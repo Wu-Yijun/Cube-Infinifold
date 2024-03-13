@@ -3,5 +3,5 @@
 version = 3
 
 [[package]]
-name = "Cube-Infinifold"
+name = "cube-infinifold"
 version = "0.1.0"
