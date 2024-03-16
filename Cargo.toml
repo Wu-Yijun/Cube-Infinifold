@@ -8,12 +8,13 @@ authors = ["Yijun Wu"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-fltk = { version = "1.4", features = ["enable-glwindow"] }
-glu-sys = "0.1.4"
-glow = "0.13"
+eframe = "*"
+egui_extras = { version = "*", features = ["all_loaders"] }
+rand = "*"
+glm = "*"
 
 [build-dependencies]
-winresource = "0.1"
+winresource = "*"
 
 
 [package.metadata.winresource]
