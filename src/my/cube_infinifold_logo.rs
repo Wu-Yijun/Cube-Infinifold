@@ -17,32 +17,11 @@ pub struct MyInfinifoldLogo {
     perf: PerformanceEvaluation,
 
     btns: Vec<UIWidget>,
+
+    change_to: Option<String>,
 }
 
 impl MyInfinifoldLogo {
-    pub fn new(game_view: Arc<Mutex<GLGameView>>, ctx: &eframe::egui::Context) -> Self {
-        let btns = vec![
-            UIWidget::new(vec![
-                "file://assets/ui/unselected.png",
-                "file://assets/ui/selected.png",
-            ])
-            .load(ctx),
-            UIWidget::new(vec![
-                "file://assets/ui/unselected.png",
-                "file://assets/ui/selected.png",
-            ]),
-            UIWidget::new(vec![
-                "file://assets/ui/unselected.png",
-                "file://assets/ui/selected.png",
-            ]),
-        ];
-        Self {
-            game_view: game_view,
-            angle: 0.0,
-            perf: PerformanceEvaluation::new(),
-            btns: btns,
-        }
-    }
 
     fn paint_opengl(&mut self, ui: &mut egui::Ui) {
         let (rect, response) = ui.allocate_exact_size(ui.max_rect().size(), egui::Sense::drag());
@@ -63,12 +42,31 @@ impl MyInfinifoldLogo {
 }
 
 impl MyViewImpl for MyInfinifoldLogo {
-    fn destory(self) {
-        todo!()
+    fn new(game_view: Arc<Mutex<GLGameView>>, ctx: &eframe::egui::Context) -> MyInfinifoldLogo {
+        let btns = vec![UIWidget::new(vec![
+            "file://assets/ui/unselected.png",
+            "file://assets/ui/selected.png",
+        ])
+        .load(ctx)];
+        Self {
+            game_view: game_view,
+            angle: 0.0,
+            perf: PerformanceEvaluation::new(),
+            btns: btns,
+            change_to: None,
+        }
     }
 
-    fn to_change(&self) -> Option<i32> {
-        None
+    fn destory(&mut self) {
+        // nothing todo!()
+        self.btns.clear();
+    }
+
+    fn to_change(&self) -> Option<String> {
+        match self.change_to.clone()?.as_str() {
+            "Logo"|"Menu" => self.change_to.clone(),
+            _ => None,
+        }
     }
 
     fn paint(&mut self, ctx: &eframe::egui::Context, _frame: &mut eframe::Frame) {
@@ -88,14 +86,9 @@ impl MyViewImpl for MyInfinifoldLogo {
         egui::CentralPanel::default()
             .frame(layout_layers)
             .show(ctx, |ui| {
-                if self.btns[0].button(ui, "开始游戏", 0, 1).clicked() {
-                    println!("开始游戏")
-                }
-                if self.btns[1].button(ui, "Test1", 0, 1).clicked() {
-                    println!("Tst 1 clked");
-                }
-                if self.btns[2].button(ui, "Test2", 0, 1).double_clicked() {
-                    println!("Tst 2 db clked");
+                if self.btns[0].button(ui, "返回", 0, 1).clicked() {
+                    println!("返回");
+                    self.change_to = Some(String::from("Menu"));
                 }
                 self.perf.performance_evaluation(ui);
             });

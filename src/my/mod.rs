@@ -1,30 +1,50 @@
-use std::default;
-
 use eframe::{
     self,
-    egui::{vec2, Context, TextureId},
+    egui,
+    epaint::mutex,
 };
-pub mod menu;
+
+// use self::menu::MyMenu;
 pub mod cube_infinifold_logo;
+pub mod gl_game_view;
+pub mod load_fonts;
+pub mod menu;
+pub mod performance_evaluation;
+
 pub trait MyViewImpl {
-    // fn new() -> Self;
-    fn destory(self);
-    fn paint(&mut self, ctx: &eframe::egui::Context, frame: &mut eframe::Frame);
-    fn to_change(&self) -> Option<i32>;
+    fn new(
+        game_view: std::sync::Arc<mutex::Mutex<gl_game_view::GLGameView>>,
+        ctx: &egui::Context,
+    ) -> Self;
+    fn destory(&mut self);
+    fn paint(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame);
+    fn to_change(&self) -> Option<String>;
 }
 
 pub enum MyView {
     MyMenu(menu::MyMenu),
+    MyLogo(cube_infinifold_logo::MyInfinifoldLogo),
+    None,
+}
+
+impl MyView {
+    pub fn destory(&mut self) {
+        match self {
+            MyView::MyMenu(m) => m.destory(),
+            MyView::MyLogo(m) => m.destory(),
+            _ => (),
+        }
+    }
 }
 
 pub struct UIWidget {
     pub default_img: String,
     imgs: Vec<String>,
-    imgs_ids: Vec<eframe::egui::TextureId>,
+    imgs_ids: Vec<egui::TextureId>,
     pub x: f32,
     pub y: f32,
-    pub font_color: eframe::egui::Color32,
-    pub font_id: eframe::egui::FontId,
+    pub font_color: egui::Color32,
+    pub font_id: egui::FontId,
 }
 
 impl UIWidget {
@@ -35,22 +55,22 @@ impl UIWidget {
             imgs: imgs.iter().map(|s| String::from(*s)).collect(),
             x: 100.0,
             y: 50.0,
-            font_color: eframe::egui::Color32::BLACK,
-            font_id: eframe::egui::FontId {
+            font_color: egui::Color32::BLACK,
+            font_id: egui::FontId {
                 size: 24.0,
-                family: eframe::egui::FontFamily::Proportional,
+                family: egui::FontFamily::Proportional,
             },
             imgs_ids: vec![],
         }
     }
     // eframe:
-    fn load(mut self, ctx: &Context) -> Self {
+    fn load(mut self, ctx: &egui::Context) -> Self {
         self.imgs_ids = self
             .imgs
             .iter()
             .filter_map(|s| {
-                eframe::egui::Image::new(s)
-                    .load_for_size(ctx, vec2(self.x, self.y))
+                egui::Image::new(s)
+                    .load_for_size(ctx, egui::vec2(self.x, self.y))
                     .ok()
                     .and_then(|ld| ld.texture_id())
             })
@@ -65,25 +85,25 @@ impl UIWidget {
     }
     fn with_font(
         mut self,
-        color: eframe::egui::Color32,
+        color: egui::Color32,
         size: f32,
-        family: eframe::egui::FontFamily,
+        family: egui::FontFamily,
     ) -> Self {
         self.font_color = color;
-        self.font_id = eframe::egui::FontId { size, family };
+        self.font_id = egui::FontId { size, family };
         self
     }
 
     fn button(
         &self,
-        ui: &mut eframe::egui::Ui,
+        ui: &mut egui::Ui,
         text: &str,
         img_id: usize,
         hov_id: usize,
-    ) -> eframe::egui::Response {
+    ) -> egui::Response {
         let (rect, response) = ui.allocate_exact_size(
-            eframe::egui::Vec2 { x: 100.0, y: 50.0 },
-            eframe::egui::Sense {
+            egui::Vec2 { x: 100.0, y: 50.0 },
+            egui::Sense {
                 click: true,
                 drag: false,
                 focusable: false,
@@ -95,31 +115,27 @@ impl UIWidget {
             } else {
                 self.imgs.get(img_id).unwrap_or(&self.default_img)
             };
-            eframe::egui::Image::new(img_str).paint_at(ui, rect);
+            egui::Image::new(img_str).paint_at(ui, rect);
         } else {
-            let default_img = eframe::egui::TextureId::default();
+            let default_img = egui::TextureId::default();
             let texture = if response.hovered() {
-                self.imgs_ids
-                    .get(hov_id)
-                    .unwrap_or(&default_img)
+                self.imgs_ids.get(hov_id).unwrap_or(&default_img)
             } else {
-                self.imgs_ids
-                    .get(img_id)
-                    .unwrap_or(&default_img)
+                self.imgs_ids.get(img_id).unwrap_or(&default_img)
             };
             ui.painter().image(
                 *texture,
                 rect,
-                eframe::egui::Rect::from_min_max(
-                    eframe::egui::Pos2::new(0.0, 0.0),
-                    eframe::egui::Pos2::new(1.0, 1.0),
+                egui::Rect::from_min_max(
+                    egui::Pos2::new(0.0, 0.0),
+                    egui::Pos2::new(1.0, 1.0),
                 ),
-                eframe::egui::Color32::WHITE,
+                egui::Color32::WHITE,
             );
         }
         ui.painter().text(
             rect.center(),
-            eframe::egui::Align2::CENTER_CENTER,
+            egui::Align2::CENTER_CENTER,
             text,
             self.font_id.clone(),
             self.font_color,
@@ -127,7 +143,3 @@ impl UIWidget {
         response
     }
 }
-
-pub mod gl_game_view;
-pub mod load_fonts;
-pub mod performance_evaluation;

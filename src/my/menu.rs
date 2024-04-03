@@ -22,7 +22,26 @@ pub struct MyMenu {
 }
 
 impl MyMenu {
-    pub fn new(game_view: Arc<Mutex<GLGameView>>, ctx: &eframe::egui::Context) -> Self {
+    fn paint_opengl(&mut self, ui: &mut egui::Ui) {
+        let (rect, response) = ui.allocate_exact_size(ui.max_rect().size(), egui::Sense::drag());
+        self.angle += response.drag_delta().x * 0.01;
+
+        // Clone locals so we can move them into the paint callback:
+        let angle = self.angle;
+        let game_view = self.game_view.clone();
+
+        let callback = egui::PaintCallback {
+            rect,
+            callback: std::sync::Arc::new(egui_glow::CallbackFn::new(move |_info, painter| {
+                game_view.lock().paint(painter.gl(), &rect, angle);
+            })),
+        };
+        ui.painter().add(callback);
+    }
+}
+
+impl MyViewImpl for MyMenu {
+    fn new(game_view: Arc<Mutex<GLGameView>>, ctx: &eframe::egui::Context) -> MyMenu {
         let btns = vec![
             UIWidget::new(vec![
                 "file://assets/ui/unselected.png",
@@ -47,33 +66,14 @@ impl MyMenu {
         }
     }
 
-    fn paint_opengl(&mut self, ui: &mut egui::Ui) {
-        let (rect, response) = ui.allocate_exact_size(ui.max_rect().size(), egui::Sense::drag());
-        self.angle += response.drag_delta().x * 0.01;
-
-        // Clone locals so we can move them into the paint callback:
-        let angle = self.angle;
-        let game_view = self.game_view.clone();
-
-        let callback = egui::PaintCallback {
-            rect,
-            callback: std::sync::Arc::new(egui_glow::CallbackFn::new(move |_info, painter| {
-                game_view.lock().paint(painter.gl(), &rect, angle);
-            })),
-        };
-        ui.painter().add(callback);
-    }
-}
-
-impl MyViewImpl for MyMenu {
-    fn destory(self) {
-        todo!()
+    fn destory(&mut self) {
+        // nothing todo!()
+        self.btns.clear();
     }
 
-    fn to_change(self) -> Option<i32> {
-        match self.change_to?.as_ref() {
-            "Logo" => Some(0),
-            "Start" => Some(1),
+    fn to_change(&self) -> Option<String> {
+        match self.change_to.clone()?.as_str() {
+            "Logo" | "Strat" => self.change_to.clone(),
             _ => None,
         }
     }
@@ -100,7 +100,7 @@ impl MyViewImpl for MyMenu {
                 }
                 if self.btns[1].button(ui, "开始游戏", 0, 1).clicked() {
                     self.change_to = Some(String::from("Start"));
-                    println!("开始游戏")
+                    println!("开始游戏");
                 }
                 if self.btns[2].button(ui, "Test2", 0, 1).double_clicked() {
                     println!("Tst 2 db clked");
