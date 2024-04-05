@@ -1,13 +1,16 @@
-use eframe::egui::mutex::Mutex;
-use eframe::{egui, glow, icon_data};
-use my::cube_infinifold_logo::MyInfinifoldLogo;
-use my::menu::MyMenu;
-use my::MyView;
-use my::MyViewImpl;
-use std::sync::Arc;
+use eframe::{
+    egui,
+    glow, icon_data,
+};
 
 mod my;
-use my::{gl_game_view::GLGameView, load_fonts::load_fonts};
+use my::{
+    cube_infinifold_logo::MyInfinifoldLogo,
+    gl_game_view::MyGLView,
+    load_fonts::load_fonts,
+    menu::MyMenu,
+    MyView, MyViewImpl,
+};
 
 fn main() -> Result<(), eframe::Error> {
     let options = eframe::NativeOptions {
@@ -34,21 +37,16 @@ fn main() -> Result<(), eframe::Error> {
 
 struct MyApp {
     my_view: MyView,
-    game_view: Arc<Mutex<GLGameView>>,
+    game_view: MyGLView,
 }
 
 impl MyApp {
     fn new(cc: &eframe::CreationContext<'_>) -> Self {
         egui_extras::install_image_loaders(&cc.egui_ctx);
         load_fonts(&cc.egui_ctx);
-        let gl = cc
-            .gl
-            .as_ref()
-            .expect("You need to run eframe with the glow backend");
-
         let mut sf = Self {
             my_view: MyView::None,
-            game_view: Mutex::new(GLGameView::new(gl)).into(),
+            game_view: MyGLView::new(cc),
         };
         sf.change_to(String::from("Menu"), &cc.egui_ctx);
         sf
@@ -58,14 +56,15 @@ impl MyApp {
         match name.as_str() {
             "Logo" => {
                 self.my_view.destory();
-                self.my_view = MyView::MyLogo(MyInfinifoldLogo::new(self.game_view.clone(), ctx));
+                self.my_view = MyView::MyLogo(MyInfinifoldLogo::new(self.game_view.lines.clone(), ctx));
             }
             "Menu" => {
                 self.my_view.destory();
-                self.my_view = MyView::MyMenu(MyMenu::new(self.game_view.clone(), ctx));
+                self.my_view = MyView::MyMenu(MyMenu::new(self.game_view.basic.clone(), ctx));
             }
             "Start" => {
                 self.my_view.destory();
+                self.my_view = MyView::None;
                 // self.my_view = MyView::MyLogo(MyInfinifoldLogo::new(self.game_view.clone(), ctx));
             }
             _ => (),
@@ -89,14 +88,13 @@ impl eframe::App for MyApp {
                     self.change_to(aim, ctx);
                 }
             }
-            MyView::None => todo!(),
-            _ => todo!(),
+            _ => todo!("未完成！！！"),
         }
     }
 
     fn on_exit(&mut self, gl: Option<&glow::Context>) {
         if let Some(gl) = gl {
-            self.game_view.lock().destroy(gl);
+            self.game_view.destroy_all(gl);
         }
     }
 }

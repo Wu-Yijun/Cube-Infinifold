@@ -6,7 +6,9 @@ use eframe::{
 };
 
 use super::{
-    gl_game_view::GLGameView, performance_evaluation::PerformanceEvaluation, MyViewImpl, UIWidget,
+    gl_game_view::{GLGameBase, GLGameView},
+    performance_evaluation::PerformanceEvaluation,
+    MyViewImpl, UIWidget,
 };
 
 pub struct MyMenu {
@@ -22,26 +24,7 @@ pub struct MyMenu {
 }
 
 impl MyMenu {
-    fn paint_opengl(&mut self, ui: &mut egui::Ui) {
-        let (rect, response) = ui.allocate_exact_size(ui.max_rect().size(), egui::Sense::drag());
-        self.angle += response.drag_delta().x * 0.01;
-
-        // Clone locals so we can move them into the paint callback:
-        let angle = self.angle;
-        let game_view = self.game_view.clone();
-
-        let callback = egui::PaintCallback {
-            rect,
-            callback: std::sync::Arc::new(egui_glow::CallbackFn::new(move |_info, painter| {
-                game_view.lock().paint(painter.gl(), &rect, angle);
-            })),
-        };
-        ui.painter().add(callback);
-    }
-}
-
-impl MyViewImpl for MyMenu {
-    fn new(game_view: Arc<Mutex<GLGameView>>, ctx: &eframe::egui::Context) -> MyMenu {
+    pub fn new(game_view: Arc<Mutex<GLGameView>>, ctx: &eframe::egui::Context) -> MyMenu {
         let btns = vec![
             UIWidget::new(vec![
                 "file://assets/ui/unselected.png",
@@ -66,6 +49,25 @@ impl MyViewImpl for MyMenu {
         }
     }
 
+    fn paint_opengl(&mut self, ui: &mut egui::Ui) {
+        let (rect, response) = ui.allocate_exact_size(ui.max_rect().size(), egui::Sense::drag());
+        self.angle += response.drag_delta().x * 0.01;
+
+        // Clone locals so we can move them into the paint callback:
+        let angle = self.angle;
+        let game_view = self.game_view.clone();
+
+        let callback = egui::PaintCallback {
+            rect,
+            callback: std::sync::Arc::new(egui_glow::CallbackFn::new(move |_info, painter| {
+                game_view.lock().paint(painter.gl(), &rect, angle);
+            })),
+        };
+        ui.painter().add(callback);
+    }
+}
+
+impl MyViewImpl for MyMenu {
     fn destory(&mut self) {
         // nothing todo!()
         self.btns.clear();
@@ -73,7 +75,7 @@ impl MyViewImpl for MyMenu {
 
     fn to_change(&self) -> Option<String> {
         match self.change_to.clone()?.as_str() {
-            "Logo" | "Strat" => self.change_to.clone(),
+            "Logo" | "Start" => self.change_to.clone(),
             _ => None,
         }
     }

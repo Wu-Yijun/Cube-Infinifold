@@ -6,12 +6,15 @@ use eframe::{
 };
 
 use super::{
-    gl_game_view::GLGameView, performance_evaluation::PerformanceEvaluation, MyViewImpl, UIWidget,
+    gl_game_view::{items, GLGameBase, GLLinesView},
+    performance_evaluation::PerformanceEvaluation,
+    MyViewImpl, UIWidget,
 };
 
 pub struct MyInfinifoldLogo {
     /// Behind an `Arc<Mutex<…>>` so we can pass it to [`egui::PaintCallback`] and paint later.
-    game_view: Arc<Mutex<GLGameView>>,
+    // game_view: Arc<Mutex<GLLinesView>>,
+    game_view: Arc<Mutex<GLLinesView>>,
     angle: f32,
 
     perf: PerformanceEvaluation,
@@ -22,6 +25,31 @@ pub struct MyInfinifoldLogo {
 }
 
 impl MyInfinifoldLogo {
+    pub fn new(
+        game_view: Arc<Mutex<GLLinesView>>,
+        ctx: &eframe::egui::Context,
+    ) -> MyInfinifoldLogo {
+        let btns = vec![UIWidget::new(vec![
+            "file://assets/ui/unselected.png",
+            "file://assets/ui/selected.png",
+        ])
+        .with_font(egui::Color32::GREEN, 28.0, egui::FontFamily::Proportional)
+        .with_size(200.0, 50.0)
+        .load(ctx)];
+        game_view
+            .lock()
+            .set_lines(vec![items::Line::default(0.0, 0.0, 0.0, 1.0, 1.0, 1.0)]);
+        game_view.lock().add_lines(items::Line::default(0.0, 0.0, 0.0, 1.0, 0.0, 0.0));
+        game_view.lock().add_lines(items::Line::default(0.0, 0.0, 0.0, 0.0, 1.0, 0.0));
+        game_view.lock().add_lines(items::Line::default(0.0, 0.0, 0.0, 0.0, 0.0, 1.0));
+        Self {
+            game_view: game_view,
+            angle: 0.0,
+            perf: PerformanceEvaluation::new(),
+            btns: btns,
+            change_to: None,
+        }
+    }
 
     fn paint_opengl(&mut self, ui: &mut egui::Ui) {
         let (rect, response) = ui.allocate_exact_size(ui.max_rect().size(), egui::Sense::drag());
@@ -42,21 +70,6 @@ impl MyInfinifoldLogo {
 }
 
 impl MyViewImpl for MyInfinifoldLogo {
-    fn new(game_view: Arc<Mutex<GLGameView>>, ctx: &eframe::egui::Context) -> MyInfinifoldLogo {
-        let btns = vec![UIWidget::new(vec![
-            "file://assets/ui/unselected.png",
-            "file://assets/ui/selected.png",
-        ])
-        .load(ctx)];
-        Self {
-            game_view: game_view,
-            angle: 0.0,
-            perf: PerformanceEvaluation::new(),
-            btns: btns,
-            change_to: None,
-        }
-    }
-
     fn destory(&mut self) {
         // nothing todo!()
         self.btns.clear();
@@ -64,7 +77,7 @@ impl MyViewImpl for MyInfinifoldLogo {
 
     fn to_change(&self) -> Option<String> {
         match self.change_to.clone()?.as_str() {
-            "Logo"|"Menu" => self.change_to.clone(),
+            "Logo" | "Menu" => self.change_to.clone(),
             _ => None,
         }
     }

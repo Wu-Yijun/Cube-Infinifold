@@ -1,7 +1,6 @@
 use eframe::{
     self,
     egui,
-    epaint::mutex,
 };
 
 // use self::menu::MyMenu;
@@ -12,10 +11,6 @@ pub mod menu;
 pub mod performance_evaluation;
 
 pub trait MyViewImpl {
-    fn new(
-        game_view: std::sync::Arc<mutex::Mutex<gl_game_view::GLGameView>>,
-        ctx: &egui::Context,
-    ) -> Self;
     fn destory(&mut self);
     fn paint(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame);
     fn to_change(&self) -> Option<String>;
