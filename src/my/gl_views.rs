@@ -1,13 +1,12 @@
 use std::sync::Arc;
 
-use eframe::{
-    egui::{self, mutex::Mutex},
-    glow,
-};
+use eframe::{egui::mutex::Mutex, glow};
+// use rand::distributions::uniform;
 
 pub struct MyGLView {
     pub basic: Arc<Mutex<GLGameView>>,
     pub lines: Arc<Mutex<GLLinesView>>,
+    pub faces: Arc<Mutex<GLFacesView>>,
 }
 
 impl MyGLView {
@@ -17,8 +16,9 @@ impl MyGLView {
             .as_ref()
             .expect("You need to run eframe with the glow backend");
         Self {
-            lines: Arc::new(Mutex::new(GLLinesView::new(gl))),
             basic: Arc::new(Mutex::new(GLGameView::new(gl))),
+            lines: Arc::new(Mutex::new(GLLinesView::new(gl))),
+            faces: Arc::new(Mutex::new(GLFacesView::new(gl))),
         }
     }
     pub fn destroy_all(&self, gl: &glow::Context) {
@@ -27,10 +27,43 @@ impl MyGLView {
     }
 }
 
+#[derive(Clone, PartialEq)]
+pub struct GlPaintOptions {
+    pub angle: f32,
+    pub translate: items::V3,
+    pub scale: f32,
+    pub aspect_ratio: f32,
+}
+impl Default for GlPaintOptions {
+    fn default() -> Self {
+        Self {
+            angle: Default::default(),
+            translate: Default::default(),
+            scale: 1.0,
+            aspect_ratio: 1.0,
+        }
+    }
+}
+impl GlPaintOptions {
+    fn get_projection_mat(&self) -> [f32; 9] {
+        [
+            self.scale * self.angle.cos(),
+            0.0,
+            -self.scale * self.angle.sin(),
+            0.0,
+            self.scale,
+            0.0,
+            self.scale * self.angle.sin(),
+            0.0,
+            self.scale * self.angle.cos(),
+        ]
+    }
+}
+
 pub trait GLGameBase {
     fn new(gl: &glow::Context) -> Self;
     fn destroy(&self, gl: &glow::Context);
-    fn paint(&self, gl: &glow::Context, rect: &egui::Rect, angle: f32);
+    fn paint(&self, gl: &glow::Context, option: &GlPaintOptions);
 }
 
 pub struct GLGameView {
@@ -108,8 +141,9 @@ impl GLGameBase for GLGameView {
         }
     }
 
-    fn paint(&self, gl: &glow::Context, rect: &egui::Rect, angle: f32) {
-        let aspect = rect.size().y / rect.size().x;
+    fn paint(&self, gl: &glow::Context, option: &GlPaintOptions) {
+        // let aspect = rect.size().y / rect.size().x;
+        let aspect = option.aspect_ratio;
         let identity = glm::mat4(
             1.0, 0.0, 0.0, 0.0, //
             0.0, 1.0, 0.0, 0.0, //
@@ -129,17 +163,7 @@ impl GLGameBase for GLGameView {
             0.0, -0.7, 0.2, // Bottum
             -0.7, 0.0, 0.2, // Right
         ];
-        let proj = [
-            angle.cos(),
-            0.0,
-            -angle.sin(),
-            0.0,
-            1.0,
-            0.0,
-            angle.sin(),
-            0.0,
-            angle.cos(),
-        ];
+        let proj = option.get_projection_mat();
 
         use glow::HasContext as _;
 
@@ -186,7 +210,7 @@ impl GLGameBase for GLGameView {
                 0.0,
             );
             gl.bind_vertex_array(Some(self.vertex_array));
-            let mut angle = angle;
+            let mut angle = option.angle;
             for _ in 0..10 {
                 let points = glm::mat4(
                     0.7, 0.0, 0.2, 0.0, // Left
@@ -258,14 +282,21 @@ impl GLGameBase for GLGameView {
 }
 
 pub mod items {
-    use std::{fmt::Debug, rc::Rc, sync::Arc};
+    use std::{fmt::Debug, sync::Arc};
 
-    #[derive(Clone, Debug)]
+    #[derive(Clone, Debug, Default, PartialEq)]
     pub struct V3 {
         pub x: f32,
         pub y: f32,
         pub z: f32,
     }
+    impl V3 {
+        pub fn from(x: f32, y: f32, z: f32) -> V3 {
+            V3 { x, y, z }
+        }
+    }
+    #[derive(Clone, Debug, Default, PartialEq)]
+    pub struct V2(f32, f32);
 
     #[derive(Clone, Debug)]
     pub struct Musk {
@@ -278,31 +309,32 @@ pub mod items {
         pub r: f32,
         pub g: f32,
         pub b: f32,
+        pub a: f32,
     }
-
-    // pub trait ColorFun {
-    //     fn get(&self, id: usize) -> Color {
-    //         Color::default()
-    //     }
-    // }
-    // pub trait ColorFun: Fn(usize) -> Color {
-    //     fn clone_box<'a>(&self) -> Arc<dyn 'a + ColorFun>
-    //     where
-    //         Self: 'a;
-    // }
-    // impl<F: Fn(usize) -> Color + Clone> ColorFun for F {
-    //     fn clone_box<'a>(&self) -> Arc<dyn 'a + ColorFun>
-    //     where
-    //         Self: 'a,
-    //     {
-    //         Arc::new(self)
-    //     }
-    // }
-    // impl<'a> Clone for Rc<dyn 'a + ColorFun> {
-    //     fn clone(&self) -> Self {
-    //         (**self).clone_box()
-    //     }
-    // }
+    impl Color {
+        pub fn as_slice3(&self) -> [f32; 3] {
+            [self.r, self.g, self.b]
+        }
+        pub fn as_slice4(&self) -> [f32; 4] {
+            [self.r, self.g, self.b, self.a]
+        }
+        pub fn as_slice3_4(c1: &Self, c2: &Self, c3: &Self, c4: &Self) -> [f32; 12] {
+            [
+                c1.r, c1.g, c1.b, // vec3
+                c2.r, c2.g, c2.b, // vec3
+                c3.r, c3.g, c3.b, // vec3
+                c4.r, c4.g, c4.b, // vec3
+            ]
+        }
+        pub fn as_slice4_4(c1: &Self, c2: &Self, c3: &Self, c4: &Self) -> [f32; 16] {
+            [
+                c1.r, c1.g, c1.b, c1.a, // vec4
+                c2.r, c2.g, c2.b, c2.a, // vec4
+                c3.r, c3.g, c3.b, c3.a, // vec4
+                c4.r, c4.g, c4.b, c4.a, // vec4
+            ]
+        }
+    }
 
     pub enum Colored {
         Default,
@@ -371,7 +403,7 @@ pub mod items {
     }
 
     impl Line {
-        pub fn default(x0: f32, y0: f32, z0: f32, x1: f32, y1: f32, z1: f32) -> Self {
+        pub fn default_with(x0: f32, y0: f32, z0: f32, x1: f32, y1: f32, z1: f32) -> Self {
             Line {
                 pos1: V3 {
                     x: x0,
@@ -389,20 +421,22 @@ pub mod items {
         }
     }
 
-    #[derive(Clone, Debug)]
+    #[derive(Clone, Debug, Default)]
     pub struct Face {
         pub pos11: V3,
         pub pos12: V3,
         pub pos21: V3,
         pub pos22: V3,
 
-        pub msk: Option<Musk>,
+        pub musk: Option<Musk>,
 
         pub color: Colored,
+
+        pos_slice: Option<[f32; 12]>,
     }
 
     impl Face {
-        pub fn default(pos: &Vec<(f32, f32, f32)>) -> Self {
+        pub fn default_with(pos: &Vec<(f32, f32, f32)>) -> Self {
             Face {
                 pos11: V3 {
                     x: pos[0].0,
@@ -424,8 +458,180 @@ pub mod items {
                     y: pos[3].1,
                     z: pos[3].2,
                 },
-                msk: None,
+                musk: None,
                 color: Colored::Default,
+                pos_slice: None,
+            }
+        }
+        pub fn with_musk(mut self, musk: Musk) -> Self {
+            self.musk = Some(musk);
+            self
+        }
+        pub fn with_color(mut self, color: Colored) -> Self {
+            self.color = color;
+            self
+        }
+        pub fn new(pos11: V3, pos12: V3, pos21: V3, pos22: V3) -> Self {
+            Face {
+                pos11,
+                pos12,
+                pos21,
+                pos22,
+                ..Default::default()
+            }
+        }
+        pub fn new_on_x(x: f32, pos: V2, size: V2) -> Self {
+            Self::new(
+                V3 {
+                    x,
+                    y: pos.0,
+                    z: pos.1,
+                },
+                V3 {
+                    x,
+                    y: pos.0 + size.0,
+                    z: pos.1,
+                },
+                V3 {
+                    x,
+                    y: pos.0,
+                    z: pos.1 + size.1,
+                },
+                V3 {
+                    x,
+                    y: pos.0 + size.0,
+                    z: pos.1 + size.1,
+                },
+            )
+        }
+        pub fn new_on_y(y: f32, pos: V2, size: V2) -> Self {
+            Self::new(
+                V3 {
+                    x: pos.0,
+                    y,
+                    z: pos.1,
+                },
+                V3 {
+                    x: pos.0 + size.0,
+                    y,
+                    z: pos.1,
+                },
+                V3 {
+                    x: pos.0,
+                    y,
+                    z: pos.1 + size.1,
+                },
+                V3 {
+                    x: pos.0 + size.0,
+                    y,
+                    z: pos.1 + size.1,
+                },
+            )
+        }
+        pub fn new_on_z(z: f32, pos: V2, size: V2) -> Self {
+            Self::new(
+                V3 {
+                    x: pos.0,
+                    y: pos.1,
+                    z,
+                },
+                V3 {
+                    x: pos.0 + size.0,
+                    y: pos.1,
+                    z,
+                },
+                V3 {
+                    x: pos.0,
+                    y: pos.1 + size.1,
+                    z,
+                },
+                V3 {
+                    x: pos.0 + size.0,
+                    y: pos.1 + size.1,
+                    z,
+                },
+            )
+        }
+        pub fn new_pillar(pos: V3, size: V3) -> Vec<Self> {
+            let color_ccc = Colored::Pure(Color {
+                r: 0.8,
+                g: 0.8,
+                b: 0.8,
+                a: 1.0,
+            });
+            let color_777 = Colored::Pure(Color {
+                r: 0.5,
+                g: 0.5,
+                b: 0.5,
+                a: 1.0,
+            });
+            let color_333 = Colored::Pure(Color {
+                r: 0.2,
+                g: 0.2,
+                b: 0.2,
+                a: 1.0,
+            });
+            let mut res = Vec::with_capacity(6);
+            res.push(
+                Self::new_on_z(pos.z, V2(pos.x, pos.y), V2(size.x, size.y))
+                    .with_color(color_333.clone()),
+            );
+            res.push(
+                Self::new_on_z(pos.z + size.z, V2(pos.x, pos.y), V2(size.x, size.y))
+                    .with_color(color_333),
+            );
+            res.push(
+                Self::new_on_y(pos.y, V2(pos.x, pos.z), V2(size.x, size.z))
+                    .with_color(color_ccc.clone()),
+            );
+            res.push(
+                Self::new_on_y(pos.y + size.y, V2(pos.x, pos.z), V2(size.x, size.z))
+                    .with_color(color_ccc),
+            );
+            res.push(
+                Self::new_on_x(pos.x, V2(pos.y, pos.z), V2(size.y, size.z))
+                    .with_color(color_777.clone()),
+            );
+            res.push(
+                Self::new_on_x(pos.x + size.x, V2(pos.y, pos.z), V2(size.y, size.z))
+                    .with_color(color_777),
+            );
+            res
+        }
+        pub fn gen_pos_slice(&mut self) {
+            self.pos_slice = Some([
+                self.pos11.x,
+                self.pos11.y,
+                self.pos11.z,
+                self.pos12.x,
+                self.pos12.y,
+                self.pos12.z,
+                self.pos21.x,
+                self.pos21.y,
+                self.pos21.z,
+                self.pos22.x,
+                self.pos22.y,
+                self.pos22.z,
+            ]);
+        }
+        pub fn get_pos_slice<'a>(&self) -> [f32; 12] {
+            if let Some(v) = self.pos_slice {
+                v
+            } else {
+                [
+                    self.pos11.x,
+                    self.pos11.y,
+                    self.pos11.z,
+                    self.pos12.x,
+                    self.pos12.y,
+                    self.pos12.z,
+                    self.pos21.x,
+                    self.pos21.y,
+                    self.pos21.z,
+                    self.pos22.x,
+                    self.pos22.y,
+                    self.pos22.z,
+                ]
             }
         }
     }
@@ -525,19 +731,10 @@ impl GLGameBase for GLLinesView {
         }
     }
 
-    fn paint(&self, gl: &glow::Context, rect: &egui::Rect, angle: f32) {
-        let aspect = rect.size().y / rect.size().x;
-        let proj = [
-            angle.cos(),
-            0.0,
-            -angle.sin(),
-            0.0,
-            1.0,
-            0.0,
-            angle.sin(),
-            0.0,
-            angle.cos(),
-        ];
+    fn paint(&self, gl: &glow::Context, option: &GlPaintOptions) {
+        // let aspect = rect.size().y / rect.size().x;
+        let aspect = option.aspect_ratio;
+        let proj = option.get_projection_mat();
 
         use glow::HasContext as _;
         let col: &items::Colored = &items::Colored::default();
@@ -676,6 +873,185 @@ impl GLGameBase for GLLinesView {
             //         gl.draw_arrays(glow::LINES, 0, 2);
             //     }
             // }
+        }
+    }
+}
+
+pub struct GLFacesView {
+    program: glow::Program,
+    vertex_array: glow::VertexArray,
+    faces: Vec<items::Face>,
+    musk_enabled: bool,
+}
+
+impl GLFacesView {
+    pub fn set_faces(&mut self, faces: Vec<items::Face>) {
+        self.faces = faces;
+    }
+    pub fn add_face(&mut self, face: items::Face) {
+        self.faces.push(face);
+    }
+    pub fn add_faces(&mut self, mut faces: Vec<items::Face>) {
+        self.faces.append(&mut faces);
+    }
+    pub fn set_musk_enabled(&mut self, musk: bool) {
+        self.musk_enabled = musk;
+    }
+}
+
+impl GLGameBase for GLFacesView {
+    fn new(gl: &glow::Context) -> Self {
+        use glow::HasContext as _;
+
+        let shader_version = if cfg!(target_arch = "wasm32") {
+            "#version 300 es"
+        } else {
+            "#version 330"
+        };
+
+        unsafe {
+            let program = gl.create_program().expect("Cannot create program");
+
+            let (vertex_shader_source, fragment_shader_source) = (
+                include_str!("../../assets/shaders/b_faces.vs"),
+                include_str!("../../assets/shaders/b_faces.fs"),
+            );
+            let shader_sources = [
+                (glow::VERTEX_SHADER, vertex_shader_source),
+                (glow::FRAGMENT_SHADER, fragment_shader_source),
+            ];
+
+            let shaders: Vec<_> = shader_sources
+                .iter()
+                .map(|(shader_type, shader_source)| {
+                    let shader = gl
+                        .create_shader(*shader_type)
+                        .expect("Cannot create shader");
+                    gl.shader_source(shader, &format!("{shader_version}\n{shader_source}"));
+                    gl.compile_shader(shader);
+                    assert!(
+                        gl.get_shader_compile_status(shader),
+                        "Failed to compile {shader_type}: {}",
+                        gl.get_shader_info_log(shader)
+                    );
+                    gl.attach_shader(program, shader);
+                    shader
+                })
+                .collect();
+
+            gl.link_program(program);
+            assert!(
+                gl.get_program_link_status(program),
+                "{}",
+                gl.get_program_info_log(program)
+            );
+
+            for shader in shaders {
+                gl.detach_shader(program, shader);
+                gl.delete_shader(shader);
+            }
+
+            let vertex_array = gl
+                .create_vertex_array()
+                .expect("Cannot create vertex array");
+
+            Self {
+                program,
+                vertex_array,
+                faces: vec![],
+                musk_enabled: true,
+            }
+        }
+    }
+    fn destroy(&self, gl: &glow::Context) {
+        use glow::HasContext as _;
+        unsafe {
+            gl.delete_program(self.program);
+            gl.delete_vertex_array(self.vertex_array);
+        }
+    }
+
+    fn paint(&self, gl: &glow::Context, option: &GlPaintOptions) {
+        // let aspect = rect.size().y / rect.size().x;
+        let aspect = option.aspect_ratio;
+        let proj = option.get_projection_mat();
+
+        use glow::HasContext as _;
+        let col: &items::Colored = &items::Colored::default();
+
+        unsafe {
+            gl.use_program(Some(self.program));
+            gl.enable(glow::DEPTH_TEST);
+            gl.clear(glow::DEPTH_BUFFER_BIT);
+            gl.depth_func(glow::LEQUAL);
+
+            gl.uniform_matrix_3_f32_slice(
+                gl.get_uniform_location(self.program, "u_proj").as_ref(),
+                false,
+                &proj,
+            );
+            gl.uniform_1_f32(
+                gl.get_uniform_location(self.program, "u_x_scale").as_ref(),
+                aspect,
+            );
+            gl.uniform_4_f32_slice(
+                gl.get_uniform_location(self.program, "u_color").as_ref(),
+                &items::Color::as_slice4_4(&col.get(0), &col.get(1), &col.get(2), &col.get(3)),
+            );
+            let mut use_mask = false;
+            gl.uniform_1_i32(
+                gl.get_uniform_location(self.program, "u_use_mask").as_ref(),
+                use_mask as i32,
+            );
+            gl.bind_vertex_array(Some(self.vertex_array));
+
+            for f in self.faces.iter() {
+                gl.uniform_3_f32_slice(
+                    gl.get_uniform_location(self.program, "u_pos").as_ref(),
+                    &f.get_pos_slice(),
+                );
+                let col2 = &f.color;
+                if !(col == col2) {
+                    let col = col2;
+                    gl.uniform_4_f32_slice(
+                        gl.get_uniform_location(self.program, "u_color").as_ref(),
+                        &items::Color::as_slice4_4(
+                            &col.get(0),
+                            &col.get(1),
+                            &col.get(2),
+                            &col.get(3),
+                        ),
+                    );
+                }
+                if self.musk_enabled {
+                    if let Some(msk) = &f.musk {
+                        use_mask = true;
+                        gl.uniform_1_i32(
+                            gl.get_uniform_location(self.program, "u_use_mask").as_ref(),
+                            use_mask as i32,
+                        );
+                        gl.uniform_3_f32(
+                            gl.get_uniform_location(self.program, "u_mask_pos").as_ref(),
+                            msk.pos.x,
+                            msk.pos.y,
+                            msk.pos.z,
+                        );
+                        gl.uniform_3_f32(
+                            gl.get_uniform_location(self.program, "u_mask_dir").as_ref(),
+                            msk.dir.x,
+                            msk.dir.y,
+                            msk.dir.z,
+                        );
+                    } else if use_mask {
+                        use_mask = false;
+                        gl.uniform_1_i32(
+                            gl.get_uniform_location(self.program, "u_use_mask").as_ref(),
+                            use_mask as i32,
+                        );
+                    }
+                }
+                gl.draw_arrays(glow::TRIANGLE_STRIP, 0, 6);
+            }
         }
     }
 }

@@ -5,21 +5,24 @@ use eframe::{
 use std::sync::Arc;
 
 use super::{
-    gl_views::{GLGameBase, GLGameView},
+    gl_views::{GLFacesView, GLGameBase, GlPaintOptions},
     performance_evaluation::PerformanceEvaluation,
     MyViewImpl, UIWidget,
 };
 
+mod penrose_triangle;
+
 pub struct MyGameView {
-    game_view: Arc<Mutex<GLGameView>>,
+    game_view: Arc<Mutex<GLFacesView>>,
     angle: f32,
     perf: PerformanceEvaluation,
     btns: Vec<UIWidget>,
     change_to: Option<String>,
+    // faces: Vec<items::Face>,
 }
 
 impl MyGameView {
-    pub fn new(game_view: Arc<Mutex<GLGameView>>, ctx: &eframe::egui::Context) -> MyGameView {
+    pub fn new(game_view: Arc<Mutex<GLFacesView>>, ctx: &eframe::egui::Context) -> MyGameView {
         let btns = vec![UIWidget::new(vec![
             "file://assets/ui/unselected.png",
             "file://assets/ui/selected.png",
@@ -27,6 +30,7 @@ impl MyGameView {
         .with_font(egui::Color32::GREEN, 28.0, egui::FontFamily::Proportional)
         .with_size(200.0, 50.0)
         .load(ctx)];
+        game_view.lock().set_faces(penrose_triangle::get());
         Self {
             game_view: game_view,
             angle: 0.0,
@@ -55,17 +59,24 @@ impl MyGameView {
         // }
 
         // Clone locals so we can move them into the paint callback:
-        let angle = self.angle - (45.0 as f32).to_radians();
+        let angle = self.angle;
+        // let angle = self.angle - (45.0 as f32).to_radians();
         // self.game_view
         //     .lock()
         //     .set_musk_enabled(angle < (45.0 as f32).to_radians());
 
         let game_view = self.game_view.clone();
+        let option = GlPaintOptions {
+            angle,
+            scale: 0.1,
+            aspect_ratio: rect.size().y / rect.size().x,
+            ..Default::default()
+        };
 
         let callback = egui::PaintCallback {
             rect,
             callback: std::sync::Arc::new(egui_glow::CallbackFn::new(move |_info, painter| {
-                game_view.lock().paint(painter.gl(), &rect, angle);
+                game_view.lock().paint(painter.gl(), &option);
             })),
         };
         ui.painter().add(callback);
@@ -81,6 +92,7 @@ impl MyViewImpl for MyGameView {
     fn to_change(&self) -> Option<String> {
         match self.change_to.clone()?.as_str() {
             "Logo" | "Menu" => self.change_to.clone(),
+            "Start" | "Game" => self.change_to.clone(),
             _ => None,
         }
     }

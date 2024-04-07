@@ -6,7 +6,7 @@ use eframe::{
 };
 
 use super::{
-    gl_views::{GLGameBase, GLGameView},
+    gl_views::{GLGameBase, GLGameView, GlPaintOptions},
     performance_evaluation::PerformanceEvaluation,
     MyViewImpl, UIWidget,
 };
@@ -56,11 +56,17 @@ impl MyMenu {
         // Clone locals so we can move them into the paint callback:
         let angle = self.angle;
         let game_view = self.game_view.clone();
+        let option = GlPaintOptions {
+            angle,
+            scale: 1.0,
+            aspect_ratio: rect.size().y / rect.size().x,
+            ..Default::default()
+        };
 
         let callback = egui::PaintCallback {
             rect,
             callback: std::sync::Arc::new(egui_glow::CallbackFn::new(move |_info, painter| {
-                game_view.lock().paint(painter.gl(), &rect, angle);
+                game_view.lock().paint(painter.gl(), &option);
             })),
         };
         ui.painter().add(callback);

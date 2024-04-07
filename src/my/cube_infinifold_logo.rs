@@ -7,7 +7,7 @@ use eframe::{
 use rand::random;
 
 use super::{
-    gl_views::{items, GLGameBase, GLLinesView},
+    gl_views::{items, GLGameBase, GLLinesView, GlPaintOptions},
     performance_evaluation::PerformanceEvaluation,
     MyViewImpl, UIWidget,
 };
@@ -87,11 +87,17 @@ impl MyInfinifoldLogo {
             .set_musk_enabled(angle < (45.0 as f32).to_radians());
 
         let game_view = self.game_view.clone();
+        let option = GlPaintOptions {
+            angle,
+            scale: 0.1,
+            aspect_ratio: rect.size().y / rect.size().x,
+            ..Default::default()
+        };
 
         let callback = egui::PaintCallback {
             rect,
             callback: std::sync::Arc::new(egui_glow::CallbackFn::new(move |_info, painter| {
-                game_view.lock().paint(painter.gl(), &rect, angle);
+                game_view.lock().paint(painter.gl(), &option);
             })),
         };
         // std::thread::spawn(f)
@@ -186,6 +192,7 @@ impl MyInfinifoldLogo {
             r: 0.5,
             g: 0.2 * x as f32,
             b: 0.8,
+            a: 1.0
         }));
         for i in ori.iter() {
             for j in i.1.iter() {

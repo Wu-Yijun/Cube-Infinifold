@@ -5,11 +5,7 @@ use eframe::{
 
 mod my;
 use my::{
-    cube_infinifold_logo::MyInfinifoldLogo,
-    gl_views::MyGLView,
-    load_fonts::load_fonts,
-    menu::MyMenu,
-    MyView, MyViewImpl,
+    cube_infinifold_logo::MyInfinifoldLogo, game::MyGameView, gl_views::MyGLView, load_fonts::load_fonts, menu::MyMenu, MyView, MyViewImpl
 };
 
 fn main() -> Result<(), eframe::Error> {
@@ -62,10 +58,9 @@ impl MyApp {
                 self.my_view.destory();
                 self.my_view = MyView::MyMenu(MyMenu::new(self.game_view.basic.clone(), ctx));
             }
-            "Start" => {
+            "Start" | "Game" => {
                 self.my_view.destory();
-                self.my_view = MyView::None;
-                // self.my_view = MyView::MyLogo(MyInfinifoldLogo::new(self.game_view.clone(), ctx));
+                self.my_view = MyView::MyGame(MyGameView::new(self.game_view.faces.clone(), ctx));
             }
             _ => (),
         }
@@ -83,6 +78,12 @@ impl eframe::App for MyApp {
                 }
             }
             MyView::MyLogo(v) => {
+                v.paint(ctx, frame);
+                if let Some(aim) = v.to_change() {
+                    self.change_to(aim, ctx);
+                }
+            }
+            MyView::MyGame(v) => {
                 v.paint(ctx, frame);
                 if let Some(aim) = v.to_change() {
                     self.change_to(aim, ctx);
