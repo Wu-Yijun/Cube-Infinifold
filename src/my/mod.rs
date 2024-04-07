@@ -5,10 +5,11 @@ use eframe::{
 
 // use self::menu::MyMenu;
 pub mod cube_infinifold_logo;
-pub mod gl_game_view;
+pub mod gl_views;
 pub mod load_fonts;
 pub mod menu;
 pub mod performance_evaluation;
+pub mod game;
 
 pub trait MyViewImpl {
     fn destory(&mut self);
@@ -19,6 +20,7 @@ pub trait MyViewImpl {
 pub enum MyView {
     MyMenu(menu::MyMenu),
     MyLogo(cube_infinifold_logo::MyInfinifoldLogo),
+    MyGame(game::MyGameView),
     None,
 }
 

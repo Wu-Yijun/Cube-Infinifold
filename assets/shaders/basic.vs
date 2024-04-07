@@ -29,11 +29,12 @@ void main() {
     gl_Position = vec4(view * u_points[permutation[gl_VertexID]], 1.0);
     gl_Position.z += zoffset;
   }
-  if(u_use_mask){
+  if (u_use_mask) {
     vec2 p = (view * u_mask_pos).xy;
     vec2 d = (view * u_mask_dir).xy;
-    mask_dist = d.y * gl_Position.x - d.x * gl_Position.y + (p.y * d.y - p.x * d.x);
-  }else{
+    mask_dist =
+        (gl_Position.x * d.y - gl_Position.y * d.x) - (p.x * d.y - p.y * d.x);
+  } else {
     mask_dist = 1.0;
   }
   gl_Position.x *= u_x_scale;

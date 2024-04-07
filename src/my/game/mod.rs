@@ -1,9 +1,8 @@
-use std::sync::Arc;
-
 use eframe::{
     egui::{self, mutex::Mutex},
     egui_glow,
 };
+use std::sync::Arc;
 
 use super::{
     gl_views::{GLGameBase, GLGameView},
@@ -11,35 +10,23 @@ use super::{
     MyViewImpl, UIWidget,
 };
 
-pub struct MyMenu {
-    /// Behind an `Arc<Mutex<…>>` so we can pass it to [`egui::PaintCallback`] and paint later.
+pub struct MyGameView {
     game_view: Arc<Mutex<GLGameView>>,
     angle: f32,
-
     perf: PerformanceEvaluation,
-
     btns: Vec<UIWidget>,
-
     change_to: Option<String>,
 }
 
-impl MyMenu {
-    pub fn new(game_view: Arc<Mutex<GLGameView>>, ctx: &eframe::egui::Context) -> MyMenu {
-        let btns = vec![
-            UIWidget::new(vec![
-                "file://assets/ui/unselected.png",
-                "file://assets/ui/selected.png",
-            ])
-            .load(ctx),
-            UIWidget::new(vec![
-                "file://assets/ui/unselected.png",
-                "file://assets/ui/selected.png",
-            ]),
-            UIWidget::new(vec![
-                "file://assets/ui/unselected.png",
-                "file://assets/ui/selected.png",
-            ]),
-        ];
+impl MyGameView {
+    pub fn new(game_view: Arc<Mutex<GLGameView>>, ctx: &eframe::egui::Context) -> MyGameView {
+        let btns = vec![UIWidget::new(vec![
+            "file://assets/ui/unselected.png",
+            "file://assets/ui/selected.png",
+        ])
+        .with_font(egui::Color32::GREEN, 28.0, egui::FontFamily::Proportional)
+        .with_size(200.0, 50.0)
+        .load(ctx)];
         Self {
             game_view: game_view,
             angle: 0.0,
@@ -53,8 +40,26 @@ impl MyMenu {
         let (rect, response) = ui.allocate_exact_size(ui.max_rect().size(), egui::Sense::drag());
         self.angle += response.drag_delta().x * 0.01;
 
+        // if self.angle > std::f32::consts::PI * 2.0 {
+        //     self.angle -= std::f32::consts::PI * 2.0;
+        //     self.box_num += 1;
+        //     self.game_view
+        //         .lock()
+        //         .set_lines(Self::get_box(self.box_num, 0.8, 0.8, 0.6));
+        // } else if self.angle < 0.0 {
+        //     self.angle += std::f32::consts::PI * 2.0;
+        //     self.box_num -= if self.box_num <= 1 { 0 } else { 1 };
+        //     self.game_view
+        //         .lock()
+        //         .set_lines(Self::get_box(self.box_num, 0.8, 0.8, 0.6));
+        // }
+
         // Clone locals so we can move them into the paint callback:
-        let angle = self.angle;
+        let angle = self.angle - (45.0 as f32).to_radians();
+        // self.game_view
+        //     .lock()
+        //     .set_musk_enabled(angle < (45.0 as f32).to_radians());
+
         let game_view = self.game_view.clone();
 
         let callback = egui::PaintCallback {
@@ -67,7 +72,7 @@ impl MyMenu {
     }
 }
 
-impl MyViewImpl for MyMenu {
+impl MyViewImpl for MyGameView {
     fn destory(&mut self) {
         // nothing todo!()
         self.btns.clear();
@@ -75,7 +80,7 @@ impl MyViewImpl for MyMenu {
 
     fn to_change(&self) -> Option<String> {
         match self.change_to.clone()?.as_str() {
-            "Logo" | "Start" => self.change_to.clone(),
+            "Logo" | "Menu" => self.change_to.clone(),
             _ => None,
         }
     }
@@ -97,15 +102,9 @@ impl MyViewImpl for MyMenu {
         egui::CentralPanel::default()
             .frame(layout_layers)
             .show(ctx, |ui| {
-                if self.btns[0].button(ui, "Cube Infinifold", 0, 1).clicked() {
-                    self.change_to = Some(String::from("Logo"));
-                }
-                if self.btns[1].button(ui, "开始游戏", 0, 1).clicked() {
-                    self.change_to = Some(String::from("Start"));
-                    println!("开始游戏");
-                }
-                if self.btns[2].button(ui, "Test2", 0, 1).double_clicked() {
-                    println!("Tst 2 db clked");
+                if self.btns[0].button(ui, "返回", 0, 1).clicked() {
+                    println!("返回");
+                    self.change_to = Some(String::from("Menu"));
                 }
                 self.perf.performance_evaluation(ui);
             });

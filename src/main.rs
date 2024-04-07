@@ -6,7 +6,7 @@ use eframe::{
 mod my;
 use my::{
     cube_infinifold_logo::MyInfinifoldLogo,
-    gl_game_view::MyGLView,
+    gl_views::MyGLView,
     load_fonts::load_fonts,
     menu::MyMenu,
     MyView, MyViewImpl,

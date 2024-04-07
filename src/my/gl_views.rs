@@ -258,21 +258,116 @@ impl GLGameBase for GLGameView {
 }
 
 pub mod items {
+    use std::{fmt::Debug, rc::Rc, sync::Arc};
+
+    #[derive(Clone, Debug)]
     pub struct V3 {
         pub x: f32,
         pub y: f32,
         pub z: f32,
     }
 
+    #[derive(Clone, Debug)]
     pub struct Musk {
         pub pos: V3,
         pub dir: V3,
     }
 
+    #[derive(Clone, Debug, Default, PartialEq)]
+    pub struct Color {
+        pub r: f32,
+        pub g: f32,
+        pub b: f32,
+    }
+
+    // pub trait ColorFun {
+    //     fn get(&self, id: usize) -> Color {
+    //         Color::default()
+    //     }
+    // }
+    // pub trait ColorFun: Fn(usize) -> Color {
+    //     fn clone_box<'a>(&self) -> Arc<dyn 'a + ColorFun>
+    //     where
+    //         Self: 'a;
+    // }
+    // impl<F: Fn(usize) -> Color + Clone> ColorFun for F {
+    //     fn clone_box<'a>(&self) -> Arc<dyn 'a + ColorFun>
+    //     where
+    //         Self: 'a,
+    //     {
+    //         Arc::new(self)
+    //     }
+    // }
+    // impl<'a> Clone for Rc<dyn 'a + ColorFun> {
+    //     fn clone(&self) -> Self {
+    //         (**self).clone_box()
+    //     }
+    // }
+
+    pub enum Colored {
+        Default,
+        Pure(Color),
+        Vertex(Vec<Color>),
+        Fun(Arc<dyn Fn(usize) -> Color>),
+    }
+
+    impl Default for Colored {
+        fn default() -> Self {
+            Colored::Default
+        }
+    }
+    impl Debug for Colored {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            match self {
+                Self::Default => write!(f, "Default"),
+                Self::Pure(arg0) => f.debug_tuple("Pure").field(arg0).finish(),
+                Self::Vertex(arg0) => f.debug_tuple("Vertex").field(arg0).finish(),
+                Self::Fun(_) => write!(f, "ColorFun"),
+            }
+        }
+    }
+    impl Clone for Colored {
+        fn clone(&self) -> Self {
+            match self {
+                Self::Default => Self::Default,
+                Self::Pure(c) => Self::Pure(c.clone()),
+                Self::Vertex(v_c) => Self::Vertex(v_c.clone()),
+                Self::Fun(b_f) => Self::Fun(Arc::clone(b_f)),
+            }
+        }
+    }
+    impl PartialEq for Colored {
+        fn eq(&self, other: &Self) -> bool {
+            match (self, other) {
+                (Self::Pure(l0), Self::Pure(r0)) => l0 == r0,
+                (Self::Vertex(l0), Self::Vertex(r0)) => l0 == r0,
+                (Self::Fun(l0), Self::Fun(r0)) => Arc::ptr_eq(l0, r0),
+                _ => false,
+            }
+        }
+    }
+    // I don't how to fix this
+    unsafe impl Send for Colored {}
+
+    impl Colored {
+        pub fn get(&self, id: usize) -> Color {
+            match self {
+                Colored::Pure(p) => p.clone(),
+                Colored::Vertex(v) => v.get(id).unwrap_or(&Color::default()).clone(),
+                Colored::Fun(f) => f(id),
+                _ => Color::default(),
+            }
+        }
+    }
+
+    #[derive(Clone, Debug)]
     pub struct Line {
         pub pos1: V3,
         pub pos2: V3,
         pub msk: Option<Musk>,
+
+        // pub color: Rc<Colored>,
+        pub color: Colored,
     }
 
     impl Line {
@@ -289,6 +384,48 @@ pub mod items {
                     z: z1,
                 },
                 msk: None,
+                color: Colored::Default,
+            }
+        }
+    }
+
+    #[derive(Clone, Debug)]
+    pub struct Face {
+        pub pos11: V3,
+        pub pos12: V3,
+        pub pos21: V3,
+        pub pos22: V3,
+
+        pub msk: Option<Musk>,
+
+        pub color: Colored,
+    }
+
+    impl Face {
+        pub fn default(pos: &Vec<(f32, f32, f32)>) -> Self {
+            Face {
+                pos11: V3 {
+                    x: pos[0].0,
+                    y: pos[0].1,
+                    z: pos[0].2,
+                },
+                pos12: V3 {
+                    x: pos[1].0,
+                    y: pos[1].1,
+                    z: pos[1].2,
+                },
+                pos21: V3 {
+                    x: pos[2].0,
+                    y: pos[2].1,
+                    z: pos[2].2,
+                },
+                pos22: V3 {
+                    x: pos[3].0,
+                    y: pos[3].1,
+                    z: pos[3].2,
+                },
+                msk: None,
+                color: Colored::Default,
             }
         }
     }
@@ -298,14 +435,21 @@ pub struct GLLinesView {
     program: glow::Program,
     vertex_array: glow::VertexArray,
     lines: Vec<items::Line>,
+    musk_enabled: bool,
 }
 
 impl GLLinesView {
     pub fn set_lines(&mut self, line_vec: Vec<items::Line>) {
         self.lines = line_vec;
     }
-    pub fn add_lines(&mut self, line: items::Line) {
+    pub fn add_line(&mut self, line: items::Line) {
         self.lines.push(line);
+    }
+    pub fn add_lines(&mut self, mut lines: Vec<items::Line>) {
+        self.lines.append(&mut lines);
+    }
+    pub fn set_musk_enabled(&mut self, musk: bool) {
+        self.musk_enabled = musk;
     }
 }
 
@@ -369,6 +513,7 @@ impl GLGameBase for GLLinesView {
                 program,
                 vertex_array,
                 lines: vec![],
+                musk_enabled: true,
             }
         }
     }
@@ -395,6 +540,7 @@ impl GLGameBase for GLLinesView {
         ];
 
         use glow::HasContext as _;
+        let col: &items::Colored = &items::Colored::default();
 
         unsafe {
             gl.use_program(Some(self.program));
@@ -411,17 +557,19 @@ impl GLGameBase for GLLinesView {
                 gl.get_uniform_location(self.program, "u_x_scale").as_ref(),
                 aspect,
             );
+            let color = col.get(0);
             gl.uniform_3_f32(
                 gl.get_uniform_location(self.program, "u_color1").as_ref(),
-                0.1,
-                0.1,
-                0.1,
+                color.r,
+                color.g,
+                color.b,
             );
+            let color = col.get(1);
             gl.uniform_3_f32(
                 gl.get_uniform_location(self.program, "u_color2").as_ref(),
-                0.2,
-                0.9,
-                0.2,
+                color.r,
+                color.g,
+                color.b,
             );
             let mut use_mask = false;
             gl.uniform_1_i32(
@@ -443,32 +591,91 @@ impl GLGameBase for GLLinesView {
                     l.pos2.y,
                     l.pos2.z,
                 );
-                if let Some(msk) = &l.msk {
-                    gl.uniform_1_i32(
-                        gl.get_uniform_location(self.program, "u_use_mask").as_ref(),
-                        use_mask as i32,
-                    );
+                let col2 = &l.color;
+                if !(col == col2) {
+                    let col = col2;
+                    let color = col.get(0);
+                    // println!("{:#?}",col);
+                    // println!("{:#?}",col2);
+                    // todo!("test");
                     gl.uniform_3_f32(
-                        gl.get_uniform_location(self.program, "u_mask_pos").as_ref(),
-                        msk.pos.x,
-                        msk.pos.y,
-                        msk.pos.z,
+                        gl.get_uniform_location(self.program, "u_color1").as_ref(),
+                        color.r,
+                        color.g,
+                        color.b,
                     );
+                    let color = col.get(3);
                     gl.uniform_3_f32(
-                        gl.get_uniform_location(self.program, "u_mask_dir").as_ref(),
-                        msk.dir.x,
-                        msk.dir.y,
-                        msk.dir.z,
+                        gl.get_uniform_location(self.program, "u_color2").as_ref(),
+                        color.r,
+                        color.g,
+                        color.b,
                     );
-                } else if use_mask {
-                    use_mask = false;
-                    gl.uniform_1_i32(
-                        gl.get_uniform_location(self.program, "u_use_mask").as_ref(),
-                        use_mask as i32,
-                    );
+                }
+                if self.musk_enabled {
+                    if let Some(msk) = &l.msk {
+                        use_mask = true;
+                        gl.uniform_1_i32(
+                            gl.get_uniform_location(self.program, "u_use_mask").as_ref(),
+                            use_mask as i32,
+                        );
+                        gl.uniform_3_f32(
+                            gl.get_uniform_location(self.program, "u_mask_pos").as_ref(),
+                            msk.pos.x,
+                            msk.pos.y,
+                            msk.pos.z,
+                        );
+                        gl.uniform_3_f32(
+                            gl.get_uniform_location(self.program, "u_mask_dir").as_ref(),
+                            msk.dir.x,
+                            msk.dir.y,
+                            msk.dir.z,
+                        );
+                    } else if use_mask {
+                        use_mask = false;
+                        gl.uniform_1_i32(
+                            gl.get_uniform_location(self.program, "u_use_mask").as_ref(),
+                            use_mask as i32,
+                        );
+                    }
                 }
                 gl.draw_arrays(glow::LINES, 0, 2);
             }
+
+            // // draw musks
+            // gl.uniform_1_i32(
+            //     gl.get_uniform_location(self.program, "u_use_mask").as_ref(),
+            //     false as i32,
+            // );
+            // gl.uniform_3_f32(
+            //     gl.get_uniform_location(self.program, "u_color1").as_ref(),
+            //     0.9,
+            //     0.1,
+            //     0.1,
+            // );
+            // gl.uniform_3_f32(
+            //     gl.get_uniform_location(self.program, "u_color2").as_ref(),
+            //     0.9,
+            //     0.2,
+            //     0.2,
+            // );
+            // for l in self.lines.iter() {
+            //     if let Some(msk) = &l.msk {
+            //         gl.uniform_3_f32(
+            //             gl.get_uniform_location(self.program, "u_pos1").as_ref(),
+            //             msk.pos.x,
+            //             msk.pos.y,
+            //             msk.pos.z,
+            //         );
+            //         gl.uniform_3_f32(
+            //             gl.get_uniform_location(self.program, "u_pos2").as_ref(),
+            //             msk.pos.x + msk.dir.x,
+            //             msk.pos.y + msk.dir.y,
+            //             msk.pos.z + msk.dir.z,
+            //         );
+            //         gl.draw_arrays(glow::LINES, 0, 2);
+            //     }
+            // }
         }
     }
 }
