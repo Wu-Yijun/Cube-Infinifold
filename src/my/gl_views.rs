@@ -285,18 +285,30 @@ pub mod items {
     use std::{fmt::Debug, sync::Arc};
 
     #[derive(Clone, Debug, Default, PartialEq)]
+    pub struct V2(f32, f32);
+    #[derive(Clone, Debug, Default, PartialEq)]
     pub struct V3 {
         pub x: f32,
         pub y: f32,
         pub z: f32,
     }
     impl V3 {
-        pub fn from(x: f32, y: f32, z: f32) -> V3 {
-            V3 { x, y, z }
+        pub fn from(x: f32, y: f32, z: f32) -> Self {
+            Self { x, y, z }
         }
     }
     #[derive(Clone, Debug, Default, PartialEq)]
-    pub struct V2(f32, f32);
+    pub struct V4 {
+        pub x: f32,
+        pub y: f32,
+        pub z: f32,
+        pub w: f32,
+    }
+    impl V4 {
+        pub fn from(x: f32, y: f32, z: f32, w: f32) -> Self {
+            Self { x, y, z, w }
+        }
+    }
 
     #[derive(Clone, Debug)]
     pub struct Musk {
@@ -431,6 +443,11 @@ pub mod items {
         pub musk: Option<Musk>,
 
         pub color: Colored,
+        /// range from -1 to 1, default to be 0
+        /// the index of drawing, usually achieved by applying an z offset to gl drawing
+        pub index: f32,
+        /// to skip this face when drawing
+        pub skipped: bool,
 
         pos_slice: Option<[f32; 12]>,
     }
@@ -461,6 +478,8 @@ pub mod items {
                 musk: None,
                 color: Colored::Default,
                 pos_slice: None,
+                index: 0.0,
+                skipped: false,
             }
         }
         pub fn with_musk(mut self, musk: Musk) -> Self {
@@ -470,6 +489,13 @@ pub mod items {
         pub fn with_color(mut self, color: Colored) -> Self {
             self.color = color;
             self
+        }
+        pub fn with_w(mut self, w: f32) -> Self {
+            self.set_w(w);
+            self
+        }
+        pub fn set_w(&mut self, w: f32) {
+            self.index = w;
         }
         pub fn new(pos11: V3, pos12: V3, pos21: V3, pos22: V3) -> Self {
             Face {
@@ -552,52 +578,6 @@ pub mod items {
                 },
             )
         }
-        pub fn new_pillar(pos: V3, size: V3) -> Vec<Self> {
-            let color_ccc = Colored::Pure(Color {
-                r: 0.8,
-                g: 0.8,
-                b: 0.8,
-                a: 1.0,
-            });
-            let color_777 = Colored::Pure(Color {
-                r: 0.5,
-                g: 0.5,
-                b: 0.5,
-                a: 1.0,
-            });
-            let color_333 = Colored::Pure(Color {
-                r: 0.2,
-                g: 0.2,
-                b: 0.2,
-                a: 1.0,
-            });
-            let mut res = Vec::with_capacity(6);
-            res.push(
-                Self::new_on_z(pos.z, V2(pos.x, pos.y), V2(size.x, size.y))
-                    .with_color(color_333.clone()),
-            );
-            res.push(
-                Self::new_on_z(pos.z + size.z, V2(pos.x, pos.y), V2(size.x, size.y))
-                    .with_color(color_333),
-            );
-            res.push(
-                Self::new_on_y(pos.y, V2(pos.x, pos.z), V2(size.x, size.z))
-                    .with_color(color_ccc.clone()),
-            );
-            res.push(
-                Self::new_on_y(pos.y + size.y, V2(pos.x, pos.z), V2(size.x, size.z))
-                    .with_color(color_ccc),
-            );
-            res.push(
-                Self::new_on_x(pos.x, V2(pos.y, pos.z), V2(size.y, size.z))
-                    .with_color(color_777.clone()),
-            );
-            res.push(
-                Self::new_on_x(pos.x + size.x, V2(pos.y, pos.z), V2(size.y, size.z))
-                    .with_color(color_777),
-            );
-            res
-        }
         pub fn gen_pos_slice(&mut self) {
             self.pos_slice = Some([
                 self.pos11.x,
@@ -633,6 +613,106 @@ pub mod items {
                     self.pos22.z,
                 ]
             }
+        }
+    }
+
+    #[derive(Clone, Debug, Default)]
+    pub struct Pillar(Vec<Face>);
+    impl Pillar {
+        pub fn new_upright(pos: V3, size: V3) -> Self {
+            let color_ccc = Colored::Pure(Color {
+                r: 0.8,
+                g: 0.8,
+                b: 0.8,
+                a: 1.0,
+            });
+            let color_777 = Colored::Pure(Color {
+                r: 0.5,
+                g: 0.5,
+                b: 0.5,
+                a: 1.0,
+            });
+            let color_333 = Colored::Pure(Color {
+                r: 0.2,
+                g: 0.2,
+                b: 0.2,
+                a: 1.0,
+            });
+            let mut res = Vec::with_capacity(6);
+            // right
+            res.push(
+                Face::new_on_x(pos.x + size.x, V2(pos.y, pos.z), V2(size.y, size.z))
+                    .with_color(color_777.clone()),
+            );
+            // left
+            res.push(
+                Face::new_on_x(pos.x, V2(pos.y, pos.z), V2(size.y, size.z)).with_color(color_777),
+            );
+            // up
+            res.push(
+                Face::new_on_y(pos.y + size.y, V2(pos.x, pos.z), V2(size.x, size.z))
+                    .with_color(color_ccc.clone()),
+            );
+            // down
+            res.push(
+                Face::new_on_y(pos.y, V2(pos.x, pos.z), V2(size.x, size.z)).with_color(color_ccc),
+            );
+            // front
+            res.push(
+                Face::new_on_z(pos.z + size.z, V2(pos.x, pos.y), V2(size.x, size.y))
+                    .with_color(color_333.clone()),
+            );
+            // back
+            res.push(
+                Face::new_on_z(pos.z, V2(pos.x, pos.y), V2(size.x, size.y)).with_color(color_333),
+            );
+            Self(res)
+        }
+        pub fn into_vec(mut self) -> Vec<Face> {
+            self.0
+        }
+        pub fn with_w(mut self, w: f32) -> Self {
+            for f in self.0.iter_mut() {
+                f.set_w(w);
+            }
+            self
+        }
+
+        pub fn set_skipped_filter_all(&mut self, skipped: bool) {
+            self.set_skipped_filter(skipped, skipped, skipped, skipped, skipped, skipped);
+        }
+        pub fn set_skipped_filter(
+            &mut self,
+            right_x: bool,
+            left: bool,
+            top_y: bool,
+            down: bool,
+            front_z: bool,
+            back: bool,
+        ) {
+            self.0[0].skipped = right_x;
+            self.0[1].skipped = left;
+            self.0[2].skipped = top_y;
+            self.0[3].skipped = down;
+            self.0[4].skipped = front_z;
+            self.0[5].skipped = back;
+        }
+        pub fn with_skipped_filter(
+            mut self,
+            right_x: bool,
+            left: bool,
+            top_y: bool,
+            down: bool,
+            front_z: bool,
+            back: bool,
+        ) -> Self {
+            self.0[0].skipped = right_x;
+            self.0[1].skipped = left;
+            self.0[2].skipped = top_y;
+            self.0[3].skipped = down;
+            self.0[4].skipped = front_z;
+            self.0[5].skipped = back;
+            self
         }
     }
 }
@@ -982,8 +1062,9 @@ impl GLGameBase for GLFacesView {
         unsafe {
             gl.use_program(Some(self.program));
             gl.enable(glow::DEPTH_TEST);
-            gl.clear(glow::DEPTH_BUFFER_BIT);
             gl.depth_func(glow::LEQUAL);
+            // gl.depth_func(glow::GREATER);
+            gl.clear(glow::DEPTH_BUFFER_BIT);
 
             gl.uniform_matrix_3_f32_slice(
                 gl.get_uniform_location(self.program, "u_proj").as_ref(),
@@ -993,6 +1074,10 @@ impl GLGameBase for GLFacesView {
             gl.uniform_1_f32(
                 gl.get_uniform_location(self.program, "u_x_scale").as_ref(),
                 aspect,
+            );
+            gl.uniform_1_f32(
+                gl.get_uniform_location(self.program, "u_index").as_ref(),
+                0.0,
             );
             gl.uniform_4_f32_slice(
                 gl.get_uniform_location(self.program, "u_color").as_ref(),
@@ -1005,10 +1090,14 @@ impl GLGameBase for GLFacesView {
             );
             gl.bind_vertex_array(Some(self.vertex_array));
 
-            for f in self.faces.iter() {
+            for f in self.faces.iter().filter(|f| !f.skipped) {
                 gl.uniform_3_f32_slice(
                     gl.get_uniform_location(self.program, "u_pos").as_ref(),
                     &f.get_pos_slice(),
+                );
+                gl.uniform_1_f32(
+                    gl.get_uniform_location(self.program, "u_index").as_ref(),
+                    f.index,
                 );
                 let col2 = &f.color;
                 if !(col == col2) {

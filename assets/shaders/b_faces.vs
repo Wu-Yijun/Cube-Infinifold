@@ -1,5 +1,5 @@
-const highp float zRatio = -0.1;
-const highp float zoffset = 0.001;
+const highp float zRatio = 0.01;
+const highp float zoffset = 0.0001;
 const mat3x3 pj = mat3x3(0.866025, -0.5, zRatio,  // x -> x'
                          0.0, 1.0, zRatio,        // y -> y'
                          -0.866025, -0.5, zRatio  // z -> z'
@@ -10,6 +10,7 @@ out highp float mask_dist;
 
 uniform mat3 u_proj;
 uniform float u_x_scale;
+uniform float u_index;
 
 uniform vec4 u_color[4];
 uniform vec3 u_pos[4];
@@ -24,7 +25,7 @@ void main() {
   if (gl_InstanceID < 2) {
     // base
     v_color.a /= 2 - v_color.a;
-  }else{
+  } else {
     gl_Position.z += zoffset;
     v_color *= 0.5;
   }
@@ -37,4 +38,7 @@ void main() {
     mask_dist = 1.0;
   }
   gl_Position.x *= u_x_scale;
+  gl_Position.z += u_index;
+  // using lequal
+  gl_Position.z = -gl_Position.z;
 }

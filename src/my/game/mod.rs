@@ -19,6 +19,7 @@ pub struct MyGameView {
     btns: Vec<UIWidget>,
     change_to: Option<String>,
     // faces: Vec<items::Face>,
+    level: penrose_triangle::PenroseTriangle,
 }
 
 impl MyGameView {
@@ -30,13 +31,15 @@ impl MyGameView {
         .with_font(egui::Color32::GREEN, 28.0, egui::FontFamily::Proportional)
         .with_size(200.0, 50.0)
         .load(ctx)];
-        game_view.lock().set_faces(penrose_triangle::get());
+        let level = penrose_triangle::PenroseTriangle::new();
+        game_view.lock().set_faces(level.get().clone());
         Self {
-            game_view: game_view,
-            angle: 0.0,
+            game_view,
+            angle: 550_f32.to_radians(),
             perf: PerformanceEvaluation::new(),
             btns: btns,
             change_to: None,
+            level,
         }
     }
 
@@ -60,6 +63,9 @@ impl MyGameView {
 
         // Clone locals so we can move them into the paint callback:
         let angle = self.angle;
+        if self.level.when_angled(angle) {
+            self.game_view.lock().set_faces(self.level.get().clone());
+        }
         // let angle = self.angle - (45.0 as f32).to_radians();
         // self.game_view
         //     .lock()
@@ -68,7 +74,7 @@ impl MyGameView {
         let game_view = self.game_view.clone();
         let option = GlPaintOptions {
             angle,
-            scale: 0.1,
+            scale: 0.05,
             aspect_ratio: rect.size().y / rect.size().x,
             ..Default::default()
         };
