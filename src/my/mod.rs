@@ -1,15 +1,12 @@
-use eframe::{
-    self,
-    egui,
-};
+use eframe::{self, egui};
 
 // use self::menu::MyMenu;
 pub mod cube_infinifold_logo;
+pub mod game;
 pub mod gl_views;
 pub mod load_fonts;
 pub mod menu;
 pub mod performance_evaluation;
-pub mod game;
 
 pub trait MyViewImpl {
     fn destory(&mut self);
@@ -80,12 +77,7 @@ impl UIWidget {
         self.y = y;
         self
     }
-    fn with_font(
-        mut self,
-        color: egui::Color32,
-        size: f32,
-        family: egui::FontFamily,
-    ) -> Self {
+    fn with_font(mut self, color: egui::Color32, size: f32, family: egui::FontFamily) -> Self {
         self.font_color = color;
         self.font_id = egui::FontId { size, family };
         self
@@ -123,10 +115,7 @@ impl UIWidget {
             ui.painter().image(
                 *texture,
                 rect,
-                egui::Rect::from_min_max(
-                    egui::Pos2::new(0.0, 0.0),
-                    egui::Pos2::new(1.0, 1.0),
-                ),
+                egui::Rect::from_min_max(egui::Pos2::new(0.0, 0.0), egui::Pos2::new(1.0, 1.0)),
                 egui::Color32::WHITE,
             );
         }

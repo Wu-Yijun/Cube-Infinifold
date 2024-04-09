@@ -10,8 +10,10 @@ authors = ["Yijun Wu"]
 [dependencies]
 eframe = "*"
 egui_extras = { version = "*", features = ["all_loaders"] }
+image = { version = "*", features = ["jpeg", "png"] }
 rand = "*"
 glm = "*"
+chrono = "*"
 
 [build-dependencies]
 winresource = "*"

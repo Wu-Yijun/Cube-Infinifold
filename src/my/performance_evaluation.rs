@@ -183,4 +183,14 @@ impl PerformanceEvaluation {
             });
         });
     }
+
+    pub fn messager(ui: &mut egui::Ui, msg: Vec<String>) {
+        ui.group(|ui| {
+            for s in msg {
+                ui.label(s);
+            }
+        });
+    }
 }
+
+pub struct Messager {}

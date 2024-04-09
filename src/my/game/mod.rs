@@ -35,7 +35,7 @@ impl MyGameView {
         game_view.lock().set_faces(level.get().clone());
         Self {
             game_view,
-            angle: 550_f32.to_radians(),
+            angle: 0_f32.to_radians(),
             perf: PerformanceEvaluation::new(),
             btns: btns,
             change_to: None,

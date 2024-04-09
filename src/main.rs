@@ -1,11 +1,12 @@
-use eframe::{
-    egui,
-    glow, icon_data,
-};
+use eframe::{egui, glow, icon_data};
 
+mod game_options;
 mod my;
+mod test;
+use game_options::{media, MyGameOption};
 use my::{
-    cube_infinifold_logo::MyInfinifoldLogo, game::MyGameView, gl_views::MyGLView, load_fonts::load_fonts, menu::MyMenu, MyView, MyViewImpl
+    cube_infinifold_logo::MyInfinifoldLogo, game::MyGameView, gl_views::MyGLView,
+    load_fonts::load_fonts, menu::MyMenu, MyView, MyViewImpl,
 };
 
 fn main() -> Result<(), eframe::Error> {
@@ -34,6 +35,7 @@ fn main() -> Result<(), eframe::Error> {
 struct MyApp {
     my_view: MyView,
     game_view: MyGLView,
+    option: MyGameOption,
 }
 
 impl MyApp {
@@ -43,6 +45,7 @@ impl MyApp {
         let mut sf = Self {
             my_view: MyView::None,
             game_view: MyGLView::new(cc),
+            option: Default::default(),
         };
         sf.change_to(String::from("Menu"), &cc.egui_ctx);
         sf
@@ -52,7 +55,8 @@ impl MyApp {
         match name.as_str() {
             "Logo" => {
                 self.my_view.destory();
-                self.my_view = MyView::MyLogo(MyInfinifoldLogo::new(self.game_view.lines.clone(), ctx));
+                self.my_view =
+                    MyView::MyLogo(MyInfinifoldLogo::new(self.game_view.lines.clone(), ctx));
             }
             "Menu" => {
                 self.my_view.destory();
@@ -69,7 +73,14 @@ impl MyApp {
 
 impl eframe::App for MyApp {
     fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
-        // self.menu_view(ctx, frame);
+        {
+            let t = std::time::Instant::now();
+            self.option.dt = t - self.option.time;
+            self.option.time = t;
+            self.option.messages.recv();
+            self.option.messages.dt(self.option.dt);
+        }
+        // View show
         match &mut self.my_view {
             MyView::MyMenu(v) => {
                 v.paint(ctx, frame);
@@ -90,6 +101,124 @@ impl eframe::App for MyApp {
                 }
             }
             _ => todo!("未完成！！！"),
+        }
+
+        // message
+        if self.option.messages.has_any() || self.option.messages.expanded {
+            egui::TopBottomPanel::bottom(egui::Id::new("msgbox"))
+                .frame(egui::containers::Frame {
+                    fill: egui::Color32::from_rgba_unmultiplied(0, 0, 0, 100),
+                    outer_margin: egui::Margin {
+                        left: 10.0,
+                        right: 10.0,
+                        top: 20.0,
+                        bottom: 100.0,
+                    },
+                    inner_margin: egui::Margin::same(10.0),
+                    rounding: egui::Rounding::ZERO,
+                    shadow: eframe::epaint::Shadow::NONE,
+                    stroke: eframe::epaint::Stroke::NONE,
+                })
+                .show_separator_line(false)
+                .min_height(1.0)
+                .show(ctx, |ui| {
+                    let msg = if self.option.messages.expanded {
+                        &self.option.messages.msg
+                    } else {
+                        self.option.messages.get()
+                    };
+                    for s in msg {
+                        ui.label(s.0.clone());
+                    }
+                });
+        }
+
+        // eve handler
+        match ctx.input(|i| {
+            for event in &i.events {
+                match event {
+                    egui::Event::Key {
+                        key: egui::Key::F2,
+                        pressed: true,
+                        modifiers: egui::Modifiers::NONE,
+                        repeat: _,
+                        physical_key: _,
+                    } => {
+                        return "screen shot";
+                    }
+                    egui::Event::Key {
+                        key: egui::Key::T,
+                        pressed: true,
+                        modifiers: egui::Modifiers::NONE,
+                        repeat: false,
+                        physical_key: _,
+                    } => {
+                        return "text input";
+                    }
+                    egui::Event::Key {
+                        key: egui::Key::F2,
+                        pressed: true,
+                        modifiers: egui::Modifiers::CTRL,
+                        repeat: _,
+                        physical_key: _,
+                    } => {
+                        return "screen record";
+                    }
+                    _ => (),
+                }
+            }
+            ""
+        }) {
+            "screen record" => {
+                if self.option.screenshot.screen_recording {
+                    self.option.screenshot.screen_recording_stop = true;
+                } else {
+                    self.option.screenshot.screen_recording = true;
+                }
+            }
+            "screen shot" => {
+                self.option.screenshot.screen_shot = true;
+            }
+            "text input" => {
+                self.option.messages.expanded = !self.option.messages.expanded;
+            }
+            _ => (),
+        }
+        if self.option.screenshot.screen_shot || self.option.screenshot.screen_recording {
+            ctx.send_viewport_cmd(egui::ViewportCommand::Screenshot);
+        }
+
+        if self.option.screenshot.screen_shot || self.option.screenshot.screen_recording {
+            // notice that the command will not always be executed
+            if let Some(image) = ctx.input(|i| {
+                for event in &i.raw.events {
+                    if let egui::Event::Screenshot { image, .. } = event {
+                        return Some(image.clone());
+                    }
+                }
+                None
+            }) {
+                if self.option.screenshot.screen_shot {
+                    self.option.screenshot.screen_shot = false;
+                    let t = chrono::offset::Local::now().to_string().replace(":", "_");
+                    let sender = self.option.messages.send.clone();
+                    std::thread::spawn(move || {
+                        let name = format!("output/img-{t}");
+                        if let Some(err) = media::save_image(&name, "png", &image) {
+                            println!("Cannot save image! Error: {err}");
+                        } else {
+                            let _ = sender.send((format!("{name}.png saved successfully"), 1000));
+                        }
+                    });
+                } else if self.option.screenshot.screen_recording {
+                    todo!("Add image");
+                    if self.option.screenshot.screen_recording_stop {
+                        self.option.screenshot.screen_recording = false;
+                        self.option.screenshot.screen_recording_stop = false;
+                        todo!("Save recording");
+                    }
+                }
+            }
         }
     }
 
