@@ -1,4 +1,4 @@
-use std::f32::consts::PI;
+// use std::f32::consts::PI;
 
 use crate::my::gl_views::items::{self, Pillar, V3};
 
@@ -43,7 +43,7 @@ enum State {
 
 pub struct PenroseTriangle {
     faces: Vec<items::Face>,
-    updated: bool,
+    // updated: bool,
     state: State,
 
     content: Content,
@@ -71,7 +71,10 @@ impl PenroseTriangle {
             back: Pillar::new_upright(V3::from(4.0, 4.0, -1.0), V3::from(-4.0, 2.0, 2.0)),
             shrink: (
                 Pillar::new_upright(V3::from(4.0, -2.0, -1.0), V3::from(2.0, 12.0, 2.0)),
-                Pillar::new_upright(V3::from(4.0, 5.0 * S2 - 2.0, -11.0), V3::from(2.0, 2.0, 12.0)),
+                Pillar::new_upright(
+                    V3::from(4.0, 5.0 * S2 - 2.0, -11.0),
+                    V3::from(2.0, 2.0, 12.0),
+                ),
             ),
             shrink2: Pillar::new_upright(V3::from(4.0, 8.0, -1.0), V3::from(2.0, 2.0, -5.8)),
             shrink3: (
@@ -82,20 +85,20 @@ impl PenroseTriangle {
         let mut s = Self {
             content,
             faces: vec![],
-            updated: true,
+            // updated: true,
             state: State::Basic,
         };
         s.gen_vec();
         s
     }
-    /// Is the faces inside is changed
-    /// Update state will disappear when set_updated method is called
-    pub fn updated(&self) -> bool {
-        self.updated
-    }
-    pub fn set_updated(&mut self, state: bool) {
-        self.updated = state;
-    }
+    // /// Is the faces inside is changed
+    // /// Update state will disappear when set_updated method is called
+    // pub fn updated(&self) -> bool {
+    //     self.updated
+    // }
+    // pub fn set_updated(&mut self, state: bool) {
+    //     self.updated = state;
+    // }
     /// this will not disable update state
     pub fn get(&self) -> &Vec<items::Face> {
         &self.faces
@@ -135,16 +138,22 @@ impl PenroseTriangle {
                     .append(&mut self.content.right.clone().into_vec());
             }
             State::Shrink => {
-                self.faces.append(&mut self.content.shrink.0.clone().into_vec());
-                self.faces.append(&mut self.content.shrink.1.clone().into_vec());
+                self.faces
+                    .append(&mut self.content.shrink.0.clone().into_vec());
+                self.faces
+                    .append(&mut self.content.shrink.1.clone().into_vec());
             }
             State::Shrink2 => {
-                self.faces.append(&mut self.content.shrink.0.clone().into_vec());
-                self.faces.append(&mut self.content.shrink2.clone().into_vec());
+                self.faces
+                    .append(&mut self.content.shrink.0.clone().into_vec());
+                self.faces
+                    .append(&mut self.content.shrink2.clone().into_vec());
             }
             State::Shrink3 => {
-                self.faces.append(&mut self.content.shrink3.0.clone().into_vec());
-                self.faces.append(&mut self.content.shrink3.1.clone().into_vec());
+                self.faces
+                    .append(&mut self.content.shrink3.0.clone().into_vec());
+                self.faces
+                    .append(&mut self.content.shrink3.1.clone().into_vec());
             }
         }
     }
@@ -180,9 +189,9 @@ impl PenroseTriangle {
             || self.range_and_state(angle, 405_f32, 585_f32, State::Shrink2)
             || self.range_and_state(angle, 585_f32, 1000_f32, State::Shrink3)
     }
-    pub fn set_angle(&mut self, angle: f32) {
-        if self.when_angled(angle) {
-            self.updated = true;
-        }
-    }
+    // pub fn set_angle(&mut self, angle: f32) {
+    //     if self.when_angled(angle) {
+    //         self.updated = true;
+    //     }
+    // }
 }

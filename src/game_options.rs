@@ -23,11 +23,24 @@ impl Default for MyGameOption {
 
 impl MyGameOption {}
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq)]
 pub struct MyScreenShot {
     pub screen_shot: bool,
     pub screen_recording: bool,
     pub screen_recording_stop: bool,
+
+    pub video_encoder: Option<media::Video>,
+}
+
+impl Clone for MyScreenShot {
+    fn clone(&self) -> Self {
+        Self {
+            screen_shot: self.screen_shot,
+            screen_recording: self.screen_recording,
+            screen_recording_stop: self.screen_recording_stop,
+            video_encoder: None,
+        }
+    }
 }
 
 impl Default for MyScreenShot {
@@ -36,11 +49,16 @@ impl Default for MyScreenShot {
             screen_shot: false,
             screen_recording: false,
             screen_recording_stop: false,
+            video_encoder: None,
         }
     }
 }
 
 pub mod media {
+    use std::{
+        sync::mpsc::{self, Sender},
+        thread::{self},
+    };
 
     /// return None if it is saved successfully.
     /// or else return Some(error: String)
@@ -56,6 +74,85 @@ pub mod media {
             return Some(err.to_string());
         }
         None
+    }
+
+    #[derive(Debug)]
+    pub struct Video {
+        pub width: usize,
+        pub height: usize,
+        pub path: String,
+        pub sender: Sender<VideoFrame>,
+        // handler: JoinHandle<()>,
+        // recvier: Receiver<Vec<u8>>,
+        // handler: Receiver<Vec<u8>>,
+        // / we will save the un encoded frames
+        // pub video: VecDeque<Vec<u8>>,
+        // pub audio: (),
+    }
+    impl PartialEq for Video {
+        fn eq(&self, _: &Self) -> bool {
+            true
+        }
+    }
+
+    pub struct VideoFrame {
+        pub image: eframe::egui::ColorImage,
+        pub audio: (),
+        pub time_stamp: std::time::Instant,
+    }
+
+    impl Video {
+        pub fn new(
+            height: usize,
+            width: usize,
+            path: &str,
+            msg_sender: Sender<(String, u64)>,
+        ) -> Self {
+            let (sender, receiver) = mpsc::channel::<VideoFrame>();
+
+            // println!("{width},{height}");
+            let settings = video_rs::encode::Settings::preset_h264_yuv420p(width, height, false);
+            let mut encoder = video_rs::encode::Encoder::new(std::path::Path::new(path), settings)
+                .expect("Cannot create");
+            let path_s = path.to_string();
+            thread::spawn(move || {
+                let start_from = std::time::Instant::now();
+                while let Ok(msg) = receiver.recv() {
+                    let dt = msg.time_stamp - start_from;
+                    let source_timestamp = video_rs::Time::from_secs_f64(dt.as_secs_f64());
+                    // let rgb_data = msg.image.pixels.iter().map(|c|)
+                    let shape = (msg.image.height(), msg.image.width(), 3);
+                    let data = msg.image.as_raw();
+                    let default = &0;
+                    let frame: ndarray::Array3<u8> =
+                        ndarray::Array3::from_shape_fn(shape, |(x, y, c)| {
+                            *data.get((x * shape.1 + y) * 4 + c).unwrap_or(default)
+                        });
+                    encoder
+                        .encode(&frame, &source_timestamp)
+                        .expect("failed to encode frame");
+                }
+                encoder.finish().expect("failed to finish encoder");
+                // println!("Finish writing!");
+                msg_sender
+                    .send((
+                        format!("Image {path_s} has been written into file successfully!"),
+                        5000,
+                    ))
+                    .unwrap();
+            });
+            Self {
+                width,
+                height,
+                path: path.to_string(),
+                sender,
+            }
+        }
+
+        // pub fn done(self) {
+        //     drop(self.sender);
+        //     self.handler.join().unwrap();
+        // }
     }
 }
 
@@ -143,7 +240,9 @@ impl MyMessage {
                 }
             }
         }
-        self.update();
+        if to_update {
+            self.update();
+        }
     }
     fn update(&mut self) {
         self.shown_message = self

@@ -1,4 +1,7 @@
-use eframe::{egui, glow, icon_data};
+use eframe::{
+    egui,
+    glow, icon_data,
+};
 
 mod game_options;
 mod my;
@@ -12,7 +15,8 @@ use my::{
 fn main() -> Result<(), eframe::Error> {
     let options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default()
-            .with_fullscreen(true)
+            // .with_fullscreen(true)
+            // .with_inner_size(egui::Vec2::new(800.0/1.25, 600.0/1.25))
             .with_resizable(false)
             .with_fullsize_content_view(false)
             .with_icon(
@@ -24,6 +28,8 @@ fn main() -> Result<(), eframe::Error> {
         depth_buffer: 24,
         ..Default::default()
     };
+
+    // println!("{:#?}", options.viewport);
 
     eframe::run_native(
         "Custom 3D painting in eframe using glow",
@@ -42,6 +48,7 @@ impl MyApp {
     fn new(cc: &eframe::CreationContext<'_>) -> Self {
         egui_extras::install_image_loaders(&cc.egui_ctx);
         load_fonts(&cc.egui_ctx);
+        video_rs::init().unwrap();
         let mut sf = Self {
             my_view: MyView::None,
             game_view: MyGLView::new(cc),
@@ -140,6 +147,21 @@ impl eframe::App for MyApp {
                     egui::Event::Key {
                         key: egui::Key::F2,
                         pressed: true,
+                        modifiers:
+                            egui::Modifiers {
+                                ctrl: true,
+                                shift: false,
+                                alt: false,
+                                ..
+                            },
+                        repeat: _,
+                        physical_key: _,
+                    } => {
+                        return "screen record";
+                    }
+                    egui::Event::Key {
+                        key: egui::Key::F2,
+                        pressed: true,
                         modifiers: egui::Modifiers::NONE,
                         repeat: _,
                         physical_key: _,
@@ -155,26 +177,31 @@ impl eframe::App for MyApp {
                     } => {
                         return "text input";
                     }
-                    egui::Event::Key {
-                        key: egui::Key::F2,
-                        pressed: true,
-                        modifiers: egui::Modifiers::CTRL,
-                        repeat: _,
-                        physical_key: _,
-                    } => {
-                        return "screen record";
-                    }
                     _ => (),
                 }
             }
             ""
         }) {
             "screen record" => {
-                if self.option.screenshot.screen_recording {
+                let msg = if self.option.screenshot.screen_recording {
                     self.option.screenshot.screen_recording_stop = true;
+                    "Stop screen recording.".to_string()
                 } else {
                     self.option.screenshot.screen_recording = true;
-                }
+
+                    // let rect = ctx
+                    //     .input(|i| i.viewport().outer_rect)
+                    //     .unwrap_or(ctx.screen_rect());
+                    let rect = ctx.screen_rect();
+                    self.option.screenshot.video_encoder = Some(media::Video::new(
+                        (rect.height() * ctx.pixels_per_point()).round() as usize,
+                        (rect.width() * ctx.pixels_per_point()).round() as usize,
+                        "output/video.mp4",
+                        self.option.messages.send.clone(),
+                    ));
+                    "Ready for screen recording...".to_string()
+                };
+                let _ = self.option.messages.send.send((msg, 2000));
             }
             "screen shot" => {
                 self.option.screenshot.screen_shot = true;
@@ -202,24 +229,72 @@ impl eframe::App for MyApp {
                     self.option.screenshot.screen_shot = false;
                     let t = chrono::offset::Local::now().to_string().replace(":", "_");
                     let sender = self.option.messages.send.clone();
+                    let name = format!("output/img-{t}");
+                    sender
+                        .clone()
+                        .send((format!("{name}.png captured. Saving"), 500))
+                        .unwrap();
                     std::thread::spawn(move || {
-                        let name = format!("output/img-{t}");
                         if let Some(err) = media::save_image(&name, "png", &image) {
                             println!("Cannot save image! Error: {err}");
                         } else {
-                            let _ = sender.send((format!("{name}.png saved successfully"), 1000));
+                            let _ = sender.send((format!("{name}.png saved successfully"), 2000));
                         }
                     });
                 } else if self.option.screenshot.screen_recording {
-                    todo!("Add image");
-                    if self.option.screenshot.screen_recording_stop {
-                        self.option.screenshot.screen_recording = false;
-                        self.option.screenshot.screen_recording_stop = false;
-                        todo!("Save recording");
+                    // todo!("Add image");
+                    let img: &eframe::egui::ColorImage = &image;
+                    if let Some(s) = &self.option.screenshot.video_encoder {
+                        let frame = media::VideoFrame {
+                            image: img.clone(),
+                            audio: (),
+                            time_stamp: std::time::Instant::now(),
+                        };
+                        s.sender.send(frame).unwrap();
+
+                        if self.option.screenshot.screen_recording_stop {
+                            self.option.screenshot.screen_recording = false;
+                            self.option.screenshot.screen_recording_stop = false;
+                            // s.done();
+                            self.option.screenshot.video_encoder = None;
+                        }
                     }
                 }
             }
         }
+        // if self.option.screenshot.screen_shot {
+        //     if let Some(gl) = frame.gl().cloned().as_deref() {
+        //         unsafe {
+        //             let width = ctx.screen_rect().width() as i32;
+        //             let height = ctx.screen_rect().height() as i32;
+        //             let mut img = vec![0; (width * height * 4) as usize];
+        //             gl.read_pixels(
+        //                 0,
+        //                 0,
+        //                 width,
+        //                 height,
+        //                 glow::RGBA,
+        //                 glow::UNSIGNED_BYTE,
+        //                 glow::PixelPackData::Slice(&mut img),
+        //             );
+        //             println!("{}", img.len());
+        //             self.option.screenshot.screen_shot = false;
+        //             let sender = self.option.messages.send.clone();
+        //             std::thread::spawn(move || {
+        //                 let name = format!("output/img000");
+        //                 let img = egui::ColorImage::from_rgba_unmultiplied(
+        //                     [width as usize, height as usize],
+        //                     &img,
+        //                 );
+        //                 if let Some(err) = media::save_image(&name, "png", &img) {
+        //                     println!("Cannot save image! Error: {err}");
+        //                 } else {
+        //                     let _ = sender.send((format!("{name}.png saved successfully"), 2000));
+        //                 }
+        //             });
+        //         }
+        //     }
+        // }
     }
 
     fn on_exit(&mut self, gl: Option<&glow::Context>) {

@@ -103,7 +103,7 @@ impl MyViewImpl for MyGameView {
         }
     }
 
-    fn paint(&mut self, ctx: &eframe::egui::Context, _frame: &mut eframe::Frame) {
+    fn paint(&mut self, ctx: &eframe::egui::Context, frame: &mut eframe::Frame) {
         let gl_layer = egui::containers::Frame {
             fill: egui::Color32::WHITE,
             ..Default::default()
@@ -124,7 +124,7 @@ impl MyViewImpl for MyGameView {
                     println!("返回");
                     self.change_to = Some(String::from("Menu"));
                 }
-                self.perf.performance_evaluation(ui);
+                self.perf.performance_evaluation(ui, &frame);
             });
         ctx.input(|k| {
             if k.key_pressed(egui::Key::Escape) {

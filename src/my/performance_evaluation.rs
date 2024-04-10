@@ -43,7 +43,7 @@ impl PerformanceEvaluation {
             ..Default::default()
         }
     }
-    pub fn performance_evaluation(self: &mut Self, ui: &mut egui::Ui) {
+    pub fn performance_evaluation(self: &mut Self, ui: &mut egui::Ui, frame: &eframe::Frame) {
         let now = Instant::now();
         let dt = now - self.last_time.0;
         self.last_time = Time(now);
@@ -68,8 +68,10 @@ impl PerformanceEvaluation {
             self.frame99 = 0;
         }
 
+        let cpu_time = frame.info().cpu_usage.unwrap_or(0.0) * 1000000000.0;
         ui.group(|ui| {
-            ui.label(format!("Frame time:{:0} ns ", fm_time));
+            ui.label(format!("CPU time:  {:0} ns ", cpu_time as u64));
+            ui.label(format!("Frame time:{:0} ns ", fm_time as u64));
             ui.label(format!("FPS:         {:.2} ", fps));
             ui.label(format!("FPS(stable): {:.2} ", self.fps));
             ui.label(format!("FPS-99:      {:.2} ", self.fps99));
@@ -183,14 +185,4 @@ impl PerformanceEvaluation {
             });
         });
     }
-
-    pub fn messager(ui: &mut egui::Ui, msg: Vec<String>) {
-        ui.group(|ui| {
-            for s in msg {
-                ui.label(s);
-            }
-        });
-    }
 }
-
-pub struct Messager {}

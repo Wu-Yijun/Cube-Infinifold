@@ -3,6 +3,9 @@ use std::sync::Arc;
 use eframe::{egui::mutex::Mutex, glow};
 // use rand::distributions::uniform;
 
+#[allow(dead_code)]
+
+
 pub struct MyGLView {
     pub basic: Arc<Mutex<GLGameView>>,
     pub lines: Arc<Mutex<GLLinesView>>,
@@ -280,6 +283,8 @@ impl GLGameBase for GLGameView {
         }
     }
 }
+
+#[allow(dead_code)]
 
 pub mod items {
     use std::{fmt::Debug, sync::Arc};
@@ -668,7 +673,7 @@ pub mod items {
             );
             Self(res)
         }
-        pub fn into_vec(mut self) -> Vec<Face> {
+        pub fn into_vec(self) -> Vec<Face> {
             self.0
         }
         pub fn with_w(mut self, w: f32) -> Self {
@@ -717,12 +722,16 @@ pub mod items {
     }
 }
 
+
+
 pub struct GLLinesView {
     program: glow::Program,
     vertex_array: glow::VertexArray,
     lines: Vec<items::Line>,
     musk_enabled: bool,
 }
+
+#[allow(dead_code)]
 
 impl GLLinesView {
     pub fn set_lines(&mut self, line_vec: Vec<items::Line>) {
@@ -963,6 +972,8 @@ pub struct GLFacesView {
     faces: Vec<items::Face>,
     musk_enabled: bool,
 }
+
+#[allow(dead_code)]
 
 impl GLFacesView {
     pub fn set_faces(&mut self, faces: Vec<items::Face>) {

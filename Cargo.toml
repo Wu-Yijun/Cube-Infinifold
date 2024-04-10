@@ -3,7 +3,7 @@ description = "Cube Infinifold (A Puzzle Game)"
 name = "cube-infinifold"
 version = "0.1.1"
 edition = "2021"
-authors = ["Yijun Wu"]
+authors = ["Yijun Wu", "Rimor Aluria"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -11,6 +11,8 @@ authors = ["Yijun Wu"]
 eframe = "*"
 egui_extras = { version = "*", features = ["all_loaders"] }
 image = { version = "*", features = ["jpeg", "png"] }
+ndarray = "*"
+video-rs = { version = "*", features = ["ndarray"] }
 rand = "*"
 glm = "*"
 chrono = "*"
@@ -18,11 +20,9 @@ chrono = "*"
 [build-dependencies]
 winresource = "*"
 
-
 [package.metadata.winresource]
 OriginalFilename = "Cube Infinifold.exe"
 LegalCopyright = "Infinifold © 2024"
 # FileDescription = "Cube Infinifold (A Puzzle indie Game)"
 ProductName = "Cube Infinifold"
-# ProductVersion = "0.1.1.1"
-
+ProductVersion = "0.1.1.50"

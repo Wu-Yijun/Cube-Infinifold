@@ -86,7 +86,7 @@ impl MyViewImpl for MyMenu {
         }
     }
 
-    fn paint(&mut self, ctx: &eframe::egui::Context, _frame: &mut eframe::Frame) {
+    fn paint(&mut self, ctx: &eframe::egui::Context, frame: &mut eframe::Frame) {
         let gl_layer = egui::containers::Frame {
             fill: egui::Color32::WHITE,
             ..Default::default()
@@ -113,7 +113,7 @@ impl MyViewImpl for MyMenu {
                 if self.btns[2].button(ui, "Test2", 0, 1).double_clicked() {
                     println!("Tst 2 db clked");
                 }
-                self.perf.performance_evaluation(ui);
+                self.perf.performance_evaluation(ui, &frame);
             });
         ctx.input(|k| {
             if k.key_pressed(egui::Key::Escape) {
