@@ -54,8 +54,10 @@
 我已经测试了 Windows 截屏，以及 Faststone Capture 截图软件，两者均不能正常截取图片，录屏更是完全录不上。准备再尝试一下 OBS 。最后，好消息是 OBS 可以正常录制，坏消息是我已经基本写好了。
 
 使用程序自带的(我写的)录屏功能录制的视频：
-<video controls src="assets/video-1.mp4" title="Recording by Rust"></video>
+! [@video](assets/video-1.mp4)(@text:Recorded by Rust)
+!##! <video controls src="assets/video-1.mp4" title="Recorded by Rust"></video> !##!
 
 使用 OBS 录制的视频：
-<video controls src="assets/video-2.mkv" title="Recording by Rust"></video>
+! [@video](assets/video-2.mkv)(@text:Recorded by Rust)
+!##! <video controls src="assets/video-2.mkv" title="Recorded by Rust"></video> !##!
 
