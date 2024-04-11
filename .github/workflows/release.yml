@@ -13,19 +13,41 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  release-on-linux:
+  # release-on-linux:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #   # - uses: actions/checkout@v3
+  #   - name: Create GitHub release
+  #     uses: marvinpinto/action-automatic-releases@latest
+  #     with:
+  #       repo_token: "${{ secrets.GITHUB_TOKEN }}"
+  #       automatic_release_tag: latest
+  #       title: ${{ vars.VERSION }}
+  #       prerelease: false
+  #       files: |
+  #         articles/*.md
+
+  create-release:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-    - name: Create GitHub release
-      uses: marvinpinto/action-automatic-releases@latest
-      with:
-        repo_token: "${{ secrets.GITHUB_TOKEN }}"
-        automatic_release_tag: "latest"
-        title: ${{ vars.VERSION }}
-        prerelease: false
-        files: |
-          articles/*.md
+      - uses: actions/checkout@v4
+      - uses: taiki-e/create-gh-release-action@v1
+        with:
+          # (required) GitHub token for creating GitHub Releases.
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+  upload-assets:
+    needs: create-release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: taiki-e/upload-rust-binary-action@v1
+        with:
+          # (required) Comma-separated list of binary names (non-extension portion of filename) to build and upload.
+          # Note that glob pattern is not supported yet.
+          bin: ...
+          # (required) GitHub token for uploading assets to GitHub Releases.
+          token: ${{ secrets.GITHUB_TOKEN }}
 
     # display-variables:
     #     name: "1234"
