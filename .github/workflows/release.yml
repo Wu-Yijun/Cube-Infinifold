@@ -21,7 +21,7 @@ jobs:
             uses: marvinpinto/action-automatic-releases@latest
             with:
                 repo_token: "${{ secrets.GITHUB_TOKEN }}"
-                automatic_release_tag: "测试, 由 Github Actions 自动完成"
+                # automatic_release_tag: "测试, 由 Github Actions 自动完成"
                 title: ${{ vars.VERSION }}
                 prerelease: false
                 files: |
