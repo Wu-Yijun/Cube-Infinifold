@@ -34,7 +34,7 @@ jobs:
       - uses: taiki-e/create-gh-release-action@v1
         with:
           changelog: README.md
-          ref: refs/tags/my_tag
+          ref: refs/tags/release
           # (required) GitHub token for creating GitHub Releases.
           token: ${{ secrets.GITHUB_TOKEN }}
 
