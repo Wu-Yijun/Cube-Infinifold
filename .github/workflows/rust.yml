@@ -24,5 +24,15 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+    - name: Install dependencies
+      run: |
+        apt update
+        apt install -y --no-install-recommends clang curl pkg-config
+    - name: Set up Rust
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        override: true
+        components: rustfmt, clippy
     - name: Build
       run: cargo build --verbose --release
