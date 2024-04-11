@@ -16,7 +16,7 @@ jobs:
   create-release:
     runs-on: ubuntu-latest
     steps:
-    # - uses: actions/checkout@v4
+    - uses: actions/checkout@v4
     - name: Create GitHub release
       uses: marvinpinto/action-automatic-releases@latest
       with:
@@ -47,7 +47,7 @@ jobs:
         with:
           # (required) Comma-separated list of binary names (non-extension portion of filename) to build and upload.
           # Note that glob pattern is not supported yet.
-          bin: ...
+          bin: testlevel
           # (required) GitHub token for uploading assets to GitHub Releases.
           token: ${{ secrets.GITHUB_TOKEN }}
           ref: refs/tags/${{ vars.VERSION }}
