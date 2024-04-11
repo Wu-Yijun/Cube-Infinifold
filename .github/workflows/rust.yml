@@ -1,8 +1,13 @@
 name: Rust
 
-## manually
+## manuallyon:
 on:
-  []
+  workflow_dispatch:
+    inputs:
+      input:
+        description: "Test"
+        required: false
+        default: "World"
 #   push:
 #     branches: [ "master" ]
 #   pull_request:
