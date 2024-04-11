@@ -20,10 +20,9 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
+    container: jrottenberg/ffmpeg:4.4-ubuntu
 
     steps:
     - uses: actions/checkout@v3
-    - name: Config ffmpeg
-      run: pacman -Sy mingw-w64-x86_64-pkg-config mingw-w64-x86_64-gcc mingw-w64-x86_64-ffmpeg
     - name: Build
       run: cargo build --verbose --release
