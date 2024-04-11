@@ -34,22 +34,22 @@ jobs:
       - uses: taiki-e/create-gh-release-action@v1
         with:
           title: $version
-          ref: refs/tags/${{ vars.VERSION }}
+          # ref: refs/tags/${{ vars.VERSION }}
           # (required) GitHub token for creating GitHub Releases.
           token: ${{ secrets.GITHUB_TOKEN }}
 
-  upload-assets:
-    needs: create-release
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: taiki-e/upload-rust-binary-action@v1
-        with:
-          # (required) Comma-separated list of binary names (non-extension portion of filename) to build and upload.
-          # Note that glob pattern is not supported yet.
-          bin: ...
-          # (required) GitHub token for uploading assets to GitHub Releases.
-          token: ${{ secrets.GITHUB_TOKEN }}
+  # upload-assets:
+  #   needs: create-release
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: taiki-e/upload-rust-binary-action@v1
+  #       with:
+  #         # (required) Comma-separated list of binary names (non-extension portion of filename) to build and upload.
+  #         # Note that glob pattern is not supported yet.
+  #         bin: ...
+  #         # (required) GitHub token for uploading assets to GitHub Releases.
+  #         token: ${{ secrets.GITHUB_TOKEN }}
 
     # display-variables:
     #     name: "1234"
