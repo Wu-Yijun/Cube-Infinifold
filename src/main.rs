@@ -15,7 +15,7 @@ use my::{
 fn main() -> Result<(), eframe::Error> {
     let options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default()
-            // .with_fullscreen(true)
+            .with_fullscreen(true)
             // .with_inner_size(egui::Vec2::new(800.0/1.25, 600.0/1.25))
             .with_resizable(false)
             .with_fullsize_content_view(false)

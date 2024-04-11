@@ -26,3 +26,22 @@ LegalCopyright = "Infinifold © 2024"
 # FileDescription = "Cube Infinifold (A Puzzle indie Game)"
 ProductName = "Cube Infinifold"
 ProductVersion = "0.1.1.50"
+
+# [lib]
+# path = "src/libs/levels/test.rs"
+# crate-type = ["dylib"]
+# name = "leveltest"
+
+# [lib]
+# path = "src/main.rs"
+# crate-type = ["bin"]
+# name = "Cube-Infinifold"
+
+[[bin]]
+name ="cube-infinifold"
+path ="src/main.rs"
+
+[lib]
+name ="leveltest"
+path = "src/libs/levels/test.rs"
+crate-type = ["dylib"]

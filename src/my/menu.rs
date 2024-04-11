@@ -103,7 +103,7 @@ impl MyViewImpl for MyMenu {
         egui::CentralPanel::default()
             .frame(layout_layers)
             .show(ctx, |ui| {
-                if self.btns[0].button(ui, "Cube Infinifold", 0, 1).clicked() {
+                if self.btns[0].button(ui, "Cube Infinifolddddd", 0, 1).clicked() {
                     self.change_to = Some(String::from("Logo"));
                 }
                 if self.btns[1].button(ui, "开始游戏", 0, 1).clicked() {

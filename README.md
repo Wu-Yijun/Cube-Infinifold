@@ -167,3 +167,81 @@ impl Colored {
 
 接下来我准备创建 MyView/GameView
 考虑到 game 可能内容较多，因此我创建了一个 game 文件夹
+
+### 关卡程序结构
+
+我准备将每一个独立的关卡作为一个 dll ，通过 json 控制访问
+
+#### 生成和使用动态链接
+
+因为我们允许自己编写关卡，因而在程序编译时关卡是未知的，因此需要主程序与关卡的动态交互。
+
+一种方式是使用静态关卡，各种信息静态地保存在预先设置好的结构中，然后主程序读取文件以加载逻辑。
+这是一种可行的方案，但是我现在还没想好文件结构，以及各种状况带来的复杂性，使得编写这个交互脚本异常困难。
+
+因此，我决定采取第二种方式，将关卡编译为动态链接库，通过特定程序接口来实现两者的交互。
+这样我可以在更新后快速升级我的关卡，且可以通过代码实现复杂的行为。
+
+链接有很多种，.dll .a .so .dylib .rlib 等等，但只有动态链接的才可以在编译后由程序控制加载。
+
+加载 .dll 的库经过调查，我认为比较好用的是 `libloading` .
+
+具体方法如下:
+对于创建库的代码, 简单使用 cargo new NAME --lib 可以生成一个简单的库项目, 我们在 Cargo.toml 中添加多个类似于下面的项目,就可以在 build 时生成多个动态链接库
+```TOML
+[lib]
+# 必选, Rust 动态链接库
+crate-type = ["dylib"]
+# 输出的库名称(文件名)
+name = "OUTPUT_NAME"
+# 可选, 文件入口路径
+path = "src/NAME.rs"
+```
+
+在代码中, 我们通过如下的方法标记导出 C 风格函数, 其中 `no_mangle` 标记表示不改变函数名称, 不然我们无法用名称索引获取函数. 在另一个文件中, 调用此函数的方法如下, 我们先加载这个动态链接库, 然后再显式地通过类型调用 `get` 函数, 返回结果是一个包裹内的函数, 可以直接通过括号调用. 当然, 数据类型也可以是结构体, 只不过要改成 C 可兼容的类型, 因此要使用 `repr(C)` 来标记 C 风格, 结构体的函数类型也可以通过 `extern "C"` 标记.
+```Rust
+//----- lib.rs -----
+#[no_mangle]
+pub extern "C" fn NAME(var:type,...) -> type{
+    // codes here
+}
+// type define
+#[repr(C)]
+pub struct Stru {
+    pub num: i32,
+    pub fun: extern "C" fn(i32) -> bool,
+}
+
+//----- main.rs -----
+fn unsafe main(){
+    let lib = libloading::Library::new("path/to/LIBNAME.lib").unwrap();
+    let fun: libloading::Symbol<extern "C" fn(type,...) -> type> = lib.get(b"NAME\0").unwrap();
+    // call by: fun(var,...)
+}
+```
+
+但是, 我们既然两边都是 Rust , 为何不能直接使用 Rust 风格, 而非要找 C 作为中间人呢?
+当然可以!
+我们只需要将 `extern "C"` 替换为 `extern "Rust"` 就可以表示这个是 Rust 风格的, 此外 `extern "Rust"` 是作为默认值存在, 可以省略. 因此, 我们可以通过下面的方法导出 Rust 类型的函数和全局变量. 将 `Symbol` 的类型直接设定为函数类型, 就可以获取到函数, 将它的类型设定为 `*mut Type` 就可以获取到 `Type` 类型的变量了.
+```Rust
+//----- lib.rs -----
+// export function
+#[no_mangle]
+pub fn NAME(var:type,...) -> type{
+    // codes here
+}
+// export static mut
+#[no_mangle]
+static mut NAME_VAR: type = INITIALIZER;
+
+//----- main.rs -----
+fn unsafe main(){
+    let lib = libloading::Library::new("path/to/LIBNAME.lib").unwrap();
+    let fun: libloading::Symbol<fn(type,...) -> type> = lib.get(b"NAME\0").unwrap();
+    // call by: fun(var,...)
+    let var: libloading::Symbol<*mut type> = lib.get(b"NAME_VAR\0").unwrap();
+    // get (_: *mut type) by applying: *var
+    // and get (_: type) by applying: **var
+}
+```
+
