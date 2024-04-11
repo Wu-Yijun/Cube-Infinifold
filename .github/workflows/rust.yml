@@ -23,12 +23,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-    - uses: FedericoCarboni/setup-ffmpeg@v3
-      id: setup-ffmpeg
-      with:
-        ffmpeg-version: release
-        architecture: ''
-        linking-type: static
-        github-token: ${{ github.server_url == 'https://github.com' && github.token || '' }}
+    - name: Config ffmpeg
+      run: pacman -Sy mingw-w64-x86_64-pkg-config mingw-w64-x86_64-gcc mingw-w64-x86_64-ffmpeg
     - name: Build
       run: cargo build --verbose --release
