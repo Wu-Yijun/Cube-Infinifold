@@ -88,8 +88,8 @@ impl GLGameBase for GLGameView {
             let program = gl.create_program().expect("Cannot create program");
 
             let (vertex_shader_source, fragment_shader_source) = (
-                include_str!("../../assets/shaders/basic.vs"),
-                include_str!("../../assets/shaders/basic.fs"),
+                include_str!("../../../assets/shaders/basic.vs"),
+                include_str!("../../../assets/shaders/basic.fs"),
             );
             let shader_sources = [
                 (glow::VERTEX_SHADER, vertex_shader_source),
@@ -762,8 +762,8 @@ impl GLGameBase for GLLinesView {
             let program = gl.create_program().expect("Cannot create program");
 
             let (vertex_shader_source, fragment_shader_source) = (
-                include_str!("../../assets/shaders/b_lines.vs"),
-                include_str!("../../assets/shaders/b_lines.fs"),
+                include_str!("../../../assets/shaders/b_lines.vs"),
+                include_str!("../../../assets/shaders/b_lines.fs"),
             );
             let shader_sources = [
                 (glow::VERTEX_SHADER, vertex_shader_source),
@@ -1004,8 +1004,8 @@ impl GLGameBase for GLFacesView {
             let program = gl.create_program().expect("Cannot create program");
 
             let (vertex_shader_source, fragment_shader_source) = (
-                include_str!("../../assets/shaders/b_faces.vs"),
-                include_str!("../../assets/shaders/b_faces.fs"),
+                include_str!("../../../assets/shaders/b_faces.vs"),
+                include_str!("../../../assets/shaders/b_faces.fs"),
             );
             let shader_sources = [
                 (glow::VERTEX_SHADER, vertex_shader_source),

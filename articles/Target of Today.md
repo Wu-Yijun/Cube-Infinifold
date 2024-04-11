@@ -61,3 +61,19 @@
 ! [@video](assets/video-2.mkv)(@text:Recorded by Rust)
 !##! <video controls src="assets/video-2.mkv" title="Recorded by Rust"></video> !##!
 
+我突然发现是全屏模式下才无法截图，非全屏模式是正常的。
+
+再试试 OBS ：正常录屏也不能录制，只有切换到游戏模式-采集特定窗口-选中我们这个开启的全屏窗口，然后就可以正常录制全屏了。
+从配置上可以看出，OBS使用了钩子进行窗口采集，这可能是一个可以考虑的思路。具体参见这一篇神奇的文章 ! [@link](https://blog.csdn.net/Poisx/article/details/124579638)(@text:OBS Studio 窗口采集game-capture注入之OpenGL与D3D11的GPU资源进行互操作)。
+但是，从源码上可以看出，这些代码基本上都是 C/C++ 独享的，利用共享内存的不安全操作，没有用 rust 实现的价值。并且在一些游戏中可能会把这些钩子判定为作弊器，值得警惕。
+
+
+## 2024-4-10
+
+- [ ] 拆分为 workspace
+- [ ] 完成 lib builder 和 lib loader
+- [ ] 完成关卡的json分析器
+- [ ] 建议：添加键盘转动功能
+- [ ] 可选：显示一个角色，可以控制移动。
+- [ ] 可选：创建起点终点，
+
