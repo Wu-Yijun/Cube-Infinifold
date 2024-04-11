@@ -233,6 +233,7 @@ pub mod my_interface {
 
 #[cfg(feature = "cube-infinifold_main")]
 #[cfg(test)]
+#[allow(dead_code)]
 mod tests {
     use super::*;
 
@@ -289,7 +290,7 @@ mod tests {
             panic!("Cannot destory void!");
         }
     }
-    #[test]
+    // #[test]
     // fn interfacable() {
     //     let my = MyInterface {
     //         new: my_new,
@@ -321,6 +322,7 @@ mod tests {
     //         her.name = "!!".to_string();
     //     }
     // }
+
     #[test]
     fn load() {
         let p = MyInterface::from_lib_safe("testlevel.dll".to_string());
