@@ -1,0 +1,55 @@
+name: Rust
+
+## manuallyon:
+on:
+  workflow_dispatch:
+    inputs:
+      input:
+        description: "Test Release"
+        required: false
+        default: "Master"
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+    release-on-linux:
+        runs-on: ubuntu-latest
+        steps:
+          - uses: actions/checkout@v3
+          - name: Create GitHub release
+            uses: marvinpinto/action-automatic-releases@latest
+            with:
+                repo_token: "${{ secrets.GITHUB_TOKEN }}"
+                automatic_release_tag: ${{ env.ReleaseVersion }}
+                title: ${{ env.ReleaseVersion }}
+                prerelease: false
+                files: |
+                    # target/release/*.exe
+                    # target/release/*.dll
+                    articles/*.md
+
+    display-variables:
+        name: "1234"
+        # You can use configuration variables with the `vars` context for dynamic jobs
+        # if: ${{ vars.USE_VARIABLES == 'true' }}
+        runs-on: ubuntu-latest
+        # environment: ${{ vars.ENVIRONMENT_STAGE }}
+        steps:
+        #   - name: Use variables
+        #     run: |
+        #         echo "repository variable : $REPOSITORY_VAR"
+        #         echo "organization variable : $ORGANIZATION_VAR"
+        #         echo "overridden variable : $OVERRIDE_VAR"
+        #         echo "variable from shell environment : $env_var"
+        #     env:
+        #         REPOSITORY_VAR: ${{ vars.REPOSITORY_VAR }}
+        #         ORGANIZATION_VAR: ${{ vars.ORGANIZATION_VAR }}
+        #         OVERRIDE_VAR: ${{ vars.OVERRIDE_VAR }}
+                
+          - name: uss
+            if: ${{ vars.VERSION == '0.2.10' }}
+            uses: actions/hello-world-javascript-action@main
+            with:
+                who-to-greet: ${{ vars.VERSION }}
+
