@@ -29,3 +29,7 @@ ProductVersion = "0.1.1.50"
 
 [[bin]]
 name = "cube-infinifold"
+
+[dependencies.level-interface]
+path = "../levels/level-interface"
+features = ["cube-infinifold_main"]
