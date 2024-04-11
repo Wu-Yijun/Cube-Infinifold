@@ -9,7 +9,7 @@ out vec4 v_color;
 out highp float mask_dist;
 
 uniform mat3 u_proj;
-uniform float u_x_scale;
+uniform float u_aspect_ratio;
 uniform float u_index;
 
 uniform vec4 u_color[4];
@@ -37,7 +37,7 @@ void main() {
   } else {
     mask_dist = 1.0;
   }
-  gl_Position.x *= u_x_scale;
+  gl_Position.x /= u_aspect_ratio;
   gl_Position.z += u_index;
   // using lequal
   gl_Position.z = -gl_Position.z;

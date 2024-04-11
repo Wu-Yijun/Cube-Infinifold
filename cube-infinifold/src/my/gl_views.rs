@@ -145,8 +145,6 @@ impl GLGameBase for GLGameView {
     }
 
     fn paint(&self, gl: &glow::Context, option: &GlPaintOptions) {
-        // let aspect = rect.size().y / rect.size().x;
-        let aspect = option.aspect_ratio;
         let identity = glm::mat4(
             1.0, 0.0, 0.0, 0.0, //
             0.0, 1.0, 0.0, 0.0, //
@@ -183,8 +181,8 @@ impl GLGameBase for GLGameView {
                 &proj,
             );
             gl.uniform_1_f32(
-                gl.get_uniform_location(self.program, "u_x_scale").as_ref(),
-                aspect,
+                gl.get_uniform_location(self.program, "u_aspect_ratio").as_ref(),
+                option.aspect_ratio,
             );
             gl.uniform_matrix_4_f32_slice(
                 gl.get_uniform_location(self.program, "u_colors").as_ref(),
@@ -821,8 +819,6 @@ impl GLGameBase for GLLinesView {
     }
 
     fn paint(&self, gl: &glow::Context, option: &GlPaintOptions) {
-        // let aspect = rect.size().y / rect.size().x;
-        let aspect = option.aspect_ratio;
         let proj = option.get_projection_mat();
 
         use glow::HasContext as _;
@@ -840,8 +836,8 @@ impl GLGameBase for GLLinesView {
                 &proj,
             );
             gl.uniform_1_f32(
-                gl.get_uniform_location(self.program, "u_x_scale").as_ref(),
-                aspect,
+                gl.get_uniform_location(self.program, "u_aspect_ratio").as_ref(),
+                option.aspect_ratio,
             );
             let color = col.get(0);
             gl.uniform_3_f32(
@@ -1063,8 +1059,6 @@ impl GLGameBase for GLFacesView {
     }
 
     fn paint(&self, gl: &glow::Context, option: &GlPaintOptions) {
-        // let aspect = rect.size().y / rect.size().x;
-        let aspect = option.aspect_ratio;
         let proj = option.get_projection_mat();
 
         use glow::HasContext as _;
@@ -1083,8 +1077,8 @@ impl GLGameBase for GLFacesView {
                 &proj,
             );
             gl.uniform_1_f32(
-                gl.get_uniform_location(self.program, "u_x_scale").as_ref(),
-                aspect,
+                gl.get_uniform_location(self.program, "u_aspect_ratio").as_ref(),
+                option.aspect_ratio,
             );
             gl.uniform_1_f32(
                 gl.get_uniform_location(self.program, "u_index").as_ref(),

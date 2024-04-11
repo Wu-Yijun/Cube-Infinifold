@@ -63,8 +63,13 @@ impl MyInfinifoldLogo {
     }
 
     fn paint_opengl(&mut self, ui: &mut egui::Ui) {
-        let (rect, response) = ui.allocate_exact_size(ui.max_rect().size(), egui::Sense::drag());
-        self.angle += response.drag_delta().x * 0.01;
+        self.angle += ui.input(|r| {
+            if r.pointer.any_down() {
+                r.pointer.delta().x * 0.01
+            } else {
+                0.0
+            }
+        });
 
         if self.angle > std::f32::consts::PI * 2.0 {
             self.angle -= std::f32::consts::PI * 2.0;
@@ -89,13 +94,13 @@ impl MyInfinifoldLogo {
         let game_view = self.game_view.clone();
         let option = GlPaintOptions {
             angle,
-            scale: 0.1,
-            aspect_ratio: rect.size().y / rect.size().x,
+            scale: 0.2,
+            aspect_ratio: ui.max_rect().aspect_ratio(),
             ..Default::default()
         };
 
         let callback = egui::PaintCallback {
-            rect,
+            rect: ui.max_rect(),
             callback: std::sync::Arc::new(egui_glow::CallbackFn::new(move |_info, painter| {
                 game_view.lock().paint(painter.gl(), &option);
             })),

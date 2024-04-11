@@ -70,9 +70,12 @@
 
 ## 2024-4-10
 
-- [ ] 拆分为 workspace
-- [ ] 完成 lib builder 和 lib loader
-- [ ] 完成关卡的json分析器
+- [x] 拆分为 workspace
+- [ ] ADDED: 将全局控制检测放在外侧
+  - [x] 通过新的检测方式完成
+- [ ] ADDED: 将 CentralPanel 也放在外侧
+- [ ] POSTPONED: 完成 lib builder 和 lib loader
+- [ ] POSTPONED: 完成关卡的json分析器
 - [ ] 建议：添加键盘转动功能
 - [ ] 可选：显示一个角色，可以控制移动。
 - [ ] 可选：创建起点终点，

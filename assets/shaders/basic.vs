@@ -17,7 +17,7 @@ uniform mat3 u_proj;
 uniform bool u_use_mask;
 uniform vec3 u_mask_pos;
 uniform vec3 u_mask_dir;
-uniform float u_x_scale;
+uniform float u_aspect_ratio;
 
 void main() {
   mat3 view = pj * u_proj;
@@ -37,5 +37,5 @@ void main() {
   } else {
     mask_dist = 1.0;
   }
-  gl_Position.x *= u_x_scale;
+  gl_Position.x /= u_aspect_ratio;
 }

@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use eframe::{
-    egui::{self, mutex::Mutex},
+    egui::{self, mutex::Mutex, Widget},
     egui_glow,
 };
 
@@ -29,8 +29,8 @@ impl MyMenu {
             UIWidget::new(vec![
                 "file://assets/ui/unselected.png",
                 "file://assets/ui/selected.png",
-            ])
-            .load(ctx),
+            ]),
+            // .load(ctx),
             UIWidget::new(vec![
                 "file://assets/ui/unselected.png",
                 "file://assets/ui/selected.png",
@@ -50,21 +50,25 @@ impl MyMenu {
     }
 
     fn paint_opengl(&mut self, ui: &mut egui::Ui) {
-        let (rect, response) = ui.allocate_exact_size(ui.max_rect().size(), egui::Sense::drag());
-        self.angle += response.drag_delta().x * 0.01;
-
-        // Clone locals so we can move them into the paint callback:
+        self.angle += ui.input(|r| {
+            if r.pointer.any_down() {
+                r.pointer.delta().x * 0.01
+            } else {
+                0.0
+            }
+        });
         let angle = self.angle;
         let game_view = self.game_view.clone();
         let option = GlPaintOptions {
             angle,
             scale: 1.0,
-            aspect_ratio: rect.size().y / rect.size().x,
+            aspect_ratio: ui.max_rect().aspect_ratio(),
             ..Default::default()
         };
 
+        // Clone locals so we can move them into the paint callback:
         let callback = egui::PaintCallback {
-            rect,
+            rect: ui.max_rect(),
             callback: std::sync::Arc::new(egui_glow::CallbackFn::new(move |_info, painter| {
                 game_view.lock().paint(painter.gl(), &option);
             })),
@@ -82,42 +86,30 @@ impl MyViewImpl for MyMenu {
     fn to_change(&self) -> Option<String> {
         match self.change_to.clone()?.as_str() {
             "Logo" | "Start" => self.change_to.clone(),
+            "Exit" => self.change_to.clone(),
             _ => None,
         }
     }
 
     fn paint(&mut self, ctx: &eframe::egui::Context, frame: &mut eframe::Frame) {
-        let gl_layer = egui::containers::Frame {
-            fill: egui::Color32::WHITE,
-            ..Default::default()
-        };
-        let layout_layers = egui::containers::Frame {
-            fill: egui::Color32::from_rgba_unmultiplied(0, 0, 0, 0),
-            ..Default::default()
-        };
-        egui::CentralPanel::default()
-            .frame(gl_layer)
-            .show(ctx, |ui| {
-                self.paint_opengl(ui);
-            });
-        egui::CentralPanel::default()
-            .frame(layout_layers)
-            .show(ctx, |ui| {
-                if self.btns[0].button(ui, "Cube Infinifolddddd", 0, 1).clicked() {
-                    self.change_to = Some(String::from("Logo"));
-                }
-                if self.btns[1].button(ui, "开始游戏", 0, 1).clicked() {
-                    self.change_to = Some(String::from("Start"));
-                    println!("开始游戏");
-                }
-                if self.btns[2].button(ui, "Test2", 0, 1).double_clicked() {
-                    println!("Tst 2 db clked");
-                }
-                self.perf.performance_evaluation(ui, &frame);
-            });
+        egui::CentralPanel::default().show(ctx, |ui| {
+            // self.paint_opengl(&mut ui.child_ui(ui.max_rect(), egui::Layout::default()));
+            self.paint_opengl(ui);
+            if self.btns[0].button(ui, "Cube Infinifold", 0, 1).clicked() {
+                self.change_to = Some(String::from("Logo"));
+            }
+            if self.btns[1].button(ui, "开始游戏", 0, 1).clicked() {
+                self.change_to = Some(String::from("Start"));
+                println!("开始游戏");
+            }
+            if self.btns[2].button(ui, "Test2", 0, 1).double_clicked() {
+                println!("Tst 2 db clked");
+            }
+            self.perf.performance_evaluation(ui, &frame);
+        });
         ctx.input(|k| {
             if k.key_pressed(egui::Key::Escape) {
-                std::process::exit(0);
+                self.change_to = Some(String::from("Exit"));
             }
         });
         ctx.request_repaint();

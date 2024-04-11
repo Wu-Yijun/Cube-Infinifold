@@ -44,43 +44,29 @@ impl MyGameView {
     }
 
     fn paint_opengl(&mut self, ui: &mut egui::Ui) {
-        let (rect, response) = ui.allocate_exact_size(ui.max_rect().size(), egui::Sense::drag());
-        self.angle += response.drag_delta().x * 0.01;
+        self.angle += ui.input(|r| {
+            if r.pointer.any_down() {
+                r.pointer.delta().x * 0.01
+            } else {
+                0.0
+            }
+        });
 
-        // if self.angle > std::f32::consts::PI * 2.0 {
-        //     self.angle -= std::f32::consts::PI * 2.0;
-        //     self.box_num += 1;
-        //     self.game_view
-        //         .lock()
-        //         .set_lines(Self::get_box(self.box_num, 0.8, 0.8, 0.6));
-        // } else if self.angle < 0.0 {
-        //     self.angle += std::f32::consts::PI * 2.0;
-        //     self.box_num -= if self.box_num <= 1 { 0 } else { 1 };
-        //     self.game_view
-        //         .lock()
-        //         .set_lines(Self::get_box(self.box_num, 0.8, 0.8, 0.6));
-        // }
-
-        // Clone locals so we can move them into the paint callback:
         let angle = self.angle;
         if self.level.when_angled(angle) {
             self.game_view.lock().set_faces(self.level.get().clone());
         }
-        // let angle = self.angle - (45.0 as f32).to_radians();
-        // self.game_view
-        //     .lock()
-        //     .set_musk_enabled(angle < (45.0 as f32).to_radians());
 
         let game_view = self.game_view.clone();
         let option = GlPaintOptions {
             angle,
             scale: 0.05,
-            aspect_ratio: rect.size().y / rect.size().x,
+            aspect_ratio: ui.max_rect().aspect_ratio(),
             ..Default::default()
         };
 
         let callback = egui::PaintCallback {
-            rect,
+            rect: ui.max_rect(),
             callback: std::sync::Arc::new(egui_glow::CallbackFn::new(move |_info, painter| {
                 game_view.lock().paint(painter.gl(), &option);
             })),

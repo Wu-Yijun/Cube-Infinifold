@@ -63,6 +63,7 @@ fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
 }
 ```
 
+![@effect] (old)(@start)
 而对于一个页面，其绘制时，先绘制 opengl 作为底层，再在之上使用透明背景绘制UI。
 
 ```Rust
@@ -122,6 +123,27 @@ pub trait GLGameBase {
 ```
 
 具体Opengl如何初始化如何绘制参见下一节。
+
+![@end] (effect)
+
+但这种绘制多图层, 有几个更好的思路
+**其一:** 我们通过 `let ui = &mut ui.child_ui(ui.max_rect(), Layout::Default)` 来获取一个子 ui , 利用这个孩子画下层, 之后正常使用上层 ui.
+这个方法没有隐患, 唯一就是需要复制 ui 的一些数据, 造成浪费.
+**其二:** 我们先记录 cursor 目前的位置, 当绘制结束后, 再恢复当前位置. ***注意: 这种方法存在问然, 就是 advance_cursor_after_rect 函数会额外移动一个 item_spacing , 虽然不大, 但不是完全一致的位置***
+~~更好的方法是使用 ui.set_cursor(rect), 但是在看函数是 pub(crate) 的, 无法从外部调用~~
+```Rust
+// record pos
+let pos = ui.cursor().left_top();
+// code...... //
+// move ui back
+ui.advance_cursor_after_rect(egui::Rect { min: pos, max: pos });
+```
+**其三:** 我们干脆不要用curosr绘图就好了, 比如我们上面的绘制就不需要分配空间, 是直接画出来的, 这样就影响不到 cursor 了.
+
+我准备采取第三种方案, 之所以我之前会需要分图层, 归结到底是我需要获取拖拽的距离. 但是分配矩形其实就是全局, 那么我为什么不直接将测量过程放在全局呢.
+我今天出现了拖拽失灵的现象, 我认为是绘制了两层 CentralPanel 导致的恶果.
+因此我计划将 CentralPanel 放在 ui 绘制的外侧, 让绘制函数直接调用 ui 而不是 ctx.
+
 
 ### OpenGl 
 我们从更为完整的 GLLinesView 分析。它的实现包含一下几个函数

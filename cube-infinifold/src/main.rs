@@ -1,7 +1,4 @@
-use eframe::{
-    egui,
-    glow, icon_data,
-};
+use eframe::{egui, glow, icon_data};
 
 mod game_options;
 mod my;
@@ -73,6 +70,10 @@ impl MyApp {
                 self.my_view.destory();
                 self.my_view = MyView::MyGame(MyGameView::new(self.game_view.faces.clone(), ctx));
             }
+            "Exit" => {
+                self.my_view.destory();
+                std::process::exit(0);
+            }
             _ => (),
         }
     }
@@ -87,59 +88,6 @@ impl eframe::App for MyApp {
             self.option.messages.recv();
             self.option.messages.dt(self.option.dt);
         }
-        // View show
-        match &mut self.my_view {
-            MyView::MyMenu(v) => {
-                v.paint(ctx, frame);
-                if let Some(aim) = v.to_change() {
-                    self.change_to(aim, ctx);
-                }
-            }
-            MyView::MyLogo(v) => {
-                v.paint(ctx, frame);
-                if let Some(aim) = v.to_change() {
-                    self.change_to(aim, ctx);
-                }
-            }
-            MyView::MyGame(v) => {
-                v.paint(ctx, frame);
-                if let Some(aim) = v.to_change() {
-                    self.change_to(aim, ctx);
-                }
-            }
-            _ => todo!("未完成！！！"),
-        }
-
-        // message
-        if self.option.messages.has_any() || self.option.messages.expanded {
-            egui::TopBottomPanel::bottom(egui::Id::new("msgbox"))
-                .frame(egui::containers::Frame {
-                    fill: egui::Color32::from_rgba_unmultiplied(0, 0, 0, 100),
-                    outer_margin: egui::Margin {
-                        left: 10.0,
-                        right: 10.0,
-                        top: 20.0,
-                        bottom: 100.0,
-                    },
-                    inner_margin: egui::Margin::same(10.0),
-                    rounding: egui::Rounding::ZERO,
-                    shadow: eframe::epaint::Shadow::NONE,
-                    stroke: eframe::epaint::Stroke::NONE,
-                })
-                .show_separator_line(false)
-                .min_height(1.0)
-                .show(ctx, |ui| {
-                    let msg = if self.option.messages.expanded {
-                        &self.option.messages.msg
-                    } else {
-                        self.option.messages.get()
-                    };
-                    for s in msg {
-                        ui.label(s.0.clone());
-                    }
-                });
-        }
-
         // eve handler
         match ctx.input(|i| {
             for event in &i.events {
@@ -211,87 +159,109 @@ impl eframe::App for MyApp {
             }
             _ => (),
         }
-        if self.option.screenshot.screen_shot || self.option.screenshot.screen_recording {
-            ctx.send_viewport_cmd(egui::ViewportCommand::Screenshot);
-        }
 
-        if self.option.screenshot.screen_shot || self.option.screenshot.screen_recording {
-            // notice that the command will not always be executed
-            if let Some(image) = ctx.input(|i| {
-                for event in &i.raw.events {
-                    if let egui::Event::Screenshot { image, .. } = event {
-                        return Some(image.clone());
-                    }
-                }
-                None
-            }) {
-                if self.option.screenshot.screen_shot {
-                    self.option.screenshot.screen_shot = false;
-                    let t = chrono::offset::Local::now().to_string().replace(":", "_");
-                    let sender = self.option.messages.send.clone();
-                    let name = format!("output/img-{t}");
-                    sender
-                        .clone()
-                        .send((format!("{name}.png captured. Saving"), 500))
-                        .unwrap();
-                    std::thread::spawn(move || {
-                        if let Some(err) = media::save_image(&name, "png", &image) {
-                            println!("Cannot save image! Error: {err}");
-                        } else {
-                            let _ = sender.send((format!("{name}.png saved successfully"), 2000));
-                        }
-                    });
-                } else if self.option.screenshot.screen_recording {
-                    // todo!("Add image");
-                    let img: &eframe::egui::ColorImage = &image;
-                    if let Some(s) = &self.option.screenshot.video_encoder {
-                        let frame = media::VideoFrame {
-                            image: img.clone(),
-                            audio: (),
-                            time_stamp: std::time::Instant::now(),
-                        };
-                        s.sender.send(frame).unwrap();
-
-                        if self.option.screenshot.screen_recording_stop {
-                            self.option.screenshot.screen_recording = false;
-                            self.option.screenshot.screen_recording_stop = false;
-                            // s.done();
-                            self.option.screenshot.video_encoder = None;
-                        }
-                    }
+        // View show
+        match &mut self.my_view {
+            MyView::MyMenu(v) => {
+                v.paint(ctx, frame);
+                if let Some(aim) = v.to_change() {
+                    self.change_to(aim, ctx);
                 }
             }
+            MyView::MyLogo(v) => {
+                v.paint(ctx, frame);
+                if let Some(aim) = v.to_change() {
+                    self.change_to(aim, ctx);
+                }
+            }
+            MyView::MyGame(v) => {
+                v.paint(ctx, frame);
+                if let Some(aim) = v.to_change() {
+                    self.change_to(aim, ctx);
+                }
+            }
+            _ => todo!("未完成！！！"),
         }
-        // if self.option.screenshot.screen_shot {
-        //     if let Some(gl) = frame.gl().cloned().as_deref() {
-        //         unsafe {
-        //             let width = ctx.screen_rect().width() as i32;
-        //             let height = ctx.screen_rect().height() as i32;
-        //             let mut img = vec![0; (width * height * 4) as usize];
-        //             gl.read_pixels(
-        //                 0,
-        //                 0,
-        //                 width,
-        //                 height,
-        //                 glow::RGBA,
-        //                 glow::UNSIGNED_BYTE,
-        //                 glow::PixelPackData::Slice(&mut img),
-        //             );
-        //             println!("{}", img.len());
+
+        // // message
+        // if self.option.messages.has_any() || self.option.messages.expanded {
+        //     egui::TopBottomPanel::bottom(egui::Id::new("msgbox"))
+        //         .frame(egui::containers::Frame {
+        //             fill: egui::Color32::from_rgba_unmultiplied(0, 0, 0, 100),
+        //             outer_margin: egui::Margin {
+        //                 left: 10.0,
+        //                 right: 10.0,
+        //                 top: 20.0,
+        //                 bottom: 100.0,
+        //             },
+        //             inner_margin: egui::Margin::same(10.0),
+        //             rounding: egui::Rounding::ZERO,
+        //             shadow: eframe::epaint::Shadow::NONE,
+        //             stroke: eframe::epaint::Stroke::NONE,
+        //         })
+        //         .show_separator_line(false)
+        //         .min_height(1.0)
+        //         .show(ctx, |ui| {
+        //             let msg = if self.option.messages.expanded {
+        //                 &self.option.messages.msg
+        //             } else {
+        //                 self.option.messages.get()
+        //             };
+        //             for s in msg {
+        //                 ui.label(s.0.clone());
+        //             }
+        //         });
+        // }
+
+        // if self.option.screenshot.screen_shot || self.option.screenshot.screen_recording {
+        //     ctx.send_viewport_cmd(egui::ViewportCommand::Screenshot);
+        // }
+
+        // // screen shot and record
+        // if self.option.screenshot.screen_shot || self.option.screenshot.screen_recording {
+        //     // notice that the command will not always be executed
+        //     if let Some(image) = ctx.input(|i| {
+        //         for event in &i.raw.events {
+        //             if let egui::Event::Screenshot { image, .. } = event {
+        //                 return Some(image.clone());
+        //             }
+        //         }
+        //         None
+        //     }) {
+        //         if self.option.screenshot.screen_shot {
         //             self.option.screenshot.screen_shot = false;
+        //             let t = chrono::offset::Local::now().to_string().replace(":", "_");
         //             let sender = self.option.messages.send.clone();
+        //             let name = format!("output/img-{t}");
+        //             sender
+        //                 .clone()
+        //                 .send((format!("{name}.png captured. Saving"), 500))
+        //                 .unwrap();
         //             std::thread::spawn(move || {
-        //                 let name = format!("output/img000");
-        //                 let img = egui::ColorImage::from_rgba_unmultiplied(
-        //                     [width as usize, height as usize],
-        //                     &img,
-        //                 );
-        //                 if let Some(err) = media::save_image(&name, "png", &img) {
+        //                 if let Some(err) = media::save_image(&name, "png", &image) {
         //                     println!("Cannot save image! Error: {err}");
         //                 } else {
         //                     let _ = sender.send((format!("{name}.png saved successfully"), 2000));
         //                 }
         //             });
+        //         } else if self.option.screenshot.screen_recording {
+        //             // todo!("Add image");
+        //             let img: &eframe::egui::ColorImage = &image;
+        //             if let Some(s) = &self.option.screenshot.video_encoder {
+        //                 let frame = media::VideoFrame {
+        //                     image: img.clone(),
+        //                     audio: (),
+        //                     time_stamp: std::time::Instant::now(),
+        //                 };
+        //                 s.sender.send(frame).unwrap();
+
+        //                 if self.option.screenshot.screen_recording_stop {
+        //                     self.option.screenshot.screen_recording = false;
+        //                     self.option.screenshot.screen_recording_stop = false;
+        //                     // s.done();
+        //                     self.option.screenshot.video_encoder = None;
+        //                 }
+        //             }
         //         }
         //     }
         // }
