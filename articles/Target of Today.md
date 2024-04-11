@@ -71,9 +71,10 @@
 ## 2024-4-10
 
 - [x] 拆分为 workspace
-- [ ] ADDED: 将全局控制检测放在外侧
+- [x] ADDED: 将全局控制检测放在外侧
   - [x] 通过新的检测方式完成
-- [ ] ADDED: 将 CentralPanel 也放在外侧
+  - [x] 不过我又改成统一检测了
+- [x] ADDED: 将 CentralPanel 也放在外侧
 - [ ] POSTPONED: 完成 lib builder 和 lib loader
 - [ ] POSTPONED: 完成关卡的json分析器
 - [ ] 建议：添加键盘转动功能

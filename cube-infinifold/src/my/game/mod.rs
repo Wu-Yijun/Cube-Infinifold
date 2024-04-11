@@ -4,9 +4,10 @@ use eframe::{
 };
 use std::sync::Arc;
 
+use crate::game_options::MyGameOption;
+
 use super::{
     gl_views::{GLFacesView, GLGameBase, GlPaintOptions},
-    performance_evaluation::PerformanceEvaluation,
     MyViewImpl, UIWidget,
 };
 
@@ -15,7 +16,6 @@ mod penrose_triangle;
 pub struct MyGameView {
     game_view: Arc<Mutex<GLFacesView>>,
     angle: f32,
-    perf: PerformanceEvaluation,
     btns: Vec<UIWidget>,
     change_to: Option<String>,
     // faces: Vec<items::Face>,
@@ -36,21 +36,18 @@ impl MyGameView {
         Self {
             game_view,
             angle: 0_f32.to_radians(),
-            perf: PerformanceEvaluation::new(),
             btns: btns,
             change_to: None,
             level,
         }
     }
 
-    fn paint_opengl(&mut self, ui: &mut egui::Ui) {
-        self.angle += ui.input(|r| {
-            if r.pointer.any_down() {
-                r.pointer.delta().x * 0.01
-            } else {
-                0.0
-            }
-        });
+    fn paint_opengl(&mut self, ui: &mut egui::Ui, option: &MyGameOption) {
+        self.angle += if option.events.pressed_l {
+            option.events.moved.0 * 0.01
+        } else {
+            0.0
+        };
 
         let angle = self.angle;
         if self.level.when_angled(angle) {
@@ -83,40 +80,28 @@ impl MyViewImpl for MyGameView {
 
     fn to_change(&self) -> Option<String> {
         match self.change_to.clone()?.as_str() {
-            "Logo" | "Menu" => self.change_to.clone(),
+            "Logo" | "Menu" | "Exit" => self.change_to.clone(),
             "Start" | "Game" => self.change_to.clone(),
-            _ => None,
+            s => {
+                println!("Undefined Command:{s}");
+                None
+            }
         }
     }
 
-    fn paint(&mut self, ctx: &eframe::egui::Context, frame: &mut eframe::Frame) {
-        let gl_layer = egui::containers::Frame {
-            fill: egui::Color32::WHITE,
-            ..Default::default()
-        };
-        let layout_layers = egui::containers::Frame {
-            fill: egui::Color32::from_rgba_unmultiplied(0, 0, 0, 0),
-            ..Default::default()
-        };
-        egui::CentralPanel::default()
-            .frame(gl_layer)
-            .show(ctx, |ui| {
-                self.paint_opengl(ui);
-            });
-        egui::CentralPanel::default()
-            .frame(layout_layers)
-            .show(ctx, |ui| {
-                if self.btns[0].button(ui, "返回", 0, 1).clicked() {
-                    println!("返回");
-                    self.change_to = Some(String::from("Menu"));
-                }
-                self.perf.performance_evaluation(ui, &frame);
-            });
-        ctx.input(|k| {
-            if k.key_pressed(egui::Key::Escape) {
-                std::process::exit(0);
-            }
-        });
-        ctx.request_repaint();
+    fn paint(&mut self, ui: &mut egui::Ui, option: &MyGameOption) {
+        self.paint_opengl(ui, option);
+        if self.btns[0].button(ui, "返回", 0, 1).clicked() {
+            println!("返回");
+            self.change_to = Some(String::from("Menu"));
+        }
+        // event handler
+        if option.events.esc {
+            self.change_to = Some(String::from(if option.events.shift_l {
+                "Exit"
+            } else {
+                "Menu"
+            }))
+        }
     }
 }

@@ -3,6 +3,8 @@ use std::{collections::VecDeque, time::Instant};
 
 use eframe::egui;
 
+use crate::game_options::MyGameOption;
+
 struct Time(Instant);
 
 impl Default for Time {
@@ -43,7 +45,7 @@ impl PerformanceEvaluation {
             ..Default::default()
         }
     }
-    pub fn performance_evaluation(self: &mut Self, ui: &mut egui::Ui, frame: &eframe::Frame) {
+    pub fn evaluate(self: &mut Self, ui: &mut egui::Ui, option: &MyGameOption) {
         let now = Instant::now();
         let dt = now - self.last_time.0;
         self.last_time = Time(now);
@@ -68,7 +70,7 @@ impl PerformanceEvaluation {
             self.frame99 = 0;
         }
 
-        let cpu_time = frame.info().cpu_usage.unwrap_or(0.0) * 1000000000.0;
+        let cpu_time = option.cpu_useage * 1000000000.0;
         ui.group(|ui| {
             ui.label(format!("CPU time:  {:0} ns ", cpu_time as u64));
             ui.label(format!("Frame time:{:0} ns ", fm_time as u64));

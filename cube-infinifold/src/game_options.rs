@@ -7,6 +7,9 @@ pub struct MyGameOption {
     pub messages: MyMessage,
     pub time: std::time::Instant,
     pub dt: std::time::Duration,
+    pub cpu_useage: f32,
+
+    pub events: MyEvents,
 }
 
 impl Default for MyGameOption {
@@ -17,6 +20,8 @@ impl Default for MyGameOption {
             messages: MyMessage::default(),
             time: std::time::Instant::now(),
             dt: std::time::Duration::from_millis(1),
+            cpu_useage: 0.0,
+            events: Default::default(),
         }
     }
 }
@@ -136,7 +141,7 @@ pub mod media {
                 // println!("Finish writing!");
                 msg_sender
                     .send((
-                        format!("Image {path_s} has been written into file successfully!"),
+                        format!("Screen Record {path_s} has been written into file successfully!"),
                         5000,
                     ))
                     .unwrap();
@@ -263,5 +268,134 @@ impl MyMessage {
     }
     pub fn has_any(&self) -> bool {
         !self.is_empty
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Default)]
+pub struct MyEvents {
+    /// keybord
+    pub ctrl: bool,
+    /// keybord
+    pub shift_l: bool,
+    /// keybord **NOT IMPL**
+    pub shift_r: bool,
+    /// keybord
+    pub alt: bool,
+    /// keybord **NOT IMPL**
+    pub caps: bool,
+
+    /// keybord
+    pub tab: bool,
+    /// keybord
+    pub esc: bool,
+    /// keybord
+    pub enter: bool,
+    /// keybord
+    pub space: bool,
+    /// mouse
+    pub moved: (f32, f32),
+    pub scrolled: (f32, f32),
+    /// pointer state
+    pub pos: (f32, f32),
+    pub focused: bool,
+    pub hovered: bool,
+
+    pub pressed_l: bool,
+    pub pressed_r: bool,
+    pub pressed_m: bool,
+}
+
+impl MyEvents {
+    pub fn reset_all(&mut self) {
+        // Copy
+        *self = Self::default();
+    }
+    pub fn reset(&mut self) {
+        self.ctrl = false;
+        self.shift_l = false;
+        self.shift_r = false;
+        self.alt = false;
+        self.caps = false;
+        self.tab = false;
+        self.esc = false;
+        self.enter = false;
+        self.space = false;
+        // self.pressed_l = false;
+        // self.pressed_m = false;
+        // self.pressed_r = false;
+        self.moved = (0.0, 0.0);
+        self.scrolled = (0.0, 0.0);
+    }
+    pub fn get(&mut self, ctx: &eframe::egui::Context) {
+        self.reset();
+        ctx.input(|r| {
+            for e in &r.events {
+                match e {
+                    eframe::egui::Event::WindowFocused(f) => self.focused = *f,
+                    eframe::egui::Event::PointerGone => self.hovered = false,
+                    eframe::egui::Event::PointerMoved(p) => {
+                        self.moved = (p.x - self.pos.0, p.y - self.pos.1);
+                        self.pos = (p.x, p.y);
+                        self.hovered = true;
+                    }
+                    eframe::egui::Event::PointerButton {
+                        button: eframe::egui::PointerButton::Primary,
+                        pressed,
+                        ..
+                    } => self.pressed_l = *pressed,
+                    eframe::egui::Event::PointerButton {
+                        button: eframe::egui::PointerButton::Secondary,
+                        pressed,
+                        ..
+                    } => self.pressed_r = *pressed,
+                    eframe::egui::Event::PointerButton {
+                        button: eframe::egui::PointerButton::Middle,
+                        pressed,
+                        ..
+                    } => self.pressed_m = *pressed,
+                    eframe::egui::Event::MouseWheel {
+                        unit: eframe::egui::MouseWheelUnit::Point,
+                        delta,
+                        ..
+                    } => self.scrolled = (delta.x, delta.y),
+                    eframe::egui::Event::Key {
+                        key,
+                        physical_key: _,
+                        modifiers,
+                        pressed: true,
+                        ..
+                    } => {
+                        match key {
+                            eframe::egui::Key::Space => self.space = true,
+                            eframe::egui::Key::Enter => self.enter = true,
+                            eframe::egui::Key::Escape => self.esc = true,
+                            eframe::egui::Key::Tab => self.tab = true,
+                            _ => (),
+                        }
+                        self.alt |= modifiers.alt;
+                        self.ctrl |= modifiers.ctrl;
+                        self.shift_l |= modifiers.shift;
+
+                        // match physical_key {
+                        //     eframe::egui::Key::Enter => (),
+                        //     _ => (),
+                        // }
+                    }
+                    // eframe::egui::Event::AccessKitActionRequest(_) => (),
+                    // eframe::egui::Event::Screenshot { .. } => (),
+                    // eframe::egui::Event::Copy => (),
+                    // eframe::egui::Event::Cut => (),
+                    // eframe::egui::Event::Paste(_) => (),
+                    // eframe::egui::Event::Text(_) => (),
+                    // eframe::egui::Event::MouseMoved(_) => (),
+                    // eframe::egui::Event::Touch { .. } => (),
+                    // eframe::egui::Event::Zoom(_) => (),
+                    // eframe::egui::Event::CompositionStart => (),
+                    // eframe::egui::Event::CompositionUpdate(_) => (),
+                    // eframe::egui::Event::CompositionEnd(_) => (),
+                    _ => (),
+                }
+            }
+        });
     }
 }

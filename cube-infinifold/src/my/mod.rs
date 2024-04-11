@@ -10,7 +10,7 @@ pub mod performance_evaluation;
 
 pub trait MyViewImpl {
     fn destory(&mut self);
-    fn paint(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame);
+    fn paint(&mut self, ui: &mut egui::Ui, option: &crate::game_options::MyGameOption);
     fn to_change(&self) -> Option<String>;
 }
 
