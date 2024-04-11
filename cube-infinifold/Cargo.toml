@@ -10,12 +10,12 @@ authors = ["Yijun Wu", "Rimor Aluria"]
 [dependencies]
 eframe = "*"
 egui_extras = { version = "*", features = ["all_loaders"] }
-image = { version = "*", features = ["jpeg", "png"] }
 ndarray = "*"
 video-rs = { version = "*", features = ["ndarray"] }
 rand = "*"
 glm = "*"
 chrono = "*"
+image = "*"
 
 [build-dependencies]
 winresource = "*"
@@ -28,5 +28,4 @@ ProductName = "Cube Infinifold"
 ProductVersion = "0.1.1.50"
 
 [[bin]]
-name ="cube-infinifold"
-path ="src/main.rs"
+name = "cube-infinifold"

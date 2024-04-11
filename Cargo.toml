@@ -1,3 +1,5 @@
 [workspace]
-members = ["cube-infinifold", "levels\\test-level"]
+members = [
+    "cube-infinifold",
+ "levels\\test-level"]
 resolver = "2"

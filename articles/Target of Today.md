@@ -81,3 +81,9 @@
 - [ ] 可选：显示一个角色，可以控制移动。
 - [ ] 可选：创建起点终点，
 
+## 2024-4-11
+
+- [x] 修复 ravif 与 image 冲突导致无法build 的 bug
+  - 实话说我也不知道怎么修复的, 我就把 `image = {version = "*", features = ["png", "jpeg"]}` 改成 `image = "*"` 并放到了最后就可以通过了.
+- [ ] 完成 lib builder 和 lib loader
+- [ ] 完成关卡的json分析器
