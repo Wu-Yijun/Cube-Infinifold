@@ -306,6 +306,7 @@ pub struct MyEvents {
 }
 
 impl MyEvents {
+    #[allow(dead_code)]
     pub fn reset_all(&mut self) {
         // Copy
         *self = Self::default();
