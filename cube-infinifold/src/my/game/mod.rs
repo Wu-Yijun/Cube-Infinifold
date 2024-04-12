@@ -11,7 +11,8 @@ use super::{
     MyViewImpl, UIWidget,
 };
 
-mod penrose_triangle;
+// mod penrose_triangle;
+mod load_level;
 
 pub struct MyGameView {
     game_view: Arc<Mutex<GLFacesView>>,
@@ -19,7 +20,8 @@ pub struct MyGameView {
     btns: Vec<UIWidget>,
     change_to: Option<String>,
     // faces: Vec<items::Face>,
-    level: penrose_triangle::PenroseTriangle,
+    // level: penrose_triangle::PenroseTriangle,
+    level: load_level::Level,
 }
 
 impl MyGameView {
@@ -31,7 +33,8 @@ impl MyGameView {
         .with_font(egui::Color32::GREEN, 28.0, egui::FontFamily::Proportional)
         .with_size(200.0, 50.0)
         .load(ctx)];
-        let level = penrose_triangle::PenroseTriangle::new();
+        // let level = penrose_triangle::PenroseTriangle::new();
+        let level = load_level::Level::new();
         game_view.lock().set_faces(level.get().clone());
         Self {
             game_view,

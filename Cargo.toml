@@ -1,7 +1,9 @@
 [workspace]
 members = [
     "cube-infinifold",              # application
+    "tools/my-items",               # crate
     "levels/level-interface",       # crate
+    "levels/levels-interface",      # crate
     "levels/test-level",            # dylib/level
     "levels/test-penrose-triangle", # dylib/level
 ]

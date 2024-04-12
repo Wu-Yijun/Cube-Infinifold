@@ -1,4 +1,4 @@
-use my_items::{self, Pillar, V3};
+use my_items::{self, Face, Pillar, V3};
 
 const S2: f32 = 1.414213562373095;
 
@@ -192,4 +192,45 @@ impl PenroseTriangle {
     //         self.updated = true;
     //     }
     // }
+}
+
+// ------ The exporting part ------
+
+impl Pointerable for PenroseTriangle {}
+
+use levels_interface::{self, LevelInfo, Pointerable, Pointered};
+
+#[no_mangle]
+pub static mut LEVEL_INFO: LevelInfo = LevelInfo::NONE;
+
+#[no_mangle]
+fn init() {
+    unsafe {
+        LEVEL_INFO.group = "test";
+        LEVEL_INFO.id = 2;
+        LEVEL_INFO.name = "不可能三角";
+    }
+}
+
+#[no_mangle]
+fn new() -> Pointered {
+    PenroseTriangle::new().as_static().get_pointer()
+}
+
+#[no_mangle]
+fn destory(_p: Pointered) {
+    // PenroseTriangle::from_pointer(p).destory();
+}
+
+#[no_mangle]
+fn when_angled(p: Pointered, angle: f32) -> bool {
+    PenroseTriangle::from_pointer(p).is_some_and(|s| s.when_angled(angle))
+}
+
+#[no_mangle]
+fn get_faces(p: Pointered) -> Vec<Face> {
+    match PenroseTriangle::from_pointer(p) {
+        Some(s) => s.get().clone(),
+        _ => vec![],
+    }
 }

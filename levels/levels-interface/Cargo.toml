@@ -1,18 +1,17 @@
 [package]
-name = "test-penrose-triangle"
+name = "levels-interface"
 version = "0.1.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+libloading = "*"
 
-[dependencies.levels-interface]
-path = "../levels-interface"
 
 [dependencies.my-items]
 path = "../../tools/my-items"
 
-[lib]
-name ="testpenrose"
-crate-type = ["dylib"]
+[features]
+cube-infinifold_main = []
+default = []
