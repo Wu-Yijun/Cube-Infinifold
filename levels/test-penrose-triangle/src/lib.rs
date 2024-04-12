@@ -2,16 +2,7 @@ use my_items::{self, Face, Pillar, V3};
 
 const S2: f32 = 1.414213562373095;
 
-trait InRange {
-    fn in_range(self, begin: Self, end: Self) -> bool;
-}
-
-impl InRange for f32 {
-    fn in_range(self, begin: f32, end: f32) -> bool {
-        self >= begin && self < end
-    }
-}
-
+#[derive(Debug)]
 struct Content {
     pub base: Pillar,
     pub left: Pillar,
@@ -28,7 +19,7 @@ struct Content {
     pub shrink3: (Pillar, Pillar),
 }
 
-#[derive(PartialEq)]
+#[derive(Debug, PartialEq)]
 enum State {
     Basic,
     NoMusk,
@@ -39,6 +30,7 @@ enum State {
     Shrink3,
 }
 
+#[derive(Debug)]
 pub struct PenroseTriangle {
     faces: Vec<my_items::Face>,
     // updated: bool,
@@ -83,20 +75,11 @@ impl PenroseTriangle {
         let mut s = Self {
             content,
             faces: vec![],
-            // updated: true,
             state: State::Basic,
         };
         s.gen_vec();
         s
     }
-    // /// Is the faces inside is changed
-    // /// Update state will disappear when set_updated method is called
-    // pub fn updated(&self) -> bool {
-    //     self.updated
-    // }
-    // pub fn set_updated(&mut self, state: bool) {
-    //     self.updated = state;
-    // }
     /// this will not disable update state
     pub fn get(&self) -> &Vec<my_items::Face> {
         &self.faces
@@ -157,7 +140,7 @@ impl PenroseTriangle {
     }
 
     fn range_and_state(&mut self, angle: f32, begin: f32, end: f32, state: State) -> bool {
-        if angle.in_range(begin, end) {
+        if begin < angle && angle < end {
             if self.state == state {
                 false
             } else {
@@ -177,7 +160,6 @@ impl PenroseTriangle {
     /// **not change update state**
     pub fn when_angled(&mut self, angle: f32) -> bool {
         let angle = angle.to_degrees();
-        // let angle = angle.to_degrees().rem_euclid(360_f32);
 
         self.range_and_state(angle, -100f32, -45_f32, State::Transform)
             || self.range_and_state(angle, -45_f32, 0_f32, State::AtTop)
@@ -187,11 +169,6 @@ impl PenroseTriangle {
             || self.range_and_state(angle, 405_f32, 585_f32, State::Shrink2)
             || self.range_and_state(angle, 585_f32, 1000_f32, State::Shrink3)
     }
-    // pub fn set_angle(&mut self, angle: f32) {
-    //     if self.when_angled(angle) {
-    //         self.updated = true;
-    //     }
-    // }
 }
 
 // ------ The exporting part ------
@@ -224,7 +201,10 @@ fn destory(_p: Pointered) {
 
 #[no_mangle]
 fn when_angled(p: Pointered, angle: f32) -> bool {
-    PenroseTriangle::from_pointer(p).is_some_and(|s| s.when_angled(angle))
+    match PenroseTriangle::from_pointer(p) {
+        Some(s) => s.when_angled(angle),
+        _ => false,
+    }
 }
 
 #[no_mangle]

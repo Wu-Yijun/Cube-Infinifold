@@ -40,7 +40,7 @@ impl Level {
             return angled;
         }
         self.faces = (self.mif.get_faces)(self.p);
-        false
+        true
     }
     #[allow(dead_code)]
     pub fn destory(self) {

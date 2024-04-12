@@ -85,7 +85,7 @@
 
 - [x] 修复 ravif 与 image 冲突导致无法build 的 bug
   - 实话说我也不知道怎么修复的, 我就把 `image = {version = "*", features = ["png", "jpeg"]}` 改成 `image = "*"` 并放到了最后就可以通过了.
-- [ ] 完成 lib builder 和 lib loader
+- [x] 完成 lib builder 和 lib loader
   - [x] 先创建一个合适的接口，在此基础上继续思考需要哪些函数
 - [ ] 完成关卡的json分析器
 - [ ] 建议：添加键盘转动功能
