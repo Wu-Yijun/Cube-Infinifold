@@ -91,3 +91,21 @@
 - [ ] 建议：添加键盘转动功能
 - [ ] 可选：显示一个角色，可以控制移动。
 - [ ] 可选：创建起点终点，
+
+## 2024-4-12
+- [x] 升级了 Rust, 修复了 build 失败的 bug.
+- [x] 将 lib loader 包装在线程中, 避免中断时的异常.
+- [x] 将 lib builder 包装在catch_unwind 中, 避免 FFI 的异常干扰主程序.
+- [x] build.bat 方便一键编译, 复制, 运行
+- [ ] 完成 json-loader, 通过 json 读取lib, 而不是在程序中写死
+- [ ] 添加键盘转动功能
+- [ ] 可选：修复录屏只能特定尺寸, 无法中途缩放
+- [ ] 可选：显示一个角色，可以控制移动。
+- [ ] 可选：创建起点终点，
+  
+
+这是录制的一段在这一堆壳中转动的视频, 以及 我在库里设置的转动超过一定角度崩溃 的效果, 可以看到直接返回了主菜单, 而没有出现过分离谱的异常.
+
+! [@video](assets/video-3.mp4)(@text:Panic catching, turning back)
+!##! <video controls src="assets/video-3.mp4" title="Panic catch"></video> !##!
+

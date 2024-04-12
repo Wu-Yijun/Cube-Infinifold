@@ -1,5 +1,5 @@
 /target
-/output
+/bin
 /examples/libs/
 /.VSCodeCounter
 /Cargo.lock

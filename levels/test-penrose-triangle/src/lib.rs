@@ -161,6 +161,10 @@ impl PenroseTriangle {
     pub fn when_angled(&mut self, angle: f32) -> bool {
         let angle = angle.to_degrees();
 
+        if angle < -200f32 {
+            panic!("测试 库崩溃时 的错误处理");
+        }
+
         self.range_and_state(angle, -100f32, -45_f32, State::Transform)
             || self.range_and_state(angle, -45_f32, 0_f32, State::AtTop)
             || self.range_and_state(angle, 0_f32, 45_f32, State::Basic)
@@ -168,6 +172,7 @@ impl PenroseTriangle {
             || self.range_and_state(angle, 315_f32, 405_f32, State::Shrink)
             || self.range_and_state(angle, 405_f32, 585_f32, State::Shrink2)
             || self.range_and_state(angle, 585_f32, 1000_f32, State::Shrink3)
+        
     }
 }
 
@@ -180,7 +185,6 @@ use levels_interface::{self, LevelInfo, Pointerable, Pointered};
 #[no_mangle]
 pub static mut LEVEL_INFO: LevelInfo = LevelInfo::NONE;
 
-#[no_mangle]
 fn init() {
     unsafe {
         LEVEL_INFO.group = "test";
@@ -189,17 +193,14 @@ fn init() {
     }
 }
 
-#[no_mangle]
 fn new() -> Pointered {
     PenroseTriangle::new().as_static().get_pointer()
 }
 
-#[no_mangle]
 fn destory(_p: Pointered) {
     // PenroseTriangle::from_pointer(p).destory();
 }
 
-#[no_mangle]
 fn when_angled(p: Pointered, angle: f32) -> bool {
     match PenroseTriangle::from_pointer(p) {
         Some(s) => s.when_angled(angle),
@@ -207,10 +208,11 @@ fn when_angled(p: Pointered, angle: f32) -> bool {
     }
 }
 
-#[no_mangle]
 fn get_faces(p: Pointered) -> Vec<Face> {
     match PenroseTriangle::from_pointer(p) {
         Some(s) => s.get().clone(),
         _ => vec![],
     }
 }
+
+include!("required.rs");

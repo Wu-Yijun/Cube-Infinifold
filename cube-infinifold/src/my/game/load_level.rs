@@ -44,6 +44,9 @@ impl Level {
                         .expect("Send Error"),
                     Actions::Destory => break,
                 }
+                if !(mif.is_ok)() {
+                    break;
+                }
             }
             // destory
             my_destory(mif, p);

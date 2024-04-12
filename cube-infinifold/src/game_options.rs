@@ -69,15 +69,15 @@ pub mod media {
     /// or else return Some(error: String)
     pub fn save_image(path: &str, ext: &str, img: &eframe::egui::ColorImage) -> Option<String> {
         let path = format!("{path}.{ext}");
-        // if let Err(err) = image::save_buffer(
-        //     path,
-        //     img.as_raw(),
-        //     img.width() as u32,
-        //     img.height() as u32,
-        //     image::ColorType::Rgba8,
-        // ) {
-        //     return Some(err.to_string());
-        // }
+        if let Err(err) = image::save_buffer(
+            path,
+            img.as_raw(),
+            img.width() as u32,
+            img.height() as u32,
+            image::ColorType::Rgba8,
+        ) {
+            return Some(err.to_string());
+        }
         None
     }
 

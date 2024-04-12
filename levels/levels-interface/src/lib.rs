@@ -13,6 +13,9 @@ pub mod variables_functions_names {
     }
 
     // functions
+    // private
+    pub const REQUIRED_INCLUDED: B = b"REQUIRED_INCLUDED\0";
+    pub const CHECK_STATE: B = b"is_ok\0";
     // necessary
     pub const INIT: B = b"init\0";
     pub const NEW: B = b"new\0";
@@ -132,6 +135,8 @@ pub struct MyInterface {
     pub get_faces: fn(Pointered) -> Vec<Face>,
     pub when_angled: fn(Pointered, f32) -> bool,
 
+    pub is_ok: fn() -> bool,
+
     /// We set a lib here to ensure the lib is not closed at the end of the function
     #[allow(dead_code)]
     lib: Option<libloading::Library>,
@@ -142,17 +147,31 @@ impl MyInterface {
         let result = std::panic::catch_unwind(|| unsafe { Self::from_lib(path) });
         match result {
             Ok(s) => s,
-            Err(_) => Err(String::from("Paniced!"))
-            // Err(err) =>{ match err.downcast::<String>() {
-            //     Ok(res) => Err(*res),
-            //     Err(_) => Err("Unknown error occured when loading library".to_string()),
-            // }},
+            Err(_) => Err(String::from("Paniced!")), // Err(err) =>{ match err.downcast::<String>() {
+                                                     //     Ok(res) => Err(*res),
+                                                     //     Err(_) => Err("Unknown error occured when loading library".to_string()),
+                                                     // }},
         }
     }
     pub unsafe fn from_lib(path: String) -> Result<Self, String> {
         let lib = match libloading::Library::new(path) {
             Ok(lib) => lib,
             Err(err) => return Err(err.to_string()),
+        };
+        // check lib
+        let req_inc: *mut bool = if let Ok(req_inc) = lib.get(names::REQUIRED_INCLUDED) {
+            *req_inc
+        } else {
+            return Err("The library is not vaild".to_string());
+        };
+        if !*req_inc {
+            return Err("The required is not included in library".to_string());
+        }
+        // get the ok test fun
+        let is_ok: fn() -> bool = if let Ok(is_ok) = lib.get(names::CHECK_STATE) {
+            *is_ok
+        } else {
+            return Err("The library is not vaild(cannot find is_ok)".to_string());
         };
         // initialization
         if let Ok(init) = lib.get::<libloading::Symbol<fn()>>(names::INIT) {
@@ -175,7 +194,7 @@ impl MyInterface {
             return Err("Cannot find destory".to_string());
         };
         // get unnecessary
-        let mut mif_builder = my_interface::MyInterfaceBuilder::new(*info, new, destory);
+        let mut mif_builder = my_interface::MyInterfaceBuilder::new(is_ok, *info, new, destory);
 
         if let Ok(get_faces) = lib.get(names::GET_FACES) {
             mif_builder.with_get_faces(*get_faces);
@@ -211,6 +230,7 @@ pub mod my_interface {
         }
     }
     pub struct MyInterfaceBuilder {
+        pub is_ok: Option<fn() -> bool>,
         pub f_new: Option<fn() -> Pointered>,
         pub f_destory: Option<fn(Pointered) -> ()>,
         pub f_when_angled: Option<fn(Pointered, f32) -> bool>,
@@ -224,7 +244,9 @@ pub mod my_interface {
             f_get_faces: None,
             f_when_angled: None,
             level_info: None,
+            is_ok: None,
         };
+        pub const NOT_OK: fn() -> bool = || false;
         pub const NEW: fn() -> Pointered = || Pointered(None);
         pub const DESTORY: fn(Pointered) -> () = |_| ();
         pub const GET_FACES: fn(Pointered) -> Vec<Face> = |_| (vec![]);
@@ -232,6 +254,7 @@ pub mod my_interface {
 
         pub fn build(self, lib: Option<libloading::Library>) -> MyInterface {
             MyInterface {
+                is_ok: self.is_ok.unwrap_or(Self::NOT_OK),
                 new: self.f_new.unwrap_or(Self::NEW),
                 destory: self.f_destory.unwrap_or(Self::DESTORY),
                 get_faces: self.f_get_faces.unwrap_or(Self::GET_FACES),
@@ -241,13 +264,20 @@ pub mod my_interface {
             }
         }
 
-        pub fn new(info: LevelInfo, new: fn() -> Pointered, destory: fn(Pointered) -> ()) -> Self {
+        pub fn new(
+            is_ok: fn() -> bool,
+            info: LevelInfo,
+            new: fn() -> Pointered,
+            destory: fn(Pointered) -> (),
+        ) -> Self {
             Self {
                 level_info: Some(info),
                 f_new: Some(new),
                 f_destory: Some(destory),
                 f_get_faces: None,
                 f_when_angled: None,
+
+                is_ok: Some(is_ok),
             }
         }
         pub fn with_info(&mut self, info: LevelInfo) -> &mut Self {
