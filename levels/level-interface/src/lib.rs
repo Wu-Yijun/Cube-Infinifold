@@ -1,6 +1,7 @@
-use libloading::{self};
+use libloading;
 
 #[allow(dead_code)]
+/// 导入函数名和导入变量名的列表, 可以作为编写库时的参考或者编写接口的导入功能时的引用.
 pub mod variables_functions_names {
     pub type S = &'static str;
     pub type B = &'static [u8];
@@ -24,13 +25,28 @@ pub mod variables_functions_names {
     // variables
     pub const LEVEL_INFO: B = b"LEVEL_INFO\0";
 }
+#[allow(unused_imports)]
+// 对这个列表设置的别名为`names`, 不然太长太难用了
 use variables_functions_names as names;
 
 #[derive(Debug, Clone, Copy, PartialEq, Default)]
+/// Pointered 是一个指针的替代品, 指向一段内存地址
+///
+/// 当我们不需要指针时, 返回的结果为 None, 否则为 Some(内存地址 as usize)
 pub struct Pointered(Option<usize>);
 
+/// Pointerable 是一个很好的特征, 它保证了任意一个结构体可以化为 Pointered 指针
+///
+/// 内部实现的一些函数可以方便我们快速在 Self 和 Pointered 之间来回转化,
+/// 这样我们的函数就可以实现统一的传入传出类型
 pub trait Pointerable: Sized {
+    /// 不是指针,
+    const VOID: Pointered = Pointered(None);
+    /// 空指针, 可以快速获取一个指向 null 指针
+    const NULL: Pointered = Pointered(Some(0));
     /// 从指针获取 self, 可能失败
+    ///
+    /// 失败的原因有两种, NULL 或者 VOID, 这些都不会
     fn from_pointer(p: Pointered) -> Option<&'static mut Self> {
         let address = p.0?;
         if address == 0 {
@@ -118,7 +134,15 @@ pub struct MyInterface {
 #[cfg(feature = "cube-infinifold_main")]
 impl MyInterface {
     pub fn from_lib_safe(path: String) -> Result<Self, String> {
-        unsafe { Self::from_lib(path) }
+        let result = std::panic::catch_unwind(|| unsafe { Self::from_lib(path) });
+        match result {
+            Ok(s) => s,
+            Err(_) => Err(String::from("Paniced!"))
+            // Err(err) =>{ match err.downcast::<String>() {
+            //     Ok(res) => Err(*res),
+            //     Err(_) => Err("Unknown error occured when loading library".to_string()),
+            // }},
+        }
     }
     pub unsafe fn from_lib(path: String) -> Result<Self, String> {
         let lib = match libloading::Library::new(path) {

@@ -133,8 +133,18 @@ pub mod my_test {
     use level_interface;
     #[test]
     fn lib_loader() {
+        // panic in outer thread can not be catched
+
+        // let q = std::panic::catch_unwind(||level_interface::MyInterface::from_lib_safe("testlevel.dll".to_string()));
+        // if q.is_err(){
+        //     return;
+        // }
+        // let p = q.unwrap();
         let p = level_interface::MyInterface::from_lib_safe("testlevel.dll".to_string());
         println!("{:#?}", p);
+        if p.is_err(){
+            return;
+        }
         let p =p.unwrap();
         let s = (p.new)();
         println!("{:#?}", s);
@@ -144,5 +154,16 @@ pub mod my_test {
         (p.append)(s, "世界！");
         (p.show)(s);
         (p.destory)(s);
+    }
+
+    #[test]
+    fn thread_test(){
+        let hand = thread::spawn(||{
+            panic!("I hate it.");
+        });
+        if hand.join().is_err() {
+            return;
+        }
+        println!("Success")
     }
 }

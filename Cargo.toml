@@ -1,7 +1,8 @@
 [workspace]
 members = [
-    "cube-infinifold",        # application
-    "levels/level-interface", # crate
-    "levels/test-level",      # dylib/level
+    "cube-infinifold",              # application
+    "levels/level-interface",       # crate
+    "levels/test-level",            # dylib/level
+    "levels/test-penrose-triangle", # dylib/level
 ]
 resolver = "2"

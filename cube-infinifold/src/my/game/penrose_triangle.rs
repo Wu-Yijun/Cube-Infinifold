@@ -1,6 +1,6 @@
 // use std::f32::consts::PI;
 
-use crate::my::gl_views::items::{self, Pillar, V3};
+use my_items::{Pillar, V3};
 
 const S2: f32 = 1.414213562373095;
 
@@ -42,7 +42,7 @@ enum State {
 }
 
 pub struct PenroseTriangle {
-    faces: Vec<items::Face>,
+    faces: Vec<my_items::Face>,
     // updated: bool,
     state: State,
 
@@ -100,7 +100,7 @@ impl PenroseTriangle {
     //     self.updated = state;
     // }
     /// this will not disable update state
-    pub fn get(&self) -> &Vec<items::Face> {
+    pub fn get(&self) -> &Vec<my_items::Face> {
         &self.faces
     }
     fn gen_vec(&mut self) {

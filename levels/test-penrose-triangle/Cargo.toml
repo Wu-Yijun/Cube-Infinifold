@@ -1,5 +1,5 @@
 [package]
-name = "test-level"
+name = "test-penrose-triangle"
 version = "0.1.0"
 edition = "2021"
 
@@ -10,6 +10,9 @@ edition = "2021"
 [dependencies.level-interface]
 path = "../level-interface"
 
+[dependencies.my-items]
+path = "../../tools/my-items"
+
 [lib]
-name ="testlevel"
+name ="testpenrose"
 crate-type = ["dylib"]

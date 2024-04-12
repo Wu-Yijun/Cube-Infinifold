@@ -33,3 +33,6 @@ name = "cube-infinifold"
 [dependencies.level-interface]
 path = "../levels/level-interface"
 features = ["cube-infinifold_main"]
+
+[dependencies.my-items]
+path = "../tools/my-items"

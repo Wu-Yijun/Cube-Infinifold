@@ -28,7 +28,10 @@ pub static mut LEVEL_INFO: LevelInfo = LevelInfo {
 };
 
 #[no_mangle]
-pub fn init() {}
+extern "Rust" fn init() {
+    // panic!("Do you like panic?");
+    assert!(false);
+}
 
 #[no_mangle]
 pub fn new() -> Pointered {

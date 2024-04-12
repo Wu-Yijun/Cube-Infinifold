@@ -9,7 +9,7 @@ use rand::random;
 use crate::game_options::MyGameOption;
 
 use super::{
-    gl_views::{items, GLGameBase, GLLinesView, GlPaintOptions},
+    gl_views::{GLGameBase, GLLinesView, GlPaintOptions},
     MyViewImpl, UIWidget,
 };
 
@@ -94,7 +94,7 @@ impl MyInfinifoldLogo {
         ui.painter().add(callback);
     }
 
-    fn get_box(dim: usize, scale: f32, init_offest: f32, offset_scale: f32) -> Vec<items::Line> {
+    fn get_box(dim: usize, scale: f32, init_offest: f32, offset_scale: f32) -> Vec<my_items::Line> {
         let mut ori: Vec<(Vec<f32>, Vec<isize>)> = vec![(vec![], vec![])];
         let mut times = 0;
         let mut len = 1;
@@ -164,21 +164,21 @@ impl MyInfinifoldLogo {
         }
 
         // transform
-        let mut res: Vec<items::Line> = vec![];
-        let musk = Some(items::Musk {
-            pos: items::V3 {
+        let mut res: Vec<my_items::Line> = vec![];
+        let musk = Some(my_items::Musk {
+            pos: my_items::V3 {
                 x: init_offest + 0.01,
                 y: 1.0,
                 z: init_offest + 0.01,
             },
-            dir: items::V3 {
+            dir: my_items::V3 {
                 x: 0.0,
                 y: -1.0,
                 z: 0.0,
             },
         });
         let mut times = 0;
-        let cfun = items::Colored::Fun(Arc::new(|x| items::Color {
+        let cfun = my_items::Colored::Fun(Arc::new(|x| my_items::Color {
             r: 0.5,
             g: 0.2 * x as f32,
             b: 0.8,
@@ -186,13 +186,13 @@ impl MyInfinifoldLogo {
         }));
         for i in ori.iter() {
             for j in i.1.iter() {
-                res.push(items::Line {
-                    pos1: items::V3 {
+                res.push(my_items::Line {
+                    pos1: my_items::V3 {
                         x: i.0[0],
                         y: i.0[1],
                         z: i.0[2],
                     },
-                    pos2: items::V3 {
+                    pos2: my_items::V3 {
                         x: ori[(times + *j) as usize].0[0],
                         y: ori[(times + *j) as usize].0[1],
                         z: ori[(times + *j) as usize].0[2],
