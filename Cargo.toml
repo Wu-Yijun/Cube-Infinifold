@@ -2,6 +2,7 @@
 members = [
     "cube-infinifold",              # application
     "tools/my-items",               # crate
+    "tools/my-levels-finder",       # crate
     "levels/level-interface",       # crate
     "levels/levels-interface",      # crate
     "levels/test-level",            # dylib/level

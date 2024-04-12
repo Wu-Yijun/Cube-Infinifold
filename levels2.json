@@ -1,0 +1,17 @@
+{
+    "name": "Cube-infinifold",
+    "path": "target/debug/levels2/",
+    "index": 0,
+    "levels": [
+        {
+            "name": "lev",
+            "filename": "l1"
+        },
+        {
+            "name": "lev",
+            "filename": "l2"
+        }
+    ],
+    "groups": [],
+    "linkers": []
+}

@@ -1,0 +1,32 @@
+{
+    "name": "Cube-infinifold",
+    "path": "target/debug/levels/",
+    "index": 0,
+    "levels": [
+        {
+            "name": "test",
+            "index": 1,
+            "filename": "pen"
+        },
+        {
+            "name": "test",
+            "index": 2,
+            "filename": "pen2"
+        }
+    ],
+    "groups": [
+        {
+            "name": "Cube-infinifold",
+            "path": "target/debug/",
+            "levels": [],
+            "groups": [],
+            "linkers": []
+        }
+    ],
+    "linkers": [
+        {
+            "path": "../../../",
+            "filename": "levels2.json"
+        }
+    ]
+}
