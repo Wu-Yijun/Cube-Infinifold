@@ -71,7 +71,11 @@ impl MyApp {
             }
             "Start" | "Game" => {
                 self.my_view.destory();
-                self.my_view = MyView::MyGame(MyGameView::new(self.game_view.faces.clone(), ctx));
+                let view = MyGameView::new(self.game_view.faces.clone(), ctx);
+                if view.is_none() {
+                    return self.change_to("Menu".to_string(), ctx);
+                }
+                self.my_view = MyView::MyGame(view.unwrap());
             }
             "Exit" => {
                 self.my_view.destory();
@@ -91,7 +95,7 @@ impl eframe::App for MyApp {
             self.option.cpu_useage = frame.info().cpu_usage.unwrap_or(0.0);
             self.option.messages.recv();
             self.option.messages.dt(self.option.dt);
-            
+
             self.option.events.get(ctx);
         }
         // eve handler

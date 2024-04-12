@@ -25,7 +25,10 @@ pub struct MyGameView {
 }
 
 impl MyGameView {
-    pub fn new(game_view: Arc<Mutex<GLFacesView>>, ctx: &eframe::egui::Context) -> MyGameView {
+    pub fn new(
+        game_view: Arc<Mutex<GLFacesView>>,
+        ctx: &eframe::egui::Context,
+    ) -> Option<MyGameView> {
         let btns = vec![UIWidget::new(vec![
             "file://assets/ui/unselected.png",
             "file://assets/ui/selected.png",
@@ -34,15 +37,15 @@ impl MyGameView {
         .with_size(200.0, 50.0)
         .load(ctx)];
         // let level = penrose_triangle::PenroseTriangle::new();
-        let level = load_level::Level::new();
-        game_view.lock().set_faces(level.get().clone());
-        Self {
+        let level = load_level::Level::new()?;
+        game_view.lock().set_faces(level.get_faces().clone());
+        Some(Self {
             game_view,
             angle: 0_f32.to_radians(),
             btns: btns,
             change_to: None,
             level,
-        }
+        })
     }
 
     fn paint_opengl(&mut self, ui: &mut egui::Ui, option: &MyGameOption) {
@@ -54,7 +57,9 @@ impl MyGameView {
 
         let angle = self.angle;
         if self.level.when_angled(angle) {
-            self.game_view.lock().set_faces(self.level.get().clone());
+            self.game_view
+                .lock()
+                .set_faces(self.level.get_faces().clone());
         }
 
         let game_view = self.game_view.clone();
@@ -85,6 +90,7 @@ impl MyViewImpl for MyGameView {
         match self.change_to.clone()?.as_str() {
             "Logo" | "Menu" | "Exit" => self.change_to.clone(),
             "Start" | "Game" => self.change_to.clone(),
+            "Error" => Some("Menu".to_string()),
             s => {
                 println!("Undefined Command:{s}");
                 None
@@ -93,6 +99,14 @@ impl MyViewImpl for MyGameView {
     }
 
     fn paint(&mut self, ui: &mut egui::Ui, option: &MyGameOption) {
+        if !self.level.is_ok() {
+            let _ = option
+                .messages
+                .send
+                .send(("Errors in level!".to_string(), 2500));
+            self.change_to = Some(String::from("Error"));
+            return;
+        }
         self.paint_opengl(ui, option);
         if self.btns[0].button(ui, "返回", 0, 1).clicked() {
             println!("返回");
