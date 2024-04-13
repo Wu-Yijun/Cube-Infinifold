@@ -4,6 +4,7 @@ use eframe::{self, egui};
 pub mod cube_infinifold_logo;
 pub mod game;
 pub mod gl_views;
+pub mod level_index;
 pub mod load_fonts;
 pub mod menu;
 pub mod performance_evaluation;
@@ -16,6 +17,7 @@ pub trait MyViewImpl {
 
 pub enum MyView {
     MyMenu(menu::MyMenu),
+    MyLevels(level_index::MyLevelIndex),
     MyLogo(cube_infinifold_logo::MyInfinifoldLogo),
     MyGame(game::MyGameView),
     None,

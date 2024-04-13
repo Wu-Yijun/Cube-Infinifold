@@ -3,6 +3,7 @@ mod item;
 
 use std::fs;
 
+use item::Game;
 use json::JsonValue;
 
 pub fn get_json(path: &str) -> JsonValue {
@@ -51,6 +52,15 @@ pub fn js_obj_arr<'a>(j: &'a JsonValue, key: &str) -> Option<&'a Vec<JsonValue>>
     None
 }
 
+pub use item::CollectedGame;
+pub use item::Link;
+pub fn get_levels(path: Link, filename: &str) -> CollectedGame {
+    let j = get_json(&path.with(filename).path());
+    let mut g: Game = item::FromJson::get(&path, &j);
+    g.find();
+    g.collect()
+}
+
 #[cfg(test)]
 mod tests {
     use json::{self, object};
@@ -70,6 +80,8 @@ mod tests {
         println!("{:#?}", g);
         g.find();
         println!("{:#?}", g);
+        let c = g.collect();
+        println!("{:#?}", c);
     }
 
     #[test]

@@ -2,10 +2,10 @@
 cargo build --release
 
 @REM move to output folder
-copy /B/V/Y target\release\cube-infinifold.exe output\
-copy /B/V/Y target\release\*.dll output\
+copy /B/V/Y target\release\cube-infinifold.exe bin\
+copy /B/V/Y target\release\*.dll bin\
 
 
 @REM explorer D:\Cube-Infinifold\output\
 
-start D:\Cube-Infinifold\output\cube-infinifold.exe 
+start D:\Cube-Infinifold\bin\cube-infinifold.exe 

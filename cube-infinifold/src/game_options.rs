@@ -1,5 +1,7 @@
 use std::sync::mpsc;
 
+use crate::my::performance_evaluation::PerformanceEvaluation;
+
 #[derive(Debug, PartialEq, Clone)]
 pub struct MyGameOption {
     pub fullscreen: bool,
@@ -8,8 +10,12 @@ pub struct MyGameOption {
     pub time: std::time::Instant,
     pub dt: std::time::Duration,
     pub cpu_useage: f32,
+    
+    pub performance_evaluation: PerformanceEvaluation,
 
     pub events: MyEvents,
+
+    pub game_library: my_levels_finder::CollectedGame,
 }
 
 impl Default for MyGameOption {
@@ -21,12 +27,22 @@ impl Default for MyGameOption {
             time: std::time::Instant::now(),
             dt: std::time::Duration::from_millis(1),
             cpu_useage: 0.0,
+            performance_evaluation: PerformanceEvaluation::new(),
+
             events: Default::default(),
+
+            game_library: Self::load_levels(),
         }
     }
 }
 
-impl MyGameOption {}
+impl MyGameOption {
+    fn load_levels() -> my_levels_finder::CollectedGame {
+        let path = my_levels_finder::Link::new("");
+        const FILENAME: &str = "levels.json";
+        my_levels_finder::get_levels(path, FILENAME)
+    }
+}
 
 #[derive(Debug, PartialEq)]
 pub struct MyScreenShot {

@@ -130,31 +130,33 @@ pub mod my_test {
         println!("{:?},{:?}", receiver.recv(), receiver.recv());
     }
 
-    use level_interface;
-    #[test]
-    fn lib_loader() {
-        // panic in outer thread can not be catched
+    
+    // // now we have chaned to levels_interface
+    // use level_interface;
+    // #[test]
+    // fn lib_loader() {
+    //     // panic in outer thread can not be catched
 
-        // let q = std::panic::catch_unwind(||level_interface::MyInterface::from_lib_safe("testlevel.dll".to_string()));
-        // if q.is_err(){
-        //     return;
-        // }
-        // let p = q.unwrap();
-        let p = level_interface::MyInterface::from_lib_safe("testlevel.dll".to_string());
-        println!("{:#?}", p);
-        if p.is_err(){
-            return;
-        }
-        let p =p.unwrap();
-        let s = (p.new)();
-        println!("{:#?}", s);
-        (p.show)(s);
-        (p.append)(s, "，");
-        (p.show)(s);
-        (p.append)(s, "世界！");
-        (p.show)(s);
-        (p.destory)(s);
-    }
+    //     // let q = std::panic::catch_unwind(||level_interface::MyInterface::from_lib_safe("testlevel.dll".to_string()));
+    //     // if q.is_err(){
+    //     //     return;
+    //     // }
+    //     // let p = q.unwrap();
+    //     let p = level_interface::MyInterface::from_lib_safe("testlevel.dll".to_string());
+    //     println!("{:#?}", p);
+    //     if p.is_err(){
+    //         return;
+    //     }
+    //     let p =p.unwrap();
+    //     let s = (p.new)();
+    //     println!("{:#?}", s);
+    //     (p.show)(s);
+    //     (p.append)(s, "，");
+    //     (p.show)(s);
+    //     (p.append)(s, "世界！");
+    //     (p.show)(s);
+    //     (p.destory)(s);
+    // }
 
     #[test]
     fn thread_test(){

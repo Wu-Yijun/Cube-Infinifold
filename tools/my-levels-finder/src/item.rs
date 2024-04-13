@@ -1,3 +1,5 @@
+use std::{collections::HashMap, fs};
+
 use json::JsonValue;
 
 use crate::{get_json, js_obj_arr, js_obj_num, js_obj_str};
@@ -25,7 +27,7 @@ pub struct Level {
     name: String,
     index: i64,
 }
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Link(String);
 #[derive(Debug)]
 pub struct Linker {
@@ -125,6 +127,13 @@ impl Link {
     pub fn path(&self) -> &String {
         &self.0
     }
+    fn is_valid(&self) -> bool {
+        if let Ok(md) = fs::metadata(&self.0) {
+            md.is_file()
+        } else {
+            false
+        }
+    }
 }
 
 impl Group {
@@ -137,10 +146,96 @@ impl Group {
             i.find();
         }
     }
+    pub fn collect(&self, collections: &mut CollectedGame) {
+        let group_index = self.index;
+        collections.new_group(group_index, &self.name);
+        for l in &self.levels {
+            collections.new_level(group_index, l.index, &l.name, l.filename.with(""));
+        }
+        for g in &self.groups {
+            g.collect(collections);
+        }
+    }
 }
 
 impl Game {
     pub fn find(&mut self) {
         self.0.find();
+    }
+    pub fn collect(&self) -> CollectedGame {
+        let mut collection = CollectedGame::new(&self.0.name);
+        self.0.collect(&mut collection);
+        collection.clean();
+        collection
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct CollectedLevel {
+    pub name: String,
+    pub link: Link,
+}
+#[derive(Debug, Clone)]
+pub struct CollectedGroup {
+    pub name: String,
+    pub levels: HashMap<i64, CollectedLevel>,
+}
+#[derive(Debug, Clone)]
+pub struct CollectedGame {
+    pub name: String,
+    pub groups: HashMap<i64, CollectedGroup>,
+}
+impl PartialEq for CollectedGame {
+    fn eq(&self, other: &Self) -> bool {
+        self.name == other.name
+    }
+}
+impl CollectedLevel {
+    fn new(name: &String, link: Link) -> Self {
+        Self {
+            name: name.clone(),
+            link,
+        }
+    }
+}
+impl CollectedGroup {
+    fn new(name: &String) -> Self {
+        Self {
+            name: name.clone(),
+            levels: HashMap::new(),
+        }
+    }
+}
+impl CollectedGame {
+    fn new(name: &String) -> Self {
+        Self {
+            name: name.clone(),
+            groups: HashMap::new(),
+        }
+    }
+    fn new_group(&mut self, group_index: i64, name: &String) {
+        if let Some(g) = self.groups.get_mut(&group_index) {
+            g.name = name.clone();
+        } else {
+            self.groups.insert(group_index, CollectedGroup::new(name));
+        }
+    }
+    fn new_level(&mut self, group_index: i64, index: i64, name: &String, link: Link) {
+        if let Some(g) = self.groups.get_mut(&group_index) {
+            g.levels.insert(index, CollectedLevel::new(name, link));
+        } else {
+            self.groups.insert(group_index, CollectedGroup::new(name));
+        }
+    }
+    /// Notice it is **clean** but not ~~clear~~
+    ///
+    /// This is called at the end of the collect of game,
+    /// and groups with no level will be deleted,
+    /// and levels with no valid link will be deleted
+    fn clean(&mut self) {
+        self.groups.retain(|_, group| {
+            group.levels.retain(|_, level| level.link.is_valid());
+            !group.levels.is_empty()
+        });
     }
 }

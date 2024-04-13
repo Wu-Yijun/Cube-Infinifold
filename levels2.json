@@ -1,7 +1,7 @@
 {
     "name": "Cube-infinifold",
     "path": "target/debug/levels2/",
-    "index": 0,
+    "index": 5,
     "levels": [
         {
             "name": "lev",

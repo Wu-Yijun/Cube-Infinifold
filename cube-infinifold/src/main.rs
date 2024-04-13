@@ -6,8 +6,7 @@ mod test;
 use game_options::{media, MyGameOption};
 use my::{
     cube_infinifold_logo::MyInfinifoldLogo, game::MyGameView, gl_views::MyGLView,
-    load_fonts::load_fonts, menu::MyMenu, performance_evaluation::PerformanceEvaluation, MyView,
-    MyViewImpl,
+    level_index::MyLevelIndex, load_fonts::load_fonts, menu::MyMenu, MyView, MyViewImpl,
 };
 
 fn main() -> Result<(), eframe::Error> {
@@ -40,7 +39,6 @@ struct MyApp {
     my_view: MyView,
     game_view: MyGLView,
     option: MyGameOption,
-    performance_evaluation: PerformanceEvaluation,
 }
 
 impl MyApp {
@@ -52,7 +50,6 @@ impl MyApp {
             my_view: MyView::None,
             game_view: MyGLView::new(cc),
             option: Default::default(),
-            performance_evaluation: PerformanceEvaluation::new(),
         };
         sf.change_to(String::from("Menu"), &cc.egui_ctx);
         sf
@@ -69,7 +66,11 @@ impl MyApp {
                 self.my_view.destory();
                 self.my_view = MyView::MyMenu(MyMenu::new(self.game_view.basic.clone(), ctx));
             }
-            "Start" | "Game" => {
+            "Select Group" => {
+                self.my_view.destory();
+                self.my_view = MyView::MyLevels(MyLevelIndex::new(ctx));
+            }
+            "Select Level" | "Start" | "Game" => {
                 self.my_view.destory();
                 let view = MyGameView::new(self.game_view.faces.clone(), ctx);
                 if view.is_none() {
@@ -90,9 +91,13 @@ impl eframe::App for MyApp {
     fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
         {
             let t = std::time::Instant::now();
-            self.option.dt = t - self.option.time;
+            let dt = t - self.option.time;
+            let cpu_useage = frame.info().cpu_usage.unwrap_or(0.0);
+            self.option.performance_evaluation.evaluate(dt, cpu_useage);
             self.option.time = t;
-            self.option.cpu_useage = frame.info().cpu_usage.unwrap_or(0.0);
+            self.option.cpu_useage = cpu_useage;
+            self.option.dt = dt;
+
             self.option.messages.recv();
             self.option.messages.dt(self.option.dt);
 
@@ -192,10 +197,15 @@ impl eframe::App for MyApp {
                         self.change_to(aim, ctx);
                     }
                 }
+                MyView::MyLevels(v) => {
+                    v.paint(ui, &self.option);
+                    if let Some(aim) = v.to_change() {
+                        self.change_to(aim, ctx);
+                    }
+                }
                 _ => todo!("未完成！！！"),
             };
-
-            self.performance_evaluation.evaluate(ui, &self.option);
+            self.option.performance_evaluation.draw(ui);
         });
         ctx.request_repaint();
 

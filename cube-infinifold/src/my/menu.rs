@@ -83,7 +83,7 @@ impl MyViewImpl for MyMenu {
 
     fn to_change(&self) -> Option<String> {
         match self.change_to.clone()?.as_str() {
-            "Logo" | "Start" => self.change_to.clone(),
+            "Logo" | "Start" | "Select Group" => self.change_to.clone(),
             "Exit" => self.change_to.clone(),
             s => {
                 println!("Undefined Command:{s}");
@@ -97,12 +97,13 @@ impl MyViewImpl for MyMenu {
         if self.btns[0].button(ui, "Cube Infinifold", 0, 1).clicked() {
             self.change_to = Some(String::from("Logo"));
         }
-        if self.btns[1].button(ui, "开始游戏", 0, 1).clicked() {
+        if self.btns[1].button(ui, "加载游戏", 0, 1).clicked() {
             self.change_to = Some(String::from("Start"));
             println!("开始游戏");
         }
-        if self.btns[2].button(ui, "Test2", 0, 1).double_clicked() {
-            println!("Tst 2 db clked");
+        if self.btns[2].button(ui, "选择关卡", 0, 1).clicked() {
+            self.change_to = Some(String::from("Select Group"));
+            println!("进入选择关卡菜单");
         }
         // event handler
         if option.events.esc {
