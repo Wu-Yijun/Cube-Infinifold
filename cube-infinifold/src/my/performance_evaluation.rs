@@ -34,7 +34,12 @@ impl Fps99Finder {
         let size: usize = ((n + 150) / 100).max(2) as usize;
         let fps = Vec::with_capacity(size);
         let fps2 = Vec::new();
-        Self { n, index_99: size, fps, fps2 }
+        Self {
+            n,
+            index_99: size,
+            fps,
+            fps2,
+        }
     }
     fn push(&mut self, number: f32) {
         self.fps.push(number);
@@ -105,6 +110,13 @@ impl PerformanceEvaluation {
         self.fps99 = self.fps99_finder.fps99();
     }
     pub fn draw(&mut self, ui: &mut egui::Ui) {
+        // draw at right top
+        let rect = ui.max_rect();
+        let rect = egui::Rect::from_min_max(
+            [rect.right() - 250.0, rect.top()].into(),
+            rect.right_bottom(),
+        );
+        let ui = &mut ui.child_ui(rect, ui.layout().clone());
         ui.group(|ui| {
             ui.label(format!(
                 "CPU cost:  {:0} ns ",
@@ -114,7 +126,10 @@ impl PerformanceEvaluation {
             ui.label(format!("FPS:         {:.2} ", self.fps));
             ui.label(format!("FPS(stable): {:.2} ", self.fps_stable));
             ui.label(format!("FPS-99:      {:.2} ", self.fps99));
-            ui.label(format!("FPS-90:      {:.2} ", self.fps99_finder.fps_a(90.0)));
+            ui.label(format!(
+                "FPS-90:      {:.2} ",
+                self.fps99_finder.fps_a(90.0)
+            ));
             // let wid = ui.min_rect().width();
 
             let (width1, width2, height) = (30.0, 180.0, 90.0);

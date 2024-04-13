@@ -3,6 +3,8 @@ use std::{sync::mpsc, thread};
 use levels_interface::{self, MyInterface, Pointered};
 use my_items::Face;
 
+use crate::game_options::MyGameOption;
+
 pub struct Level {
     handler: thread::JoinHandle<()>,
     sender: mpsc::Sender<Actions>,
@@ -23,11 +25,15 @@ enum Callback {
 }
 
 impl Level {
-    pub fn new() -> Option<Self> {
+    pub fn new(option: &MyGameOption) -> Option<Self> {
         let (sender, recver) = mpsc::channel();
         let (cb_sender, cb_recver) = mpsc::channel();
+        let path = option
+            .game_info
+            .get_library_path(&option.game_library)
+            .unwrap_or(String::from("testpenrose.dll"));
         let handler = thread::spawn(move || {
-            let newed = my_new();
+            let newed = my_new(path);
             if newed.is_none() {
                 return;
             }
@@ -102,9 +108,9 @@ impl Level {
     }
 }
 
-fn my_new() -> Option<(MyInterface, Pointered, Vec<Face>)> {
+fn my_new(path: String) -> Option<(MyInterface, Pointered, Vec<Face>)> {
     // todo!("load the lib and call init()");
-    match MyInterface::from_lib_safe("testpenrose.dll".to_string()) {
+    match MyInterface::from_lib_safe(path) {
         Ok(mif) => {
             // todo!("call new() and save self to Level");
             let p = (mif.new)();

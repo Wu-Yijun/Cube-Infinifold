@@ -72,7 +72,7 @@ impl MyApp {
             }
             "Select Level" | "Start" | "Game" => {
                 self.my_view.destory();
-                let view = MyGameView::new(self.game_view.faces.clone(), ctx);
+                let view = MyGameView::new(self.game_view.faces.clone(), ctx, &self.option);
                 if view.is_none() {
                     return self.change_to("Menu".to_string(), ctx);
                 }
@@ -90,10 +90,13 @@ impl MyApp {
 impl eframe::App for MyApp {
     fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
         {
+            // calc fps and other info
             let t = std::time::Instant::now();
             let dt = t - self.option.time;
             let cpu_useage = frame.info().cpu_usage.unwrap_or(0.0);
-            self.option.performance_evaluation.evaluate(dt, cpu_useage);
+            if self.option.performance_evaluation.enable_calc {
+                self.option.performance_evaluation.evaluate(dt, cpu_useage);
+            }
             self.option.time = t;
             self.option.cpu_useage = cpu_useage;
             self.option.dt = dt;
@@ -140,6 +143,26 @@ impl eframe::App for MyApp {
                     } => {
                         return "text input";
                     }
+                    // hide and show perf eval with F12
+                    egui::Event::Key {
+                        key: egui::Key::F12,
+                        pressed: true,
+                        modifiers: egui::Modifiers::NONE,
+                        repeat: false,
+                        physical_key: _,
+                    } => {
+                        return "performance evaluation";
+                    }
+                    // shift F12 to stop and run perf calc
+                    egui::Event::Key {
+                        key: egui::Key::F12,
+                        pressed: true,
+                        modifiers: egui::Modifiers::SHIFT,
+                        repeat: false,
+                        physical_key: _,
+                    } => {
+                        return "performance calculation";
+                    }
                     _ => (),
                 }
             }
@@ -172,40 +195,56 @@ impl eframe::App for MyApp {
             "text input" => {
                 self.option.messages.expanded = !self.option.messages.expanded;
             }
+            // performance_evaluation
+            "performance evaluation" => {
+                self.option.performance_evaluation.enable_draw =
+                    !self.option.performance_evaluation.enable_draw;
+                // enable calc if draw is enabled
+                if self.option.performance_evaluation.enable_draw {
+                    self.option.performance_evaluation.enable_calc = true;
+                }
+            }
+            "performance calculation" => {
+                self.option.performance_evaluation.enable_calc =
+                    !self.option.performance_evaluation.enable_calc;
+            }
             _ => (),
         }
 
         // paint all
         egui::CentralPanel::default().show(ctx, |ui| {
-            // View show
+            // Draw View
             match &mut self.my_view {
                 MyView::MyMenu(v) => {
                     v.paint(ui, &self.option);
-                    if let Some(aim) = v.to_change() {
+                    if let Some(aim) = v.to_change(&mut self.option) {
                         self.change_to(aim, ctx);
                     }
                 }
                 MyView::MyLogo(v) => {
                     v.paint(ui, &self.option);
-                    if let Some(aim) = v.to_change() {
+                    if let Some(aim) = v.to_change(&mut self.option) {
                         self.change_to(aim, ctx);
                     }
                 }
                 MyView::MyGame(v) => {
                     v.paint(ui, &self.option);
-                    if let Some(aim) = v.to_change() {
+                    if let Some(aim) = v.to_change(&mut self.option) {
                         self.change_to(aim, ctx);
                     }
                 }
                 MyView::MyLevels(v) => {
                     v.paint(ui, &self.option);
-                    if let Some(aim) = v.to_change() {
+                    if let Some(aim) = v.to_change(&mut self.option) {
                         self.change_to(aim, ctx);
                     }
                 }
                 _ => todo!("未完成！！！"),
             };
-            self.option.performance_evaluation.draw(ui);
+            // Draw Performance Evaluation
+            if self.option.performance_evaluation.enable_draw {
+                self.option.performance_evaluation.draw(ui);
+            }
         });
         ctx.request_repaint();
 

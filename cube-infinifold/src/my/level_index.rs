@@ -8,10 +8,21 @@ use super::{
     UIWidget,
 };
 
+#[derive(Debug, Clone)]
+struct SelectedLevel {
+    pub level: i64,
+    pub group: i64,
+}
+#[derive(Debug, Clone)]
+enum Selector {
+    Select(SelectedLevel),
+    State(String),
+}
+
 pub struct MyLevelIndex {
     btns: Vec<UIWidget>,
 
-    change_to: Option<String>,
+    change_to: Option<Selector>,
 }
 
 impl MyLevelIndex {
@@ -34,13 +45,27 @@ impl MyViewImpl for MyLevelIndex {
         self.btns.clear();
     }
 
-    fn to_change(&self) -> Option<String> {
-        match self.change_to.clone()?.as_str() {
-            "Menu" | "Exit" => self.change_to.clone(),
-            "Selected" => Some(String::from("Select Level")),
-            s => {
-                println!("Undefined Command:{s}");
-                None
+    fn to_change(&self, option: &mut MyGameOption) -> Option<String> {
+        // match self.change_to.clone()?.as_str() {
+        //     "Menu" | "Exit" => self.change_to.clone(),
+        //     "Selected" => Some(String::from("Select Level")),
+        //     s => {
+        //         println!("Undefined Command:{s}");
+        //         None
+        //     }
+        // }
+        match self.change_to.clone()? {
+            Selector::State(s) => match s.as_str() {
+                "Menu" | "Exit" => Some(s),
+                s => {
+                    println!("Undefined Command:{s}");
+                    None
+                }
+            },
+            Selector::Select(s) => {
+                option.game_info.current_group_id = Some(s.group);
+                option.game_info.current_level_id = Some(s.level);
+                Some(String::from("Select Level"))
             }
         }
     }
@@ -48,7 +73,7 @@ impl MyViewImpl for MyLevelIndex {
     fn paint(&mut self, ui: &mut egui::Ui, option: &MyGameOption) {
         if self.btns[0].button(ui, "返回", 0, 1).clicked() {
             println!("返回");
-            self.change_to = Some(String::from("Menu"));
+            self.change_to = Some(Selector::State(String::from("Menu")));
         }
         let ui = &mut ui.child_ui(
             ui.max_rect(),
@@ -86,7 +111,10 @@ impl MyViewImpl for MyLevelIndex {
                                 )
                                 .clicked()
                             {
-                                self.change_to = Some("Selected".to_string());
+                                self.change_to = Some(Selector::Select(SelectedLevel {
+                                    level: *j,
+                                    group: *i,
+                                }));
                                 println!("第 {i} 组 第 {j} 关");
                             }
                         }
@@ -97,11 +125,11 @@ impl MyViewImpl for MyLevelIndex {
 
         // event handler
         if option.events.esc {
-            self.change_to = Some(String::from(if option.events.shift_l {
+            self.change_to = Some(Selector::State(String::from(if option.events.shift_l {
                 "Exit"
             } else {
                 "Menu"
-            }))
+            })))
         }
     }
 }

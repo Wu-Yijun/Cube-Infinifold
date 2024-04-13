@@ -1,23 +1,45 @@
-use std::{collections::HashMap, fs};
+use std::{
+    collections::{HashMap, HashSet},
+    fs,
+    sync::Mutex,
+};
 
 use json::JsonValue;
 
 use crate::{get_json, js_obj_arr, js_obj_num, js_obj_str};
 
-static mut INDEX_ID: i64 = 0;
+static mut INDEX_ID_MAX: i64 = -1;
+lazy_static! {
+    static ref INDEX_ID_SET: Mutex<HashSet<i64>> = Mutex::new({
+        let hash = HashSet::new();
+        // hash.insert(0);
+        hash
+    });
+}
 fn next_id() -> i64 {
     unsafe {
-        INDEX_ID += 1;
-        INDEX_ID
+        INDEX_ID_MAX += 1;
+        INDEX_ID_SET.lock().unwrap().insert(INDEX_ID_MAX);
+        INDEX_ID_MAX
     }
 }
 fn with_id(id: i64) -> i64 {
     unsafe {
-        if id > INDEX_ID {
-            INDEX_ID = id;
+        if id < 0 {
+            return next_id();
         }
-        INDEX_ID += 1;
-        id
+        if id > INDEX_ID_MAX {
+            INDEX_ID_MAX = id;
+        }
+        let mut set = INDEX_ID_SET.lock().unwrap();
+        if set.contains(&id) {
+            INDEX_ID_MAX += 1;
+            set.insert(INDEX_ID_MAX);
+            INDEX_ID_MAX
+        } else {
+            set.insert(id);
+            id
+        }
     }
 }
 
@@ -62,7 +84,7 @@ impl FromJson for Group {
         let dir = js_obj_str(j, "path", "");
         let path = path.with(dir);
         let name = js_obj_str(j, "name", "").to_string();
-        let index = with_id(js_obj_num(j, "index", next_id()));
+        let index = with_id(js_obj_num(j, "index", -1));
         let mut levels = Vec::new();
         if let Some(a) = js_obj_arr(j, "levels") {
             for j in a {
@@ -97,7 +119,7 @@ impl FromJson for Level {
         let dir = js_obj_str(j, "filename", "");
         let filename = path.with(dir);
         let name = js_obj_str(j, "name", "").to_string();
-        let index = with_id(js_obj_num(j, "index", next_id()));
+        let index = with_id(js_obj_num(j, "index", -1));
         Self {
             name,
             index,

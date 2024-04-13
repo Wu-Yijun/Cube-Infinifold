@@ -217,7 +217,7 @@ impl MyViewImpl for MyInfinifoldLogo {
         self.btns.clear();
     }
 
-    fn to_change(&self) -> Option<String> {
+    fn to_change(&self, _option: &mut MyGameOption) -> Option<String> {
         match self.change_to.clone()?.as_str() {
             "Logo" | "Menu" | "Exit" => self.change_to.clone(),
             s => {

@@ -81,7 +81,7 @@ impl MyViewImpl for MyMenu {
         self.btns.clear();
     }
 
-    fn to_change(&self) -> Option<String> {
+    fn to_change(&self, _option: &mut MyGameOption) -> Option<String> {
         match self.change_to.clone()?.as_str() {
             "Logo" | "Start" | "Select Group" => self.change_to.clone(),
             "Exit" => self.change_to.clone(),

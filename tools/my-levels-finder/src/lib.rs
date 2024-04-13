@@ -1,3 +1,5 @@
+#[macro_use]
+extern crate lazy_static; // 1.4.0
 #[allow(dead_code)]
 mod item;
 

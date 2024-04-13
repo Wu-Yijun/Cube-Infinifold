@@ -1,6 +1,7 @@
 use std::sync::mpsc;
 
 use crate::my::performance_evaluation::PerformanceEvaluation;
+use crate::my::game::game_info::MyGameInfo;
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct MyGameOption {
@@ -16,6 +17,7 @@ pub struct MyGameOption {
     pub events: MyEvents,
 
     pub game_library: my_levels_finder::CollectedGame,
+    pub game_info: MyGameInfo,
 }
 
 impl Default for MyGameOption {
@@ -32,6 +34,7 @@ impl Default for MyGameOption {
             events: Default::default(),
 
             game_library: Self::load_levels(),
+            game_info: MyGameInfo::NONE,
         }
     }
 }

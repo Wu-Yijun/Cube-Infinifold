@@ -12,7 +12,7 @@ pub mod performance_evaluation;
 pub trait MyViewImpl {
     fn destory(&mut self);
     fn paint(&mut self, ui: &mut egui::Ui, option: &crate::game_options::MyGameOption);
-    fn to_change(&self) -> Option<String>;
+    fn to_change(&self, option: &mut crate::MyGameOption) -> Option<String>;
 }
 
 pub enum MyView {

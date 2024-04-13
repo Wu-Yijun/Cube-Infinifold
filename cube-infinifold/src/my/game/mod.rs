@@ -12,6 +12,7 @@ use super::{
 };
 
 // mod penrose_triangle;
+pub mod game_info;
 mod load_level;
 
 pub struct MyGameView {
@@ -28,6 +29,7 @@ impl MyGameView {
     pub fn new(
         game_view: Arc<Mutex<GLFacesView>>,
         ctx: &eframe::egui::Context,
+        option: &MyGameOption,
     ) -> Option<MyGameView> {
         let btns = vec![UIWidget::new(vec![
             "file://assets/ui/unselected.png",
@@ -37,7 +39,7 @@ impl MyGameView {
         .with_size(200.0, 50.0)
         .load(ctx)];
         // let level = penrose_triangle::PenroseTriangle::new();
-        let level = load_level::Level::new()?;
+        let level = load_level::Level::new(option)?;
         game_view.lock().set_faces(level.get_faces().clone());
         Some(Self {
             game_view,
@@ -86,7 +88,7 @@ impl MyViewImpl for MyGameView {
         self.btns.clear();
     }
 
-    fn to_change(&self) -> Option<String> {
+    fn to_change(&self, _option: &mut MyGameOption) -> Option<String> {
         match self.change_to.clone()?.as_str() {
             "Logo" | "Menu" | "Exit" => self.change_to.clone(),
             "Start" | "Game" => self.change_to.clone(),
