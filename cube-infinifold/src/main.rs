@@ -89,8 +89,8 @@ impl MyApp {
 
 impl eframe::App for MyApp {
     fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
+        // calc fps and other info
         {
-            // calc fps and other info
             let t = std::time::Instant::now();
             let dt = t - self.option.time;
             let cpu_useage = frame.info().cpu_usage.unwrap_or(0.0);

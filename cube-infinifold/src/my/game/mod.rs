@@ -51,14 +51,9 @@ impl MyGameView {
     }
 
     fn paint_opengl(&mut self, ui: &mut egui::Ui, option: &MyGameOption) {
-        self.angle += if option.events.pressed_l {
-            option.events.moved.0 * 0.01
-        } else {
-            0.0
-        };
+        self.calc_angle(option);
 
-        let angle = self.angle;
-        if self.level.when_angled(angle) {
+        if self.level.when_angled(self.angle) {
             self.game_view
                 .lock()
                 .set_faces(self.level.get_faces().clone());
@@ -66,7 +61,7 @@ impl MyGameView {
 
         let game_view = self.game_view.clone();
         let option = GlPaintOptions {
-            angle,
+            angle: self.angle,
             scale: 0.05,
             aspect_ratio: ui.max_rect().aspect_ratio(),
             ..Default::default()
@@ -79,6 +74,25 @@ impl MyGameView {
             })),
         };
         ui.painter().add(callback);
+    }
+
+    fn calc_angle(&mut self, option: &MyGameOption) {
+        // if we use the mouse to control the angle
+        // drag distance * 0.01 is the angle
+        // however, we can use the keyboard to control the angle
+        // when we press the key 'L', the angle will snap to previous 45 * n degree
+        // when we press the key 'R', the angle will snap to next 45 * n degree
+        let angle = self.angle.to_degrees();
+        let angle = if option.events.pressed_l {
+            angle + option.events.moved.0 * 0.05
+        } else if option.events.left {
+            ((angle - 23.0) / 45.0).round() * 45.0
+        } else if option.events.right {
+            ((angle + 23.0) / 45.0).round() * 45.0
+        } else {
+            angle
+        };
+        self.angle = angle.to_radians();
     }
 }
 

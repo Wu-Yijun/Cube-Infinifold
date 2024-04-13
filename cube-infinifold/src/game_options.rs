@@ -311,6 +311,10 @@ pub struct MyEvents {
     pub enter: bool,
     /// keybord
     pub space: bool,
+    /// keybord/game-movement
+    pub left: bool,
+    /// keybord/game-movement
+    pub right: bool,
     /// mouse
     pub moved: (f32, f32),
     pub scrolled: (f32, f32),
@@ -319,8 +323,11 @@ pub struct MyEvents {
     pub focused: bool,
     pub hovered: bool,
 
+    /// mouse left button
     pub pressed_l: bool,
+    /// mouse right button
     pub pressed_r: bool,
+    /// mouse middle button
     pub pressed_m: bool,
 }
 
@@ -345,6 +352,9 @@ impl MyEvents {
         // self.pressed_r = false;
         self.moved = (0.0, 0.0);
         self.scrolled = (0.0, 0.0);
+
+        self.left = false;
+        self.right = false;
     }
     pub fn get(&mut self, ctx: &eframe::egui::Context) {
         self.reset();
@@ -380,7 +390,7 @@ impl MyEvents {
                     } => self.scrolled = (delta.x, delta.y),
                     eframe::egui::Event::Key {
                         key,
-                        physical_key: _,
+                        physical_key: p_key,
                         modifiers,
                         pressed: true,
                         ..
@@ -390,6 +400,18 @@ impl MyEvents {
                             eframe::egui::Key::Enter => self.enter = true,
                             eframe::egui::Key::Escape => self.esc = true,
                             eframe::egui::Key::Tab => self.tab = true,
+                            // ArrowLeft ArrowRight
+                            eframe::egui::Key::ArrowLeft => self.left = true,
+                            eframe::egui::Key::ArrowRight => self.right = true,
+                            // A D
+                            eframe::egui::Key::A => self.left = true,
+                            eframe::egui::Key::D => self.right = true,
+                            _ => (),
+                        }
+                        // A and D of the keyboard
+                        match p_key {
+                            Some(eframe::egui::Key::A) => self.left = true,
+                            Some(eframe::egui::Key::D) => self.right = true,
                             _ => (),
                         }
                         self.alt |= modifiers.alt;

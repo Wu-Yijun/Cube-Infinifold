@@ -139,8 +139,9 @@ impl PenroseTriangle {
         }
     }
 
+    /// 左开右闭区间
     fn range_and_state(&mut self, angle: f32, begin: f32, end: f32, state: State) -> bool {
-        if begin < angle && angle < end {
+        if begin < angle && angle <= end {
             if self.state == state {
                 false
             } else {
