@@ -1,0 +1,28 @@
+{
+    "name": "Cube-infinifold",
+    "path": "libs/",
+    "index": 1,
+    "levels": [
+        {
+            "name": "tutorial",
+            "index": 2,
+            "filename": "libtestpenrose.dylib"
+        }
+    ],
+    "groups": [
+        {
+            "name": "Group1",
+            "path": "",
+            "levels": [
+                {
+                    "name": "test",
+                    "index": 6,
+                    "filename": "libtestlevel.dylib"
+                }
+            ],
+            "groups": [],
+            "linkers": []
+        }
+    ],
+    "linkers": []
+}

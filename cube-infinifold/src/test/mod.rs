@@ -59,7 +59,7 @@ pub mod my_test {
         let settings = Settings::preset_h264_yuv420p(1280, 720, false);
         // let mut encoder = Encoder::new(std::path::Path::new("output/rainbow2.mp4"), settings)
         //     .expect("failed to create encoder");
-        let mut encoder = Encoder::new(std::path::Path::new("output/rainbow3.mp4"), settings)
+        let mut encoder = Encoder::new(std::path::Path::new("rainbow3.mp4"), settings)
             .expect("Cannot create");
 
         let mut position = Time::zero();
@@ -80,6 +80,7 @@ pub mod my_test {
         }
 
         encoder.finish().expect("failed to finish encoder");
+
     }
 
     fn rainbow_frame(p: f32) -> Array3<u8> {

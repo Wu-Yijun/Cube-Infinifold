@@ -1,0 +1,287 @@
+# 手动运行 或 push 到 master 分支时触发
+on:
+  # workflow_dispatch:
+  push:
+    branches:
+      - master
+
+name: Build and Release
+
+env:
+  EXECUTABLE_NAME: cube-infinifold
+  EXECUTABLE_CHECK_NAME: cube-infinifold-check
+
+jobs:
+  get_counter_and_release:
+    runs-on: ubuntu-latest
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+      release_id: ${{ steps.create_release.outputs.id }}
+      release_tag: ${{ steps.get_release_info.outputs.release_tag }}
+      version_major_main: ${{ steps.get_release_info.outputs.VERSION_MAJOR_MAIN }}
+      version_major: ${{ steps.get_release_info.outputs.VERSION_MAJOR }}
+      version_minor: ${{ steps.get_release_info.outputs.VERSION_MINOR }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@main
+      # Get the current counter value from the latest release
+      - name: Get version
+        id: get_release_info
+        run: |
+          VERSION=$(curl -sL https://api.github.com/repos/${{ github.repository }}/releases/latest | jq -r '.tag_name')
+          VERSION_MAJOR_MAIN=$(echo $VERSION | cut -d '.' -f 1 | cut -c 2-)
+          VERSION_MAJOR=$(echo $VERSION | cut -d '.' -f 2)
+          VERSION_MINOR=$(echo $VERSION | cut -d '.' -f 3)
+          VERSION_BUILD=$(echo $VERSION | cut -d '.' -f 4)
+          RELEASE_TAG="v$VERSION_MAJOR_MAIN.$VERSION_MAJOR.$((VERSION_MINOR+1)).${{ github.run_number }}"
+          echo "::set-output name=release_tag::$RELEASE_TAG"
+          echo "::set-output name=VERSION_MAJOR_MAIN::$VERSION_MAJOR_MAIN"
+          echo "::set-output name=VERSION_MAJOR::$VERSION_MAJOR"
+          echo "::set-output name=VERSION_MINOR::$VERSION_MINOR"
+      # Release to github release
+      - name: Create release
+        id: create_release
+        uses: actions/create-release@main
+        with:
+          tag_name: "${{ steps.get_release_info.outputs.release_tag }}"
+          release_name: Release ${{ steps.get_release_info.outputs.release_tag }}
+          body: This is release ${{ steps.get_release_info.outputs.release_tag }}. The build is not yet complete or failed.
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  build_on_ubunutu:
+    needs: get_counter_and_release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@main
+      # Set up ffmpeg environment
+      - name: Install dependencies
+        run: |
+          sudo apt install -y --no-install-recommends clang curl pkg-config
+          sudo apt install libavcodec-dev libavutil-dev libavformat-dev libavfilter-dev libavdevice-dev
+      # Install rust toolchain
+      - name: Install rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+      # Set up Rust
+      - name: Set up Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+      # Build the project
+      - name: Build Project
+        run: cargo build --verbose --release
+      # List the files in the target/release directory
+      - name: List Files
+        run: ls -R ./target/release
+      # Run the tests
+      - name: Cargo Test
+        run: cargo test
+      # copy and compress the binary and library into a zip file
+      - name: Copy and Compress Binary
+        run: |
+          cd ./target/release
+          mkdir -p temp_files/libs
+          mv ${{ env.EXECUTABLE_NAME }} temp_files/
+          mv *.so temp_files/libs/
+          cd temp_files
+          zip -r ../${{ env.EXECUTABLE_NAME }}_ubuntu.zip .
+          cd ..
+          mv ${{ env.EXECUTABLE_CHECK_NAME }} temp_files/
+          cd ..
+          cd ..
+      # Test the Rust program
+      - name: Run Rust program
+        run: |
+          ./${{ env.EXECUTABLE_CHECK_NAME }}
+          exit_code=$?
+          if [ $exit_code -ne 0 ]; then
+            echo "Rust program failed with exit code $exit_code"
+            exit 1
+          fi
+        working-directory: ./target/release/temp_files
+      # delete the temp_files directory
+      - name: Delete temp_files
+        run: |
+          rm -rf ./target/release/temp_files
+      # then upload the zip to the release
+      - name: Upload Release Asset
+        id: upload-release-asset
+        uses: actions/upload-release-asset@main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.get_counter_and_release.outputs.upload_url }}
+          asset_path: ./target/release/${{ env.EXECUTABLE_NAME }}_ubuntu.zip
+          asset_name: ${{ env.EXECUTABLE_NAME }}_ubuntu.zip
+          asset_content_type: application/zip
+
+  build_on_windows:
+    needs: get_counter_and_release
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@main
+      # Set up ffmpeg environment
+      - name: Install dependencies
+        run: |
+          $VCINSTALLDIR = $(& "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -property installationPath)
+          Add-Content $env:GITHUB_ENV "LIBCLANG_PATH=${VCINSTALLDIR}\VC\Tools\LLVM\x64\bin`n"
+          Invoke-WebRequest "${env:FFMPEG_DOWNLOAD_URL}" -OutFile ffmpeg-release-full-shared.7z
+          7z x ffmpeg-release-full-shared.7z
+          mkdir ffmpeg
+          mv ffmpeg-*/* ffmpeg/
+          Add-Content $env:GITHUB_ENV "FFMPEG_DIR=${pwd}\ffmpeg`n"
+          Add-Content $env:GITHUB_PATH "${pwd}\ffmpeg\bin`n"
+        env:
+          FFMPEG_DOWNLOAD_URL: https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-full-shared.7z
+      # Install rust toolchain
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+      # Build the project
+      - name: Build Project
+        run: cargo build --verbose --release
+      # Cargo Test
+      - name: Cargo Test
+        run: cargo test
+      # copy and compress the binary and library into a zip file
+      - name: Copy and Compress Binary
+        run: |
+          cd ./target/release
+          mkdir -p ${{ env.EXECUTABLE_NAME }}_windows/libs
+          mv ${{ env.EXECUTABLE_NAME }}.exe ${{ env.EXECUTABLE_NAME }}_windows/
+          mv *.dll ${{ env.EXECUTABLE_NAME }}_windows/libs/
+          Compress-Archive -Path "${{ env.EXECUTABLE_NAME }}_windows" ${{ env.EXECUTABLE_NAME }}_windows.zip
+          mv ${{ env.EXECUTABLE_CHECK_NAME }}.exe ${{ env.EXECUTABLE_NAME }}_windows/
+          cd ..
+          cd ..
+      # Test the Rust program
+      - name: Run Rust program
+        run: |
+          ./${{ env.EXECUTABLE_CHECK_NAME }}.exe
+          $exit_code = $LASTEXITCODE
+          if ($exit_code -ne 0) {
+            Write-Output "Rust program failed with exit code $exit_code"
+            exit 1
+          }
+        working-directory: ./target/release/${{ env.EXECUTABLE_NAME }}_windows
+      # delete the cube-infinifold_windows directory
+      - name: Delete cube-infinifold_windows
+        run: |
+          Remove-Item -Path "./target/release/${{ env.EXECUTABLE_NAME }}_windows" -Recurse -Force
+      # then upload the zip to the release
+      - name: Upload Release Asset
+        id: upload-release-asset
+        uses: actions/upload-release-asset@main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.get_counter_and_release.outputs.upload_url }}
+          asset_path: ./target/release/${{ env.EXECUTABLE_NAME }}_windows.zip
+          asset_name: ${{ env.EXECUTABLE_NAME }}_windows.zip
+          asset_content_type: application/zip
+
+  build_on_mac:
+    needs: get_counter_and_release
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@main
+      # Set up ffmpeg environment
+      - name: Install dependencies
+        run: brew install ffmpeg pkg-config
+      # Install rust toolchain
+      - name: Install rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+      # Build the project
+      - name: Build Project
+        run: cargo build --verbose --release
+      # Cargo Test
+      - name: Cargo Test
+        run: cargo test
+      # List the files in the target/release directory
+      - name: List Files
+        run: ls -R ./target/release
+      # copy and compress the binary and library into a zip file
+      - name: Copy and Compress Binary
+        run: |
+          cd ./target/release
+          mkdir -p temp_files/libs
+          cp ${{ env.EXECUTABLE_NAME }} temp_files/
+          cp *.dylib temp_files/libs/
+          cd temp_files
+          zip -r ../${{ env.EXECUTABLE_NAME }}_macos.zip .
+          cd ..
+          mv ${{ env.EXECUTABLE_CHECK_NAME }} temp_files/
+          cd ..
+          cd ..
+      # Test the Rust program
+      - name: Run Rust program
+        run: |
+          ./${{ env.EXECUTABLE_CHECK_NAME }}
+          exit_code=$?
+          if [ $exit_code -ne 0 ]; then
+            echo "Rust program failed with exit code $exit_code"
+            exit 1
+          fi
+        working-directory: ./target/release/temp_files
+      # delete the temp_files directory
+      - name: Delete temp_files
+        run: |
+          rm -rf ./target/release/temp_files
+      # then upload the zip to the release
+      - name: Upload Release Asset
+        id: upload-release-asset
+        uses: actions/upload-release-asset@main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.get_counter_and_release.outputs.upload_url }}
+          asset_path: ./target/release/${{ env.EXECUTABLE_NAME }}_macos.zip
+          asset_name: ${{ env.EXECUTABLE_NAME }}_macos.zip
+          asset_content_type: application/zip
+
+  # Check if all the jobs are successful before updating the release body
+  change_release_body:
+    needs: [get_counter_and_release, build_on_ubunutu, build_on_windows, build_on_mac]
+    # needs: [get_counter_and_release]
+    runs-on: ubuntu-latest
+    steps:
+      # Check if all the jobs are successful
+      - name: Check if all dependencies are successful
+        run: |
+          if [ ${{ job.status.build_on_ubunutu }} != 'completed' ] || [ ${{ job.status.build_on_windows }} != 'completed' ] || [ ${{ job.status.build_on_mac }} != 'completed' ]; then
+            echo "One or more dependencies failed"
+            exit 1
+          else
+            echo "All dependencies succeeded"
+          fi
+      # Get the release URL
+      - name: Checkout code
+        uses: actions/checkout@main
+      # Generate diff
+      - name: Generate diff
+        id: diff
+        run: |
+          git fetch --prune --unshallow
+          git diff --word-diff=porcelain ${{ github.event.before }} ${{ github.sha }} > commit_diff_temp.md
+      # Get Changelog Content
+      - name: Get Changelog Content
+        id: get_changelog_content
+        run: node ./.github/workflows/get-changelog-content.js
+      # Update Release Body
+      - name: Update Release Body
+        run: |
+          RELEASE_URL="https://api.github.com/repos/${{ github.repository }}/releases/${{ needs.get_counter_and_release.outputs.release_id }}"
+          RELEASE_MESSAGE='${{ steps.get_changelog_content.outputs.content }}'
+          curl -L \
+            -X PATCH \
+            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            $RELEASE_URL \
+            -d "{\"body\": $RELEASE_MESSAGE}"
