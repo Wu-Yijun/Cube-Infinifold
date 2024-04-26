@@ -70,9 +70,10 @@ jobs:
           echo "List of files in /usr/lib/x86_64-linux-gnu"
           ls /usr/lib/x86_64-linux-gnu/libav*
           echo "List of files in /usr/share/doc/libavcodec58"
-          ls /usr/share/doc/libavcodec58
+          ls /usr/share/doc/libavcodec58/libav*
           echo "List of files in /usr/share/doc/libavutil56"
-          ls /usr/share/doc
+          ls /usr/share/doc/libav*
+          cp /usr/lib/x86_64-linux-gnu/libav* ./target/release
           ls ./target/release
       # Run the tests
       - name: Cargo Test
