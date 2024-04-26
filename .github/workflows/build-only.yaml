@@ -41,7 +41,10 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt install -y --no-install-recommends clang curl pkg-config
-          sudo apt install libavcodec-dev libavutil-dev libavformat-dev libavfilter-dev libavdevice-dev
+      - uses: awalsh128/cache-apt-pkgs-action@latest
+        with:
+          packages: libavcodec-dev libavutil-dev libavformat-dev libavfilter-dev libavdevice-dev
+          version: 1.0
       # Install rust toolchain
       - name: Install rust toolchain
         uses: dtolnay/rust-toolchain@stable
