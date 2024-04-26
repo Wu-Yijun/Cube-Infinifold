@@ -11,8 +11,22 @@ env:
   ENABLE_CARGO_BUILD: 'false'
   ENABLE_PROGRAM_CHECK: 'false'
 
+
+  BUILD_ON_UBUNTU: 'true'
+  BUILD_ON_WINDOWS: 'false'
+  BUILD_ON_MAC: 'false'
+
 jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      BUILD_ON_UBUNTU: ${{ env.BUILD_ON_UBUNTU }}
+      BUILD_ON_WINDOWS: ${{ env.BUILD_ON_WINDOWS }}
+      BUILD_ON_MAC: ${{ env.BUILD_ON_MAC }}
+
   build_on_ubunutu:
+    needs: prepare
+    if: ${{ needs.prepare.outputs.BUILD_ON_UBUNTU == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@main
@@ -46,7 +60,7 @@ jobs:
       # List the files in the target/release directory
       - name: List Files
         run: |
-          ls -R /usr/
+          ls -R /usr/lib/
           echo "--- Hello World ---"
           dpkg -l | grep libavcodec
           echo "--- Hello World ---"
@@ -93,7 +107,8 @@ jobs:
           compression-level: 0
 
   build_on_windows:
-    if: 0 == 1
+    needs: prepare
+    if: ${{ needs.prepare.outputs.BUILD_ON_WINDOWS == 'true' }}
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@main
@@ -170,7 +185,8 @@ jobs:
           compression-level: 0
 
   build_on_mac:
-    if: 0 == 1
+    needs: prepare
+    if: ${{ needs.prepare.outputs.BUILD_ON_MAC == 'true' }}
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@main
