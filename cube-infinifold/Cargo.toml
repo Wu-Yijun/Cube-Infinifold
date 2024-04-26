@@ -40,3 +40,6 @@ path = "../tools/my-levels-finder"
 
 [dependencies.my-items]
 path = "../tools/my-items"
+
+[build]
+rustflags = ["-L", "./libs"]

@@ -16,10 +16,10 @@ env:
   ENABLE_PROGRAM_CHECK: 'false'
 
 
-  # BUILD_ON_UBUNTU: 'true'
-  BUILD_ON_UBUNTU: 'false'
-  # BUILD_ON_WINDOWS: 'true'
-  BUILD_ON_WINDOWS: 'false'
+  BUILD_ON_UBUNTU: 'true'
+  # BUILD_ON_UBUNTU: 'false'
+  BUILD_ON_WINDOWS: 'true'
+  # BUILD_ON_WINDOWS: 'false'
   BUILD_ON_MAC: 'true'
   # BUILD_ON_MAC: 'false'
 
