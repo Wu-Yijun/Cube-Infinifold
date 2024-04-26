@@ -68,7 +68,7 @@ jobs:
       - name: List Files
         run: |
           echo "List of files in /usr/lib/x86_64-linux-gnu"
-          ls /usr/lib/x86_64-linux-gnu
+          ls /usr/lib/x86_64-linux-gnu/libav*
           echo "List of files in /usr/share/doc/libavcodec58"
           ls /usr/share/doc/libavcodec58
           echo "List of files in /usr/share/doc/libavutil56"
