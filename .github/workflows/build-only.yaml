@@ -67,10 +67,7 @@ jobs:
       # List the files in the target/release directory
       - name: List Files
         run: |
-          echo "--- Hello World ---"
-          dpkg -l | grep libavcodec
-          echo "--- Hello World ---"
-          ldd ffmpeg
+          dpkg -L libavcodec-extra
           ls ./target/release
       # Run the tests
       - name: Cargo Test
