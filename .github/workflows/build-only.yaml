@@ -67,7 +67,7 @@ jobs:
       # List the files in the target/release directory
       - name: List Files
         run: |
-          ls -R /usr/lib/*libav*
+          ls -R /usr/lib/libav*
           echo "--- Hello World ---"
           dpkg -l | grep libavcodec
           echo "--- Hello World ---"
