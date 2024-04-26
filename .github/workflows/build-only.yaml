@@ -35,6 +35,8 @@ jobs:
     needs: prepare
     if: ${{ needs.prepare.outputs.BUILD_ON_UBUNTU == 'true' }}
     runs-on: ubuntu-latest
+    container:
+      image: ubuntu:latest
     steps:
       - uses: actions/checkout@main
       # Set up ffmpeg environment
@@ -67,7 +69,7 @@ jobs:
       # List the files in the target/release directory
       - name: List Files
         run: |
-          ls -R /usr/lib/
+          ls -R /usr/lib/*libav*
           echo "--- Hello World ---"
           dpkg -l | grep libavcodec
           echo "--- Hello World ---"
@@ -117,6 +119,9 @@ jobs:
     needs: prepare
     if: ${{ needs.prepare.outputs.BUILD_ON_WINDOWS == 'true' }}
     runs-on: windows-latest
+    container:
+      image: windows:latest
+      # image: mcr.microsoft.com/windows/servercore:ltsc2019
     steps:
       - uses: actions/checkout@main
       # Set up ffmpeg environment
@@ -195,6 +200,8 @@ jobs:
     needs: prepare
     if: ${{ needs.prepare.outputs.BUILD_ON_MAC == 'true' }}
     runs-on: macos-latest
+    container:
+      image: macos:latest
     steps:
       - uses: actions/checkout@main
       # Set up ffmpeg environment
