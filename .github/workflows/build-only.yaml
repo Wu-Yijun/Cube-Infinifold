@@ -16,10 +16,10 @@ env:
   ENABLE_PROGRAM_CHECK: 'false'
 
 
-  BUILD_ON_UBUNTU: 'true'
-  # BUILD_ON_UBUNTU: 'false'
-  BUILD_ON_WINDOWS: 'true'
-  # BUILD_ON_WINDOWS: 'false'
+  # BUILD_ON_UBUNTU: 'true'
+  BUILD_ON_UBUNTU: 'false'
+  # BUILD_ON_WINDOWS: 'true'
+  BUILD_ON_WINDOWS: 'false'
   BUILD_ON_MAC: 'true'
   # BUILD_ON_MAC: 'false'
 
@@ -198,9 +198,13 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@main
-      # Set up ffmpeg environment
-      - name: Install dependencies
-        run: brew install ffmpeg pkg-config
+      - uses: tecolicom/actions-install-and-cache@v1
+        with:
+          run: brew install ffmpeg pkg-config
+          path: /usr/local
+      # # Set up ffmpeg environment
+      # - name: Install dependencies
+      #   run: brew install ffmpeg pkg-config
       # Install rust toolchain
       - name: Install rust toolchain
         uses: dtolnay/rust-toolchain@stable
