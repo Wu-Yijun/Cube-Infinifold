@@ -21,7 +21,6 @@ jobs:
         run: |
           sudo apt install -y --no-install-recommends clang curl pkg-config
           sudo apt install libavcodec-dev libavutil-dev libavformat-dev libavfilter-dev libavdevice-dev
-          sudo apt install libavcodec libavutil libavformat libavfilter libavdevice
       # Install rust toolchain
       - name: Install rust toolchain
         uses: dtolnay/rust-toolchain@stable
@@ -47,7 +46,7 @@ jobs:
       # List the files in the target/release directory
       - name: List Files
         run: |
-          ls /usr/lib/*.so
+          ls /usr/local/ffmpeg/lib/*.so
           ls ./target/release
       # Run the tests
       - name: Cargo Test
