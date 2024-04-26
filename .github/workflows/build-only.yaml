@@ -35,6 +35,7 @@ jobs:
     needs: prepare
     if: ${{ needs.prepare.outputs.BUILD_ON_UBUNTU == 'true' }}
     runs-on: ubuntu-latest
+    container: jrottenberg/ffmpeg:6-ubuntu
     steps:
       - uses: actions/checkout@main
       # Set up ffmpeg environment
