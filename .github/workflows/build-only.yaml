@@ -67,7 +67,8 @@ jobs:
       # List the files in the target/release directory
       - name: List Files
         run: |
-          dpkg -L libavcodec-extra
+          dpkg -L libavcodec58
+          dpkg -L libavcodec-dev
           ls ./target/release
       # Run the tests
       - name: Cargo Test
