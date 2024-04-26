@@ -7,14 +7,21 @@ on:
 env:
   EXECUTABLE_NAME: cube-infinifold
   EXECUTABLE_CHECK_NAME: cube-infinifold-check
-  ENABLE_CARGO_TEST: 'false'
+
+  ENABLE_CARGO_TEST: 'true'
+  # ENABLE_CARGO_TEST: 'false'
+  # ENABLE_CARGO_BUILD: 'true'
   ENABLE_CARGO_BUILD: 'false'
+  # ENABLE_PROGRAM_CHECK: 'true'
   ENABLE_PROGRAM_CHECK: 'false'
 
 
   BUILD_ON_UBUNTU: 'true'
-  BUILD_ON_WINDOWS: 'false'
-  BUILD_ON_MAC: 'false'
+  # BUILD_ON_UBUNTU: 'false'
+  BUILD_ON_WINDOWS: 'true'
+  # BUILD_ON_WINDOWS: 'false'
+  BUILD_ON_MAC: 'true'
+  # BUILD_ON_MAC: 'false'
 
 jobs:
   prepare:
@@ -48,11 +55,6 @@ jobs:
       # Install rust toolchain
       - name: Install rust toolchain
         uses: dtolnay/rust-toolchain@stable
-        with:
-          toolchain: stable
-      # Set up Rust
-      - name: Set up Rust
-        uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
       # Build the project
