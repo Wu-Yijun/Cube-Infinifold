@@ -11,10 +11,6 @@ env:
   ENABLE_CARGO_BUILD: 'false'
   ENABLE_PROGRAM_CHECK: 'false'
 
-  BUILD_ON_UBUNTU: 'true'
-  BUILD_ON_WINDOWS: 'false'
-  BUILD_ON_MAC: 'false'
-
 jobs:
   build_on_ubunutu:
     runs-on: ubuntu-latest
@@ -97,7 +93,7 @@ jobs:
           compression-level: 0
 
   build_on_windows:
-    if: ${{ env.BUILD_ON_WINDOWS == 'true' }}
+    if: 0 == 1
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@main
@@ -174,7 +170,7 @@ jobs:
           compression-level: 0
 
   build_on_mac:
-    if: ${{ env.BUILD_ON_MAC == 'true' }}
+    if: 0 == 1
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@main
