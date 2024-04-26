@@ -7,9 +7,13 @@ on:
 env:
   EXECUTABLE_NAME: cube-infinifold
   EXECUTABLE_CHECK_NAME: cube-infinifold-check
-  ENABLE_CARGO_TEST: false
-  ENABLE_CARGO_BUILD: false
-  ENABLE_PROGRAM_CHECK: false
+  ENABLE_CARGO_TEST: 'false'
+  ENABLE_CARGO_BUILD: 'false'
+  ENABLE_PROGRAM_CHECK: 'false'
+
+  BUILD_ON_UBUNTU: 'true'
+  BUILD_ON_WINDOWS: 'false'
+  BUILD_ON_MAC: 'false'
 
 jobs:
   build_on_ubunutu:
@@ -46,8 +50,11 @@ jobs:
       # List the files in the target/release directory
       - name: List Files
         run: |
-          ls -R /usr/lib/*.so
-          echo "Hello World"
+          ls -R /usr/*.so
+          echo "--- Hello World ---"
+          dpkg -l | grep libavcodec
+          echo "--- Hello World ---"
+          ldd ffmpeg
           ls ./target/release
       # Run the tests
       - name: Cargo Test
@@ -90,6 +97,7 @@ jobs:
           compression-level: 0
 
   build_on_windows:
+    if: ${{ env.BUILD_ON_WINDOWS == 'true' }}
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@main
@@ -166,6 +174,7 @@ jobs:
           compression-level: 0
 
   build_on_mac:
+    if: ${{ env.BUILD_ON_MAC == 'true' }}
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@main
