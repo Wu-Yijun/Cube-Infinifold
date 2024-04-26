@@ -33,11 +33,11 @@ jobs:
           toolchain: stable
       # Build the project
       - name: Build Project
-        if: ${{ env.ENABLE_CARGO_BUILD }}
+        if: ${{ env.ENABLE_CARGO_BUILD == 'true' }}
         run: cargo build --verbose --release
       # Create binary file if not building
       - name: Create Binary
-        if: ${{ !env.ENABLE_CARGO_BUILD }}
+        if: ${{ env.ENABLE_CARGO_BUILD != 'true' }}
         run: |
           mkdir -p ./target/release
           touch ./target/release/${{ env.EXECUTABLE_NAME }}
@@ -49,7 +49,7 @@ jobs:
           ls ./target/release
       # Run the tests
       - name: Cargo Test
-        if: ${{ env.ENABLE_CARGO_TEST }}
+        if: ${{ env.ENABLE_CARGO_TEST == 'true' }}
         run: cargo test
       # copy and compress the binary and library into a zip file
       - name: Copy and Compress Binary
@@ -66,7 +66,7 @@ jobs:
           cd ..
       # Test the Rust program
       - name: Run Rust program
-        if: ${{ env.ENABLE_PROGRAM_CHECK }}
+        if: ${{ env.ENABLE_PROGRAM_CHECK == 'true' }}
         run: |
           ./${{ env.EXECUTABLE_CHECK_NAME }}
           exit_code=$?
@@ -79,17 +79,12 @@ jobs:
       - name: Delete temp_files
         run: |
           rm -rf ./target/release/temp_files
-      # then upload the zip to the release
-      - name: Upload Release Asset
-        id: upload-release-asset
-        uses: actions/upload-release-asset@main
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # then upload the zip
+      - name: Upload Asset
+        uses: actions/upload-artifact@main
         with:
-          upload_url: ${{ needs.get_counter_and_release.outputs.upload_url }}
-          asset_path: ./target/release/${{ env.EXECUTABLE_NAME }}_ubuntu.zip
-          asset_name: ${{ env.EXECUTABLE_NAME }}_ubuntu.zip
-          asset_content_type: application/zip
+          name: ${{ env.EXECUTABLE_NAME }}_ubuntu
+          path: ./target/release/${{ env.EXECUTABLE_NAME }}_ubuntu.zip
 
   build_on_windows:
     runs-on: windows-latest
@@ -115,18 +110,18 @@ jobs:
           toolchain: stable
       # Build the project
       - name: Build Project
-        if: ${{ env.ENABLE_CARGO_BUILD }}
+        if: ${{ env.ENABLE_CARGO_BUILD == 'true' }}
         run: cargo build --release
       # Create binary file if not building
       - name: Create Binary
-        if: ${{ !env.ENABLE_CARGO_BUILD }}
+        if: ${{ env.ENABLE_CARGO_BUILD != 'true' }}
         run: |
           mkdir -p ./target/release
           echo. > ./target/release/${{ env.EXECUTABLE_NAME }}.exe
           echo. > ./target/release/${{ env.EXECUTABLE_CHECK_NAME }}.exe
       # Cargo Test
       - name: Cargo Test
-        if: ${{ env.ENABLE_CARGO_TEST }}
+        if: ${{ env.ENABLE_CARGO_TEST == 'true' }}
         run: cargo test
       # List the files in the target/release directory
       - name: List Files
@@ -146,7 +141,7 @@ jobs:
           cd ..
       # Test the Rust program
       - name: Run Rust program
-        if: ${{ env.ENABLE_PROGRAM_CHECK }}
+        if: ${{ env.ENABLE_PROGRAM_CHECK == 'true' }}
         run: |
           ./${{ env.EXECUTABLE_CHECK_NAME }}.exe
           $exit_code = $LASTEXITCODE
@@ -159,17 +154,12 @@ jobs:
       - name: Delete cube-infinifold_windows
         run: |
           Remove-Item -Path "./target/release/${{ env.EXECUTABLE_NAME }}_windows" -Recurse -Force
-      # then upload the zip to the release
-      - name: Upload Release Asset
-        id: upload-release-asset
-        uses: actions/upload-release-asset@main
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # then upload the zip
+      - name: Upload Asset
+        uses: actions/upload-artifact@main
         with:
-          upload_url: ${{ needs.get_counter_and_release.outputs.upload_url }}
-          asset_path: ./target/release/${{ env.EXECUTABLE_NAME }}_windows.zip
-          asset_name: ${{ env.EXECUTABLE_NAME }}_windows.zip
-          asset_content_type: application/zip
+          name: ${{ env.EXECUTABLE_NAME }}_windows
+          path: ./target/release/${{ env.EXECUTABLE_NAME }}_windows.zip
 
   build_on_mac:
     runs-on: macos-latest
@@ -185,18 +175,18 @@ jobs:
           toolchain: stable
       # Build the project
       - name: Build Project
-        if: ${{ env.ENABLE_CARGO_BUILD }}
+        if: ${{ env.ENABLE_CARGO_BUILD == 'true' }}
         run: cargo build --verbose --release
       # Create binary file if not building
       - name: Create Binary
-        if: ${{ !env.ENABLE_CARGO_BUILD }}
+        if: ${{ env.ENABLE_CARGO_BUILD != 'true' }}
         run: |
           mkdir -p ./target/release
           touch ./target/release/${{ env.EXECUTABLE_NAME }}
           touch ./target/release/${{ env.EXECUTABLE_CHECK_NAME }}
       # Cargo Test
       - name: Cargo Test
-        if: ${{ env.ENABLE_CARGO_TEST }}
+        if: ${{ env.ENABLE_CARGO_TEST == 'true' }}
         run: cargo test
       # List the files in the target/release directory
       - name: List Files
@@ -219,7 +209,7 @@ jobs:
           cd ..
       # Test the Rust program
       - name: Run Rust program
-        if: ${{ env.ENABLE_PROGRAM_CHECK }}
+        if: ${{ env.ENABLE_PROGRAM_CHECK == 'true' }}
         run: |
           ./${{ env.EXECUTABLE_CHECK_NAME }}
           exit_code=$?
@@ -232,14 +222,9 @@ jobs:
       - name: Delete temp_files
         run: |
           rm -rf ./target/release/temp_files
-      # then upload the zip to the release
-      - name: Upload Release Asset
-        id: upload-release-asset
-        uses: actions/upload-release-asset@main
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # then upload the zip
+      - name: Upload Asset
+        uses: actions/upload-artifact@main
         with:
-          upload_url: ${{ needs.get_counter_and_release.outputs.upload_url }}
-          asset_path: ./target/release/${{ env.EXECUTABLE_NAME }}_macos.zip
-          asset_name: ${{ env.EXECUTABLE_NAME }}_macos.zip
-          asset_content_type: application/zip
+          name: ${{ env.EXECUTABLE_NAME }}_macos
+          path: ./target/release/${{ env.EXECUTABLE_NAME }}_macos.zip
