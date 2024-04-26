@@ -46,7 +46,7 @@ jobs:
       # List the files in the target/release directory
       - name: List Files
         run: |
-          ls -R /usr/*.so
+          ls -R /usr/
           echo "--- Hello World ---"
           dpkg -l | grep libavcodec
           echo "--- Hello World ---"
