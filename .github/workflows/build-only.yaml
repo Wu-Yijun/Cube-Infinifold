@@ -19,7 +19,9 @@ env:
 jobs:
   prepare:
     runs-on: ubuntu-latest
-    steps: []
+    steps:
+        - name: DO NOTHING
+          run: 
       # - name: Set outputs
       #   id: set_outputs
       #   run: |
