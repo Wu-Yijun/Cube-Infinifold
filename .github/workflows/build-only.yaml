@@ -8,10 +8,10 @@ env:
   EXECUTABLE_NAME: cube-infinifold
   EXECUTABLE_CHECK_NAME: cube-infinifold-check
 
-  ENABLE_CARGO_TEST: 'true'
-  # ENABLE_CARGO_TEST: 'false'
-  # ENABLE_CARGO_BUILD: 'true'
-  ENABLE_CARGO_BUILD: 'false'
+  # ENABLE_CARGO_TEST: 'true'
+  ENABLE_CARGO_TEST: 'false'
+  ENABLE_CARGO_BUILD: 'true'
+  # ENABLE_CARGO_BUILD: 'false'
   # ENABLE_PROGRAM_CHECK: 'true'
   ENABLE_PROGRAM_CHECK: 'false'
 
@@ -45,12 +45,12 @@ jobs:
     steps:
       - uses: actions/checkout@main
       # Set up ffmpeg environment
-      - name: Install dependencies
-        run: |
-          sudo apt install -y --no-install-recommends clang curl pkg-config
+      # - name: Install dependencies
+      #   run: |
+      #     sudo apt install -y --no-install-recommends clang curl pkg-config
       - uses: awalsh128/cache-apt-pkgs-action@latest
         with:
-          packages: libavcodec-dev libavutil-dev libavformat-dev libavfilter-dev libavdevice-dev
+          packages: clang curl pkg-config libavcodec-dev libavutil-dev libavformat-dev libavfilter-dev libavdevice-dev
           version: 1.0
       # Install rust toolchain
       - name: Install rust toolchain
