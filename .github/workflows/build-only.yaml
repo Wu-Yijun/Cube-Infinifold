@@ -85,6 +85,7 @@ jobs:
         with:
           name: ${{ env.EXECUTABLE_NAME }}_ubuntu
           path: ./target/release/${{ env.EXECUTABLE_NAME }}_ubuntu.zip
+          compression-level: 0
 
   build_on_windows:
     runs-on: windows-latest
@@ -117,8 +118,8 @@ jobs:
         if: ${{ env.ENABLE_CARGO_BUILD != 'true' }}
         run: |
           mkdir -p ./target/release
-          echo. > ./target/release/${{ env.EXECUTABLE_NAME }}.exe
-          echo. > ./target/release/${{ env.EXECUTABLE_CHECK_NAME }}.exe
+          echo . > ./target/release/${{ env.EXECUTABLE_NAME }}.exe
+          echo . > ./target/release/${{ env.EXECUTABLE_CHECK_NAME }}.exe
       # Cargo Test
       - name: Cargo Test
         if: ${{ env.ENABLE_CARGO_TEST == 'true' }}
@@ -160,6 +161,7 @@ jobs:
         with:
           name: ${{ env.EXECUTABLE_NAME }}_windows
           path: ./target/release/${{ env.EXECUTABLE_NAME }}_windows.zip
+          compression-level: 0
 
   build_on_mac:
     runs-on: macos-latest
@@ -228,3 +230,4 @@ jobs:
         with:
           name: ${{ env.EXECUTABLE_NAME }}_macos
           path: ./target/release/${{ env.EXECUTABLE_NAME }}_macos.zip
+          compression-level: 0
