@@ -21,6 +21,7 @@ jobs:
         run: |
           sudo apt install -y --no-install-recommends clang curl pkg-config
           sudo apt install libavcodec-dev libavutil-dev libavformat-dev libavfilter-dev libavdevice-dev
+          sudo apt install libavcodec libavutil libavformat libavfilter libavdevice
       # Install rust toolchain
       - name: Install rust toolchain
         uses: dtolnay/rust-toolchain@stable
@@ -42,6 +43,7 @@ jobs:
           mkdir -p ./target/release
           touch ./target/release/${{ env.EXECUTABLE_NAME }}
           touch ./target/release/${{ env.EXECUTABLE_CHECK_NAME }}
+          touch ./target/release/empty.so
       # List the files in the target/release directory
       - name: List Files
         run: |
@@ -127,7 +129,7 @@ jobs:
       # List the files in the target/release directory
       - name: List Files
         run: |
-          ls ${pwd}/ffmpeg/bin/*.dll
+          cp ${pwd}/ffmpeg/bin/*.dll ./target/release
           ls ./target/release
       # copy and compress the binary and library into a zip file
       - name: Copy and Compress Binary
