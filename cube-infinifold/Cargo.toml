@@ -4,6 +4,7 @@ name = "cube-infinifold"
 version = "0.1.1"
 edition = "2021"
 authors = ["Yijun Wu", "Rimor Aluria"]
+# build = "build.rs"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -11,11 +12,11 @@ authors = ["Yijun Wu", "Rimor Aluria"]
 eframe = "*"
 egui_extras = { version = "*", features = ["all_loaders"] }
 ndarray = "*"
-video-rs = { version = "*", features = ["ndarray"] }
 rand = "*"
 glm = "*"
 chrono = "*"
 image = "*"
+libloading = "*"
 
 [build-dependencies]
 winresource = "*"
@@ -40,6 +41,3 @@ path = "../tools/my-levels-finder"
 
 [dependencies.my-items]
 path = "../tools/my-items"
-
-[build]
-rustflags = ["-L", "./libs"]

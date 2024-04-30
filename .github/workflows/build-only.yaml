@@ -198,18 +198,12 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@main
-      - uses: tecolicom/actions-install-and-cache@v1
-        with:
-          run: brew install ffmpeg pkg-config
-          path: /usr/local
-      # # Set up ffmpeg environment
-      # - name: Install dependencies
-      #   run: brew install ffmpeg pkg-config
+      # Set up ffmpeg environment
+      - name: Install dependencies
+        run: brew install ffmpeg pkg-config
       # Install rust toolchain
       - name: Install rust toolchain
         uses: dtolnay/rust-toolchain@stable
-        with:
-          toolchain: stable
       # Build the project
       - name: Build Project
         if: ${{ env.ENABLE_CARGO_BUILD == 'true' }}

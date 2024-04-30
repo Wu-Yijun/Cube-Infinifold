@@ -1,17 +1,87 @@
 use std::sync::mpsc;
 
-use crate::my::performance_evaluation::PerformanceEvaluation;
 use crate::my::game::game_info::MyGameInfo;
+use crate::my::performance_evaluation::PerformanceEvaluation;
+
+use libloading::Library;
+
+#[derive(Debug)]
+pub struct GLobalMessage {
+    pub sender: mpsc::Sender<(String, i64)>,
+    receiver: Option<mpsc::Receiver<(String, i64)>>,
+}
+impl Default for GLobalMessage {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+impl PartialEq for GLobalMessage {
+    fn eq(&self, _: &Self) -> bool {
+        true
+    }
+}
+impl Clone for GLobalMessage {
+    fn clone(&self) -> Self {
+        Self {
+            sender: self.sender.clone(),
+            receiver: None,
+        }
+    }
+}
+impl GLobalMessage {
+    pub fn new() -> Self {
+        let (sender, receiver) = mpsc::channel();
+        Self {
+            sender,
+            receiver: Some(receiver),
+        }
+    }
+
+    #[allow(dead_code)]
+    pub fn send0(&self, msg: String) {
+        self.sender.send((msg, 0)).unwrap();
+    }
+    #[allow(dead_code)]
+    pub fn send(&self, msg: String, time: u32) {
+        self.sender.send((msg, time as i64)).unwrap();
+    }
+
+    pub fn recv(&self) -> Vec<String> {
+        if let Some(receiver) = &self.receiver {
+            let mut msgs = vec![];
+            let mut repeated = vec![];
+            loop {
+                match receiver.try_recv() {
+                    Ok(msg) => {
+                        if msg.1 > 0 {
+                            repeated.push((msg.0.clone(), msg.1 - 1));
+                        }
+                        msgs.push(msg.0);
+                    }
+                    Err(_) => break,
+                }
+            }
+            for msg in repeated {
+                self.sender.send(msg).unwrap();
+            }
+            msgs
+        } else {
+            vec![]
+        }
+    }
+}
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct MyGameOption {
+    pub global_message: GLobalMessage,
+
     pub fullscreen: bool,
     pub screenshot: MyScreenShot,
     pub messages: MyMessage,
     pub time: std::time::Instant,
     pub dt: std::time::Duration,
     pub cpu_useage: f32,
-    
+
     pub performance_evaluation: PerformanceEvaluation,
 
     pub events: MyEvents,
@@ -23,6 +93,8 @@ pub struct MyGameOption {
 impl Default for MyGameOption {
     fn default() -> Self {
         Self {
+            global_message: GLobalMessage::new(),
+
             fullscreen: false,
             screenshot: Default::default(),
             messages: MyMessage::default(),
@@ -106,12 +178,7 @@ pub mod media {
         pub height: usize,
         pub path: String,
         pub sender: Sender<VideoFrame>,
-        // handler: JoinHandle<()>,
-        // recvier: Receiver<Vec<u8>>,
-        // handler: Receiver<Vec<u8>>,
-        // / we will save the un encoded frames
-        // pub video: VecDeque<Vec<u8>>,
-        // pub audio: (),
+        pub ready: bool,
     }
     impl PartialEq for Video {
         fn eq(&self, _: &Self) -> bool {
@@ -120,6 +187,7 @@ pub mod media {
     }
 
     pub struct VideoFrame {
+        pub info: String,
         pub image: eframe::egui::ColorImage,
         pub audio: (),
         pub time_stamp: std::time::Instant,
@@ -131,49 +199,81 @@ pub mod media {
             width: usize,
             path: &str,
             msg_sender: Sender<(String, u64)>,
+            info_sender: Sender<(String, i64)>,
         ) -> Self {
-            let (sender, receiver) = mpsc::channel::<VideoFrame>();
+            let lib = super::load_lib("videosaver").unwrap();
+            let (init, add_frame, finish, hello): (
+                fn(usize, usize, String),
+                fn(ndarray::Array3<u8>, f64),
+                fn(),
+                fn(),
+            ) = unsafe {
+                (
+                    *lib.get::<fn(usize, usize, String)>(b"new\0").unwrap(),
+                    *lib.get::<fn(ndarray::Array3<u8>, f64)>(b"add_frame\0")
+                        .unwrap(),
+                    *lib.get::<fn()>(b"finish\0").unwrap(),
+                    *lib.get::<fn()>(b"hello\0").unwrap(),
+                )
+            };
+            init(width, height, path.to_string());
+            hello();
 
-            // println!("{width},{height}");
-            let settings = video_rs::encode::Settings::preset_h264_yuv420p(width, height, false);
-            let mut encoder = video_rs::encode::Encoder::new(std::path::Path::new(path), settings)
-                .expect("Cannot create");
+            let (sender, receiver) = mpsc::channel::<VideoFrame>();
             let path_s = path.to_string();
             thread::spawn(move || {
                 let start_from = std::time::Instant::now();
                 while let Ok(msg) = receiver.recv() {
-                    let dt = msg.time_stamp - start_from;
-                    let source_timestamp = video_rs::Time::from_secs_f64(dt.as_secs_f64());
-                    // let rgb_data = msg.image.pixels.iter().map(|c|)
-                    let shape = (msg.image.height(), msg.image.width(), 3);
+                    if msg.info == "stop" {
+                        break;
+                    }
+                    let dt = (msg.time_stamp - start_from).as_secs_f64();
+
+                    let shape = (height, width, 3);
                     let data = msg.image.as_raw();
                     let default = &0;
                     let frame: ndarray::Array3<u8> =
-                        ndarray::Array3::from_shape_fn(shape, |(x, y, c)| {
-                            *data.get((x * shape.1 + y) * 4 + c).unwrap_or(default)
+                        ndarray::Array3::from_shape_fn(shape, |(y, x, c)| {
+                            *data.get((y * shape.1 + x) * 4 + c).unwrap_or(default)
                         });
-                    encoder
-                        .encode(&frame, &source_timestamp)
-                        .expect("failed to encode frame");
+                    // println!("Sending {dt} frame: {:?}", frame);
+                    add_frame(frame, dt);
+                    // println!("ok");
                 }
-                encoder.finish().expect("failed to finish encoder");
-                // println!("Finish writing!");
+
+                println!("Finish writing!");
+                finish();
                 msg_sender
                     .send((
                         format!("Screen Record {path_s} has been written into file successfully!"),
                         5000,
                     ))
                     .unwrap();
+                lib.close().unwrap();
+                info_sender.send(("recording ready".to_string(), 0)).unwrap();
             });
             Self {
                 width,
                 height,
                 path: path.to_string(),
                 sender,
+                ready: false,
             }
         }
 
+        pub fn fin(&self) {
+            self.sender
+                .send(VideoFrame {
+                    info: "stop".to_string(),
+                    image: eframe::egui::ColorImage::default(),
+                    audio: (),
+                    time_stamp: std::time::Instant::now(),
+                })
+                .unwrap();
+        }
+
         // pub fn done(self) {
+        //     self.video_lib.close().unwrap();
         //     drop(self.sender);
         //     self.handler.join().unwrap();
         // }
@@ -440,4 +540,29 @@ impl MyEvents {
             }
         });
     }
+}
+
+#[cfg(target_os = "windows")]
+const PLATFORM: &str = "Windows";
+#[cfg(target_os = "linux")]
+const PLATFORM: &str = "Linux";
+#[cfg(target_os = "macos")]
+const PLATFORM: &str = "MacOS";
+
+fn load_lib(name: &str) -> Option<Library> {
+    let libname = match PLATFORM {
+        "Windows" => format!("{}.dll", name),
+        "Linux" => format!("lib{}.so", name),
+        "MacOS" => format!("lib{}.dylib", name),
+        _ => return None,
+    };
+    let cur_path = std::env::current_dir().ok()?;
+    let path_exe = std::env::current_exe().ok()?;
+    let path = path_exe.ancestors().nth(1)?;
+    let path = format!("{}/libs", path.display());
+    println!("Loading lib from: {}", path);
+    std::env::set_current_dir(path).ok()?;
+    let lib = unsafe { libloading::Library::new(libname).ok() };
+    std::env::set_current_dir(cur_path).ok()?;
+    lib
 }

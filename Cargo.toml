@@ -1,11 +1,12 @@
 [workspace]
 members = [
     "cube-infinifold",              # application
+    "tools/ffmpeg-loader",          # dylib
     "tools/my-items",               # crate
     "tools/my-levels-finder",       # crate
     "levels/level-interface",       # crate
     "levels/levels-interface",      # crate
     "levels/test-level",            # dylib/level
-    "levels/test-penrose-triangle", "tools/cube-infinifold-check", # dylib/level
+    "levels/test-penrose-triangle", "tools/cube-infinifold-check", "tools/ffmpeg-loader", # dylib/level
 ]
 resolver = "2"

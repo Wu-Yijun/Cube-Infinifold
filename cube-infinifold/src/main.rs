@@ -45,7 +45,6 @@ impl MyApp {
     fn new(cc: &eframe::CreationContext<'_>) -> Self {
         egui_extras::install_image_loaders(&cc.egui_ctx);
         load_fonts(&cc.egui_ctx);
-        video_rs::init().unwrap();
         let mut sf = Self {
             my_view: MyView::None,
             game_view: MyGLView::new(cc),
@@ -173,19 +172,23 @@ impl eframe::App for MyApp {
                     self.option.screenshot.screen_recording_stop = true;
                     "Stop screen recording.".to_string()
                 } else {
-                    self.option.screenshot.screen_recording = true;
-
-                    // let rect = ctx
-                    //     .input(|i| i.viewport().outer_rect)
-                    //     .unwrap_or(ctx.screen_rect());
-                    let rect = ctx.screen_rect();
-                    self.option.screenshot.video_encoder = Some(media::Video::new(
-                        (rect.height() * ctx.pixels_per_point()).round() as usize,
-                        (rect.width() * ctx.pixels_per_point()).round() as usize,
-                        "output/video.mp4",
-                        self.option.messages.send.clone(),
-                    ));
-                    "Ready for screen recording...".to_string()
+                    match self.option.screenshot.video_encoder {
+                        Some(ref encoder) if encoder.ready == false => {
+                            "Screen recording is not ready. Try again later...".to_string()
+                        }
+                        _ => {
+                            let rect = ctx.screen_rect();
+                            self.option.screenshot.video_encoder = Some(media::Video::new(
+                                (rect.height() * ctx.pixels_per_point()).round() as usize,
+                                (rect.width() * ctx.pixels_per_point()).round() as usize,
+                                "output/video.mp4",
+                                self.option.messages.send.clone(),
+                                self.option.global_message.sender.clone(),
+                            ));
+                            self.option.screenshot.screen_recording = true;
+                            "Ready for screen recording...".to_string()
+                        }
+                    }
                 };
                 let _ = self.option.messages.send.send((msg, 2000));
             }
@@ -317,17 +320,33 @@ impl eframe::App for MyApp {
                             image: img.clone(),
                             audio: (),
                             time_stamp: std::time::Instant::now(),
+                            info: Default::default(),
                         };
                         s.sender.send(frame).unwrap();
 
                         if self.option.screenshot.screen_recording_stop {
                             self.option.screenshot.screen_recording = false;
                             self.option.screenshot.screen_recording_stop = false;
-                            // s.done();
-                            self.option.screenshot.video_encoder = None;
+                            s.fin();
+                            // self.option.screenshot.video_encoder = None;
                         }
                     }
                 }
+            }
+        }
+
+        // receive global message and process
+        for msg in self.option.global_message.recv() {
+            match msg.as_str() {
+                "exit" => {
+                    self.change_to("Exit".to_string(), ctx);
+                }
+                "recording ready" => {
+                    self.option.screenshot.video_encoder.as_mut().map(|v| {
+                        v.ready = true;
+                    });
+                }
+                _ => (),
             }
         }
     }
