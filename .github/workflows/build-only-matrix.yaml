@@ -133,14 +133,15 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo
             });
-            
-            await github.rest.repos.uploadReleaseAsset({
+            let info = {
               owner: context.repo.owner,
               repo: context.repo.repo,
               release_id: id,
               name: artifactName,
               data: artifact
-            });
+            };
+            console.log(info);
+            await github.rest.repos.uploadReleaseAsset(info);
 
   conclude:
     needs: build_and_release

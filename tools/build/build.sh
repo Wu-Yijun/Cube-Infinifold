@@ -1,6 +1,3 @@
-printenv
-cd ..
-cd ..
 
 # .so for ubuntu, .dylib for mac
 if [ "$ENV_SYSTEM" = "mac" ]; then
@@ -8,6 +5,10 @@ if [ "$ENV_SYSTEM" = "mac" ]; then
 fi
 if [ "$ENV_SYSTEM" = "ubuntu" ]; then
   LIB_EXTENSION=".so"
+fi
+if [ LIB_EXTENSION = "" ]; then
+  echo "Unknown system"
+  exit 1
 fi
 
 # Build the project
