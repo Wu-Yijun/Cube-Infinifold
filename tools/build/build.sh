@@ -1,3 +1,5 @@
+echo $(pwd)
+
 # .so for ubuntu, .dylib for mac
 if [ "$ENV_SYSTEM" = "mac" ]; then
   LIB_EXTENSION=".dylib"
@@ -29,7 +31,7 @@ if [ "$ENV_SYSTEM" = "mac" ]; then
 fi
 if [ "$ENV_SYSTEM" = "ubuntu" ]; then
   # Copy the so files to the target directory
-  cp /usr/lib/x86_64-ubuntu-gnu/libav*.so ./target/release
+  cp /usr/lib/x86_64-ubuntu-gnu/libav* ./target/release
 fi
 
 echo $(ls ./target/release)
@@ -47,7 +49,7 @@ cd ./target/release
 mkdir -p ./${EXECUTABLE_NAME}_${ENV_SYSTEM}/libs
 mkdir -p ./${EXECUTABLE_NAME}_${ENV_SYSTEM}/assets
 mv ../../assets/ui ./${EXECUTABLE_NAME}_${ENV_SYSTEM}/assets/
-mv ../../assets/version_files/${SYSTEM}/levels.json ./${EXECUTABLE_NAME}_${ENV_SYSTEM}/
+mv ../../assets/version_files/${ENV_SYSTEM}/levels.json ./${EXECUTABLE_NAME}_${ENV_SYSTEM}/
 
 mv ./${EXECUTABLE_NAME} ./${EXECUTABLE_NAME}_${ENV_SYSTEM}/
 mv ./${EXECUTABLE_CHECK_NAME} ./${EXECUTABLE_NAME}_${ENV_SYSTEM}/
