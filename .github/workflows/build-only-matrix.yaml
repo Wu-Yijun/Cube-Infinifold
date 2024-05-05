@@ -54,13 +54,15 @@ jobs:
         include:
           - name: Build on Windows
             enabled: ${{ needs.prepare.outputs.BUILD_ON_WINDOWS == 'true' }}
-            build_path: ./tools/build/build.ps1
+            # build_path: ./tools/build/build.ps1
+            
           - name: Build on Linux
             enabled: ${{ needs.prepare.outputs.BUILD_ON_UBUNTU == 'true' }}
-            build_path: ./tools/build/build.sh
+            # build_path: ./tools/build/build.sh
+            
           - name: Build on MacOS
             enabled: ${{ needs.prepare.outputs.BUILD_ON_MAC == 'true' }}
-            build_path: ./tools/build/build.sh
+            # build_path: ./tools/build/build.sh
             
     steps:
       - uses: actions/checkout@main
@@ -98,17 +100,13 @@ jobs:
       # Build and run and release
       - name: Build Project on Ubuntu/MacOS
         if: ${{ matrix.enabled && (matrix.system == 'ubuntu' || matrix.system == 'macos') }}
-        run: |
-          echo "Building on ${{ matrix.system }} using ${{ matrix.build_path }}"
-          sudo sh ${{ matrix.build_path }}
+        run: sudo sh ./tools/build/build.sh
         env:
           SECRET_PFX_CERTIFICATION_PASSWORD: "${{ secrets.PFX_CERTIFICATION_PASSWORD }}"
           ENV_SYSTEM: "${{ matrix.system }}"
       - name: Build Project on Windows
         if: ${{ matrix.enabled && matrix.system == 'windows' }}
-        run: |
-          echo "Building on ${{ matrix.system }} using ${{ matrix.build_path }}"
-          ${{ matrix.build_path }}
+        run: ./tools/build/build.ps1
         env:
           SECRET_PFX_CERTIFICATION_PASSWORD: "${{ secrets.PFX_CERTIFICATION_PASSWORD }}"
           ENV_SYSTEM: "${{ matrix.system }}"
