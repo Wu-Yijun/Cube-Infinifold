@@ -1,7 +1,5 @@
-echo $(pwd)
-
 # .so for ubuntu, .dylib for mac
-if [ "$ENV_SYSTEM" = "mac" ]; then
+if [ "$ENV_SYSTEM" = "macos" ]; then
   LIB_EXTENSION=".dylib"
 fi
 if [ "$ENV_SYSTEM" = "ubuntu" ]; then
@@ -24,7 +22,7 @@ else
 fi
 
 # Copy the binary file to the target directory
-if [ "$ENV_SYSTEM" = "mac" ]; then
+if [ "$ENV_SYSTEM" = "macos" ]; then
   # Copy the dylib files to the target directory
   ffmpeg_path=$(brew --prefix ffmpeg)
   cp $ffmpeg_path/lib/*.dylib ./target/release

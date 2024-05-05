@@ -58,12 +58,12 @@ jobs:
           - name: 'Build on Linux'
             system: 'ubuntu'
             enabled: ${{ needs.prepare.outputs.BUILD_ON_UBUNTU == 'true' }}
-            build_command: ./tools/build/build.sh
+            build_command: sh ./tools/build/build.sh
           - name: 'Build on MacOS'
             if: ${{ needs.prepare.outputs.BUILD_ON_MAC == 'true' }}
             system: 'macos'
             enabled: ${{ needs.prepare.outputs.BUILD_ON_MAC == 'true' }}
-            build_command: ./tools/build/build.sh
+            build_command: sh ./tools/build/build.sh
             
     steps:
       - uses: actions/checkout@main
@@ -99,15 +99,9 @@ jobs:
           override: true
         
       # Build and run and release
-      - name: Build Project on Ubuntu/MacOS
-        if: ${{ matrix.os.enabled && (matrix.os.system == 'ubuntu' || matrix.os.system == 'macos') }}
-        run: sh ./tools/build/build.sh
-        env:
-          SECRET_PFX_CERTIFICATION_PASSWORD: "${{ secrets.PFX_CERTIFICATION_PASSWORD }}"
-          ENV_SYSTEM: "${{ matrix.os.system }}"
-      - name: Build Project on Windows
-        if: ${{ matrix.os.enabled && matrix.os.system == 'windows' }}
-        run: ./tools/build/build.ps1
+      - name: Build Project on ${{ matrix.os.system}}
+        if: ${{ matrix.os.enabled }}
+        run: ${{ matrix.os.build_command}}
         env:
           SECRET_PFX_CERTIFICATION_PASSWORD: "${{ secrets.PFX_CERTIFICATION_PASSWORD }}"
           ENV_SYSTEM: "${{ matrix.os.system }}"
