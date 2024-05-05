@@ -3,5 +3,5 @@
 /// used in github actions
 fn main() {
     println!("Hello, world!");
-    std::process::exit(0);
+    std::process::exit(1);
 }

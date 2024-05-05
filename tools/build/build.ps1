@@ -50,7 +50,7 @@ Compress-Archive -Path ${EXECUTABLE_NAME}_windows ${EXECUTABLE_NAME}_windows.zip
 # Test the Rust program
 if ( $ENABLE_PROGRAM_CHECK -eq 'true'){
   echo "Running the Check program..."
-  ./${EXECUTABLE_NAME}_windows/${EXECUTABLE_CHECK_NAME}.exe
+  powershell.exe ./${EXECUTABLE_NAME}_windows/${EXECUTABLE_CHECK_NAME}.exe
   $exit_code = $LASTEXITCODE
   if ($exit_code -ne 0) {
     Write-Output "Rust program failed with exit code $exit_code"
