@@ -138,6 +138,11 @@ jobs:
       #   uses: dtolnay/rust-toolchain@stable
       #   with:
       #     toolchain: stable
+      - name: Rust Setup
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
       # Build and run and release
       - name: Build Project
         run: |

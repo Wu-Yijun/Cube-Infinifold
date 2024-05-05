@@ -10,7 +10,6 @@ $PFX_CERTIFICATION_PASSWORD = $env:SECRET_PFX_CERTIFICATION_PASSWORD
 if ( $ENABLE_CARGO_BUILD -eq 'true' ) {
   echo "Building the project..."
   cargo build --release
-  echo . > ./target/release/${EXECUTABLE_NAME}.exe
 } else {
   echo "Skipping the build..."
   mkdir -p ./target/release
@@ -42,7 +41,7 @@ mkdir -p ./${EXECUTABLE_NAME}_windows/assets
 mv ../../assets/ui ./${EXECUTABLE_NAME}_windows/assets/
 mv ../../assets/version_files/${SYSTEM}/levels.json ./${EXECUTABLE_NAME}_windows/
 
-# mv ${EXECUTABLE_NAME}.exe ${EXECUTABLE_NAME}_windows/
+
 mv *.exe ${EXECUTABLE_NAME}_windows/
 mv *.dll ${EXECUTABLE_NAME}_windows/libs/
 Compress-Archive -Path ${EXECUTABLE_NAME}_windows ${EXECUTABLE_NAME}_windows.zip
