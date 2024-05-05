@@ -1,11 +1,9 @@
 # .so for ubuntu, .dylib for mac
 if [ "$ENV_SYSTEM" = "mac" ]; then
   LIB_EXTENSION=".dylib"
-else if [ "$ENV_SYSTEM" = "ubuntu" ]; then
+fi
+if [ "$ENV_SYSTEM" = "ubuntu" ]; then
   LIB_EXTENSION=".so"
-else
-  echo "Unsupported system"
-  exit 1
 fi
 
 # Build the project
@@ -27,12 +25,10 @@ if [ "$ENV_SYSTEM" = "mac" ]; then
   # Copy the dylib files to the target directory
   ffmpeg_path=$(brew --prefix ffmpeg)
   cp $ffmpeg_path/lib/*.dylib ./target/release
-else if [ "$ENV_SYSTEM" = "ubuntu" ]; then
+fi
+if [ "$ENV_SYSTEM" = "ubuntu" ]; then
   # Copy the so files to the target directory
   cp /usr/lib/x86_64-ubuntu-gnu/libav*.so ./target/release
-else
-  echo "Unsupported system"
-  exit 1
 fi
 
 echo $(ls ./target/release)

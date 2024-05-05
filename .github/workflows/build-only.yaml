@@ -2,7 +2,7 @@ name: Build Only
 
 on:
   workflow_dispatch:
-  push:
+  # push:
 
 env:
   EXECUTABLE_NAME: cube-infinifold
@@ -143,7 +143,7 @@ jobs:
         if: ${{ matrix.enabled }}
 
       # Set up ffmpeg environment
-      - name: WIndows Install dependencies
+      - name: Windows Install dependencies
         if: ${{ matrix.system == 'windows' && matrix.enabled}}
         run: ./tools/build/pre-build.ps1
         env:
@@ -172,7 +172,7 @@ jobs:
           override: true
         
       # Build and run and release
-      - name: Build Project
+      - name: Build Project on ${{ matrix.system }}
         if: ${{ matrix.enabled }}
         run: |
           ${{ matrix.build_command }}
