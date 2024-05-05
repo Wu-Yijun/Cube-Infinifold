@@ -1,8 +1,3 @@
-echo "e $ENV_SYSTEM"
-echo "e $ENV_SYSTEM"
-echo "e $ENV_SYSTEM"
-echo "e $ENV_SYSTEM"
-echo "e $ENV_SYSTEM"
 # .so for ubuntu, .dylib for mac
 if [ "$ENV_SYSTEM" = "mac" ]; then
   LIB_EXTENSION=".dylib"
