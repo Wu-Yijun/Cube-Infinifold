@@ -1,3 +1,5 @@
+ls env
+
 # .so for ubuntu, .dylib for mac
 if [ "$ENV_SYSTEM" = "mac" ]; then
   LIB_EXTENSION=".dylib"
@@ -67,7 +69,10 @@ else
 fi
 
 # delete the ${EXECUTABLE_NAME}_${ENV_SYSTEM} directory
-rm -rf ./target/release/${EXECUTABLE_NAME}_${ENV_SYSTEM}
+rm -rf ./${EXECUTABLE_NAME}_${ENV_SYSTEM}
+
+echo $(ls .)
+
 
 # Decompress the zip file to root
 unzip ./${EXECUTABLE_NAME}_${ENV_SYSTEM}.zip -d ../../
