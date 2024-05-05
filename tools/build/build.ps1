@@ -8,9 +8,11 @@ $PFX_CERTIFICATION_PASSWORD = $env:SECRET_PFX_CERTIFICATION_PASSWORD
 
 # Build the project
 if ( $ENABLE_CARGO_BUILD -eq 'true' ) {
+  echo "Building the project..."
   cargo build --release
   echo . > ./target/release/${EXECUTABLE_NAME}.exe
 } else {
+  echo "Skipping the build..."
   mkdir -p ./target/release
   echo . > ./target/release/${EXECUTABLE_NAME}.exe
   echo . > ./target/release/${EXECUTABLE_CHECK_NAME}.exe
@@ -18,12 +20,16 @@ if ( $ENABLE_CARGO_BUILD -eq 'true' ) {
 
 # Cargo Test
 if ( $ENABLE_CARGO_TEST -eq 'true' ) {
+  echo "Running cargo test..."
   cargo test
+} else {
+  echo "Skipping cargo test..."
 }
 
 # List the files in the target/release directory
 cp ${pwd}/ffmpeg/bin/*.dll ./target/release
-Tree ./target/release
+echo $(tree ./target/release)
+
 
 # sign the binary
 $passcode = "${PFX_CERTIFICATION_PASSWORD}"
