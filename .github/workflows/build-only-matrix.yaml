@@ -54,7 +54,7 @@ jobs:
         include:
           - name: Build on Windows
             enabled: ${{ needs.prepare.outputs.BUILD_ON_WINDOWS == 'true' }}
-            build_command: ./tools/build/build.ps1
+            build_command: powershell.exe ./tools/build/build.ps1
           - name: Build on Linux
             enabled: ${{ needs.prepare.outputs.BUILD_ON_UBUNTU == 'true' }}
             build_command: sudo sh ./tools/build/build.sh
