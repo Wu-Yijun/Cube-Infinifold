@@ -6,10 +6,7 @@ fi
 if [ "$ENV_SYSTEM" = "ubuntu" ]; then
   LIB_EXTENSION=".so"
 fi
-if [ LIB_EXTENSION = "" ]; then
-  echo "Unknown system"
-  exit 1
-fi
+echo "Library extension: $LIB_EXTENSION"
 
 # Build the project
 if [ "$ENABLE_CARGO_BUILD" = "true" ]; then
