@@ -45,53 +45,54 @@ jobs:
 
   build_and_release:
     needs: prepare
-    runs-on: ${{ matrix.system }}-latest
+    runs-on: ${{ matrix.os.system }}-latest
     continue-on-error: true
     timeout-minutes: 60
     strategy:
       matrix:
-        system: ['windows', 'ubuntu', 'macos']
-        include:
-          - name: Build on Windows
+        os: 
+          - name: 'Build on Windows'
+            system: 'windows'
             enabled: ${{ needs.prepare.outputs.BUILD_ON_WINDOWS == 'true' }}
-            # build_path: ./tools/build/build.ps1
-            
-          - name: Build on Linux
+            build_command: ./tools/build/build.ps1
+          - name: 'Build on Linux'
+            system: 'ubuntu'
             enabled: ${{ needs.prepare.outputs.BUILD_ON_UBUNTU == 'true' }}
-            # build_path: ./tools/build/build.sh
-
-          - name: Build on MacOS
+            build_command: ./tools/build/build.sh
+          - name: 'Build on MacOS'
+            if: ${{ needs.prepare.outputs.BUILD_ON_MAC == 'true' }}
+            system: 'macos'
             enabled: ${{ needs.prepare.outputs.BUILD_ON_MAC == 'true' }}
-            # build_path: ./tools/build/build.sh
+            build_command: ./tools/build/build.sh
             
     steps:
       - uses: actions/checkout@main
-        if: ${{ matrix.enabled }}
+        if: ${{ matrix.os.enabled }}
 
       # Set up ffmpeg environment
       - name: WIndows Install dependencies
-        if: ${{ matrix.system == 'windows' && matrix.enabled}}
+        if: ${{ matrix.os.system == 'windows' && matrix.os.enabled}}
         run: ./tools/build/pre-build.ps1
         env:
           FFMPEG_DOWNLOAD_URL: https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-full-shared.7z
       - name: Ubuntu Install dependencies
-        if: ${{ matrix.system == 'ubuntu' && matrix.enabled}}
+        if: ${{ matrix.os.system == 'ubuntu' && matrix.os.enabled}}
         uses: awalsh128/cache-apt-pkgs-action@latest
         with:
           packages: clang curl pkg-config libavcodec-dev libavutil-dev libavformat-dev libavfilter-dev libavdevice-dev
           version: 1.0
       - name: MacOS Install dependencies
-        if: ${{ matrix.system == 'macos' && matrix.enabled}}
+        if: ${{ matrix.os.system == 'macos' && matrix.os.enabled}}
         run: brew install ffmpeg pkg-config
       
       # Install rust toolchain
       - name: Setup Rust
-        if: ${{ env.RUST_TOOLCHAIN == 'dtolnay' && matrix.enabled}}
+        if: ${{ env.RUST_TOOLCHAIN == 'dtolnay' && matrix.os.enabled}}
         uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: stable          
       - name: Rust Setup
-        if: ${{ env.RUST_TOOLCHAIN == 'action-rs' && matrix.enabled}}
+        if: ${{ env.RUST_TOOLCHAIN == 'action-rs' && matrix.os.enabled}}
         uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
@@ -99,36 +100,36 @@ jobs:
         
       # Build and run and release
       - name: Build Project on Ubuntu/MacOS
-        if: ${{ matrix.enabled && (matrix.system == 'ubuntu' || matrix.system == 'macos') }}
+        if: ${{ matrix.os.enabled && (matrix.os.system == 'ubuntu' || matrix.os.system == 'macos') }}
         run: sudo -E sh ./build.sh
         working-directory: ./tools/build
         env:
           SECRET_PFX_CERTIFICATION_PASSWORD: "${{ secrets.PFX_CERTIFICATION_PASSWORD }}"
-          ENV_SYSTEM: "${{ matrix.system }}"
+          ENV_SYSTEM: "${{ matrix.os.system }}"
       - name: Build Project on Windows
-        if: ${{ matrix.enabled && matrix.system == 'windows' }}
+        if: ${{ matrix.os.enabled && matrix.os.system == 'windows' }}
         run: ./tools/build/build.ps1
         env:
           SECRET_PFX_CERTIFICATION_PASSWORD: "${{ secrets.PFX_CERTIFICATION_PASSWORD }}"
-          ENV_SYSTEM: "${{ matrix.system }}"
+          ENV_SYSTEM: "${{ matrix.os.system }}"
       
       # Then upload the release
       - name: Upload Artifact
-        if: ${{ matrix.enabled }}
+        if: ${{ matrix.os.enabled }}
         uses: actions/upload-artifact@main
         with:
-          name: ${{ env.EXECUTABLE_NAME }}_${{ matrix.system }}
-          path: ${{ env.EXECUTABLE_NAME }}_${{ matrix.system }}
+          name: ${{ env.EXECUTABLE_NAME }}_${{ matrix.os.system }}
+          path: ${{ env.EXECUTABLE_NAME }}_${{ matrix.os.system }}
       - name: Upload Assets to GitHub Release
-        if: ${{ matrix.enabled && env.UPLOAD_TO_GITHUB_RELEASE == 'true' }}
+        if: ${{ matrix.os.enabled && env.UPLOAD_TO_GITHUB_RELEASE == 'true' }}
         uses: actions/github-script@main
         with:
           script: |
             const fs = require('fs');
-            const path = "target/release/${{ env.EXECUTABLE_NAME }}_${{ matrix.system }}.zip";
+            const path = "target/release/${{ env.EXECUTABLE_NAME }}_${{ matrix.os.system }}.zip";
             const artifact = fs.readFileSync(path);
             const date = new Date().toISOString().replace(/T/, '_').replace(/\..+/, '').replace(/:/g, '-');
-            const artifactName = `Cube-Infinifold_${{ matrix.system }}_${date}.zip`;
+            const artifactName = `Cube-Infinifold_${{ matrix.os.system }}_${date}.zip`;
             
             const response = await github.rest.repos.getLatestRelease({
               owner: context.repo.owner,
