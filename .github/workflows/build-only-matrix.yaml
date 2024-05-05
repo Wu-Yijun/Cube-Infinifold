@@ -59,7 +59,7 @@ jobs:
           - name: Build on Linux
             enabled: ${{ needs.prepare.outputs.BUILD_ON_UBUNTU == 'true' }}
             # build_path: ./tools/build/build.sh
-            
+
           - name: Build on MacOS
             enabled: ${{ needs.prepare.outputs.BUILD_ON_MAC == 'true' }}
             # build_path: ./tools/build/build.sh
@@ -100,7 +100,7 @@ jobs:
       # Build and run and release
       - name: Build Project on Ubuntu/MacOS
         if: ${{ matrix.enabled && (matrix.system == 'ubuntu' || matrix.system == 'macos') }}
-        run: sudo sh ./tools/build/build.sh
+        run: ./tools/build/build.sh
         env:
           SECRET_PFX_CERTIFICATION_PASSWORD: "${{ secrets.PFX_CERTIFICATION_PASSWORD }}"
           ENV_SYSTEM: "${{ matrix.system }}"
