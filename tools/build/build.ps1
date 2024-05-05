@@ -44,7 +44,7 @@ Compress-Archive -Path ${ENV_EXECUTABLE_NAME}_windows ${ENV_EXECUTABLE_NAME}_win
 mv ${ENV_EXECUTABLE_CHECK_NAME}.exe ${ENV_EXECUTABLE_NAME}_windows/
 
 # Test the Rust program
-if ( ${ENV_ENABLE_PROGRAM_CHECK -eq 'true'){
+if ( $ENV_ENABLE_PROGRAM_CHECK -eq 'true'){
   ./${ENV_EXECUTABLE_NAME}_windows/${ENV_EXECUTABLE_CHECK_NAME}.exe
   $exit_code = $LASTEXITCODE
   if ($exit_code -ne 0) {
