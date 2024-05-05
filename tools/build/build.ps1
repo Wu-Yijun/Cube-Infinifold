@@ -4,7 +4,7 @@
 # $ENV_EXECUTABLE_NAME = ${{ env.EXECUTABLE_NAME }}
 # $ENV_EXECUTABLE_CHECK_NAME = ${{ env.EXECUTABLE_CHECK_NAME }}
 # $ENV_SYSTEM = 'windows'
-# $SECRET_PFX_CERTIFICATION_PASSWORD = ${{ secrets.PFX_CERTIFICATION_PASSWORD }}
+# $ENV_PFX_CERTIFICATION_PASSWORD = ${{ secrets.PFX_CERTIFICATION_PASSWORD }}
 
 
 # Build the project
@@ -27,11 +27,11 @@ cp ${pwd}/ffmpeg/bin/*.dll ./target/release
 Tree ./target/release
 
 # sign the binary
-$passcode = "${SECRET_PFX_CERTIFICATION_PASSWORD}"
+$passcode = "${ENV_PFX_CERTIFICATION_PASSWORD}"
 echo "code:${passcode}..."
 $password = ConvertTo-SecureString -String $passcode -Force -AsPlainText
-$cert = Get-PfxCertificate -FilePath MyCert.pfx -Password $password
-Set-AuthenticodeSignature -FilePath target/release/${ENV_EXECUTABLE_CHECK_NAME}.exe -Certificate $cert -TimeStampServer http://timestamp.digicert.com -HashAlgorithm SHA256
+$cert = Get-PfxCertificate -FilePath ./tools/build/MyCert.pfx -Password $password
+Set-AuthenticodeSignature -FilePath ./target/release/${ENV_EXECUTABLE_CHECK_NAME}.exe -Certificate $cert -TimeStampServer http://timestamp.digicert.com -HashAlgorithm SHA256
 
 # copy and compress the binary and library into a zip file
 cd ./target/release
