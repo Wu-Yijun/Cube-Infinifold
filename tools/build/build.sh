@@ -11,14 +11,14 @@ echo "Library extension: $LIB_EXTENSION"
 if [ "$ENABLE_CARGO_BUILD" = "true" ]; then
   echo "Building project"
   cargo build --release
-  touch ./target/release/${EXECUTABLE_NAME}
+  echo "......" > ./target/release/${EXECUTABLE_NAME}
 else
   # Create binary file if not building
   echo "Skipping build"
   mkdir -p ./target/release
-  touch ./target/release/${EXECUTABLE_NAME}
-  touch ./target/release/${EXECUTABLE_CHECK_NAME}
-  touch ./target/release/empty${LIB_EXTENSION}
+  echo "......" > ./target/release/${EXECUTABLE_NAME}
+  echo "......" > ./target/release/${EXECUTABLE_CHECK_NAME}
+  echo "......" > ./target/release/empty${LIB_EXTENSION}
 fi
 
 # Copy the binary file to the target directory

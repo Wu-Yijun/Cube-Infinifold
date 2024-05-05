@@ -33,6 +33,7 @@ echo $(tree ./target/release)
 $password = ConvertTo-SecureString -String $PFX_CERTIFICATION_PASSWORD -Force -AsPlainText
 $cert = Get-PfxCertificate -FilePath ./tools/build/MyCert.pfx -Password $password
 Set-AuthenticodeSignature -FilePath ./target/release/${EXECUTABLE_CHECK_NAME}.exe -Certificate $cert -TimeStampServer http://timestamp.digicert.com -HashAlgorithm SHA256
+Set-AuthenticodeSignature -FilePath ./target/release/${EXECUTABLE_NAME}.exe -Certificate $cert -TimeStampServer http://timestamp.digicert.com -HashAlgorithm SHA256
 
 # copy and compress the binary and library into a zip file
 cd ./target/release
