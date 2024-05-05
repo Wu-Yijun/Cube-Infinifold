@@ -163,9 +163,8 @@ jobs:
         run: |
           $passcode = "${{ secrets.PFX_CERTIFICATION_PASSWORD }}"
           $password = ConvertTo-SecureString -String $passcode -Force -AsPlainText
-          Import-PfxCertificate -FilePath MyCert.pfx -CertStoreLocation Cert:\CurrentUser\Root -Password $password
           Set-AuthenticodeSignature -FilePath target/release/${{ env.EXECUTABLE_NAME }}.exe -Certificate $cert -TimeStampServer http://timestamp.digicert.com -HashAlgorithm SHA256
-          
+
       # copy and compress the binary and library into a zip file
       - name: Copy and Compress Binary
         run: |
