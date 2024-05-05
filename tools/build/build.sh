@@ -11,7 +11,7 @@ echo "Library extension: $LIB_EXTENSION"
 if [ "$ENABLE_CARGO_BUILD" = "true" ]; then
   echo "Building project"
   cargo build --release
-  echo "......" > ./target/release/${EXECUTABLE_NAME}
+  # echo "......" > ./target/release/${EXECUTABLE_NAME}
 else
   # Create binary file if not building
   echo "Skipping build"
