@@ -133,7 +133,7 @@ jobs:
       # Build and run and release
       - name: Build Project
         run: |
-          $ENV_PFX_CERTIFICATION_PASSWORD = ${{ secrets.PFX_CERTIFICATION_PASSWORD }}
+          $ENV_PFX_CERTIFICATION_PASSWORD = "${{ secrets.PFX_CERTIFICATION_PASSWORD }}"
           echo "code${ENV_PFX_CERTIFICATION_PASSWORD}..."
           ./tools/build/build.ps1
         env:
