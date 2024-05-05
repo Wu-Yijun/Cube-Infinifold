@@ -139,6 +139,7 @@ jobs:
           ENV_ENABLE_PROGRAM_CHECK: ${{ env.ENABLE_PROGRAM_CHECK }}
           ENV_EXECUTABLE_NAME: ${{ env.EXECUTABLE_NAME }}
           ENV_EXECUTABLE_CHECK_NAME: ${{ env.EXECUTABLE_CHECK_NAME }}
+          SECRET_PFX_CERTIFICATION_PASSWORD: ${{ secrets.PFX_CERTIFICATION_PASSWORD }}
           ENV_SYSTEM: windows
       
       # Then upload the zip

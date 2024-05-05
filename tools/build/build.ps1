@@ -36,7 +36,7 @@ cd ./target/release
 mkdir -p ./${ENV_EXECUTABLE_NAME}_windows/libs
 mkdir -p ./${ENV_EXECUTABLE_NAME}_windows/assets
 mv ../../assets/ui ./${ENV_EXECUTABLE_NAME}_windows/assets/
-mv ../../assets/version_files/$ENV_SYSTEM/levels.json ./${ENV_EXECUTABLE_NAME}_windows/
+mv ../../assets/version_files/${ENV_SYSTEM}/levels.json ./${ENV_EXECUTABLE_NAME}_windows/
 
 mv ${ENV_EXECUTABLE_NAME}.exe ${ENV_EXECUTABLE_NAME}_windows/
 mv *.dll ${ENV_EXECUTABLE_NAME}_windows/libs/
