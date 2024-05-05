@@ -1,4 +1,6 @@
 printenv
+cd ..
+cd ..
 
 # .so for ubuntu, .dylib for mac
 if [ "$ENV_SYSTEM" = "mac" ]; then
