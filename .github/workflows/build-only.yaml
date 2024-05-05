@@ -8,20 +8,25 @@ env:
   EXECUTABLE_NAME: cube-infinifold
   EXECUTABLE_CHECK_NAME: cube-infinifold-check
 
-  # ENABLE_CARGO_TEST: 'true'
-  ENABLE_CARGO_TEST: 'false'
+  ENABLE_CARGO_TEST: 'true'
+  # ENABLE_CARGO_TEST: 'false'
   ENABLE_CARGO_BUILD: 'true'
   # ENABLE_CARGO_BUILD: 'false'
-  # ENABLE_PROGRAM_CHECK: 'true'
-  ENABLE_PROGRAM_CHECK: 'false'
+  ENABLE_PROGRAM_CHECK: 'true'
+  # ENABLE_PROGRAM_CHECK: 'false'
 
 
-  # BUILD_ON_UBUNTU: 'true'
-  BUILD_ON_UBUNTU: 'false'
+  BUILD_ON_UBUNTU: 'true'
+  # BUILD_ON_UBUNTU: 'false'
   BUILD_ON_WINDOWS: 'true'
   # BUILD_ON_WINDOWS: 'false'
-  # BUILD_ON_MAC: 'true'
-  BUILD_ON_MAC: 'false'
+  BUILD_ON_MAC: 'true'
+  # BUILD_ON_MAC: 'false'
+
+  RUST_BACKTRACE: '1'
+  RUST_TOOLCHAIN: 'action-rs'
+
+  UPLOAD_TO_GITHUB_RELEASE: 'true'
 
 jobs:
   prepare:
@@ -38,191 +43,236 @@ jobs:
       BUILD_ON_WINDOWS: ${{ env.BUILD_ON_WINDOWS }}
       BUILD_ON_MAC: ${{ env.BUILD_ON_MAC }}
 
-  build_on_ubunutu:
-    needs: prepare
-    if: ${{ needs.prepare.outputs.BUILD_ON_UBUNTU == 'true' }}
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@main
-      # Set up ffmpeg environment
-      # - name: Install dependencies
-      #   run: |
-      #     sudo apt install -y --no-install-recommends clang curl pkg-config
-      - uses: awalsh128/cache-apt-pkgs-action@latest
-        with:
-          packages: clang curl pkg-config libavcodec-dev libavutil-dev libavformat-dev libavfilter-dev libavdevice-dev
-          version: 1.0
-      # Install rust toolchain
-      - name: Install rust toolchain
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          toolchain: stable
-      # Build the project
-      - name: Build Project
-        if: ${{ env.ENABLE_CARGO_BUILD == 'true' }}
-        run: cargo build --verbose --release
-      # Create binary file if not building
-      - name: Create Binary
-        if: ${{ env.ENABLE_CARGO_BUILD != 'true' }}
-        run: |
-          mkdir -p ./target/release
-          touch ./target/release/${{ env.EXECUTABLE_NAME }}
-          touch ./target/release/${{ env.EXECUTABLE_CHECK_NAME }}
-          touch ./target/release/empty.so
-      # List the files in the target/release directory
-      - name: List Files
-        run: |
-          cp /usr/lib/x86_64-linux-gnu/libav* ./target/release
-          ls ./target/release
-      # Run the tests
-      - name: Cargo Test
-        if: ${{ env.ENABLE_CARGO_TEST == 'true' }}
-        run: cargo test
-      # copy and compress the binary and library into a zip file
-      - name: Copy and Compress Binary
-        run: |
-          cd ./target/release
-          mkdir -p temp_files/libs
-          mv ${{ env.EXECUTABLE_NAME }} temp_files/
-          mv *.so temp_files/libs/
-          cd temp_files
-          zip -r ../${{ env.EXECUTABLE_NAME }}_ubuntu.zip .
-          cd ..
-          mv ${{ env.EXECUTABLE_CHECK_NAME }} temp_files/
-          cd ..
-          cd ..
-      # Test the Rust program
-      - name: Run Rust program
-        if: ${{ env.ENABLE_PROGRAM_CHECK == 'true' }}
-        run: |
-          ./${{ env.EXECUTABLE_CHECK_NAME }}
-          exit_code=$?
-          if [ $exit_code -ne 0 ]; then
-            echo "Rust program failed with exit code $exit_code"
-            exit 1
-          fi
-        working-directory: ./target/release/temp_files
-      # delete the temp_files directory
-      - name: Delete temp_files
-        run: |
-          rm -rf ./target/release/temp_files
-      # then upload the zip
-      - name: Upload Asset
-        uses: actions/upload-artifact@main
-        with:
-          name: ${{ env.EXECUTABLE_NAME }}_ubuntu
-          path: ./target/release/${{ env.EXECUTABLE_NAME }}_ubuntu.zip
-          compression-level: 0
+  # build_on_ubunutu:
+  #   needs: prepare
+  #   if: ${{ needs.prepare.outputs.BUILD_ON_UBUNTU == 'true' }}
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@main
+  #     # Set up ffmpeg environment
+  #     # - name: Install dependencies
+  #     #   run: |
+  #     #     sudo apt install -y --no-install-recommends clang curl pkg-config
+  #     - uses: awalsh128/cache-apt-pkgs-action@latest
+  #       with:
+  #         packages: clang curl pkg-config libavcodec-dev libavutil-dev libavformat-dev libavfilter-dev libavdevice-dev
+  #         version: 1.0
+  #     # Install rust toolchain
+  #     - name: Install rust toolchain
+  #       uses: dtolnay/rust-toolchain@stable
+  #       with:
+  #         toolchain: stable
+  #     # Build the project
+  #     - name: Build Project
+  #       if: ${{ env.ENABLE_CARGO_BUILD == 'true' }}
+  #       run: cargo build --verbose --release
+  #     # Create binary file if not building
+  #     - name: Create Binary
+  #       if: ${{ env.ENABLE_CARGO_BUILD != 'true' }}
+  #       run: |
+  #         mkdir -p ./target/release
+  #         touch ./target/release/${{ env.EXECUTABLE_NAME }}
+  #         touch ./target/release/${{ env.EXECUTABLE_CHECK_NAME }}
+  #         touch ./target/release/empty.so
+  #     # List the files in the target/release directory
+  #     - name: List Files
+  #       run: |
+  #         cp /usr/lib/x86_64-linux-gnu/libav* ./target/release
+  #         ls ./target/release
+  #     # Run the tests
+  #     - name: Cargo Test
+  #       if: ${{ env.ENABLE_CARGO_TEST == 'true' }}
+  #       run: cargo test
+  #     # copy and compress the binary and library into a zip file
+  #     - name: Copy and Compress Binary
+  #       run: |
+  #         cd ./target/release
+  #         mkdir -p temp_files/libs
+  #         mv ${{ env.EXECUTABLE_NAME }} temp_files/
+  #         mv *.so temp_files/libs/
+  #         cd temp_files
+  #         zip -r ../${{ env.EXECUTABLE_NAME }}_ubuntu.zip .
+  #         cd ..
+  #         mv ${{ env.EXECUTABLE_CHECK_NAME }} temp_files/
+  #         cd ..
+  #         cd ..
+  #     # Test the Rust program
+  #     - name: Run Rust program
+  #       if: ${{ env.ENABLE_PROGRAM_CHECK == 'true' }}
+  #       run: |
+  #         ./${{ env.EXECUTABLE_CHECK_NAME }}
+  #         exit_code=$?
+  #         if [ $exit_code -ne 0 ]; then
+  #           echo "Rust program failed with exit code $exit_code"
+  #           exit 1
+  #         fi
+  #       working-directory: ./target/release/temp_files
+  #     # delete the temp_files directory
+  #     - name: Delete temp_files
+  #       run: |
+  #         rm -rf ./target/release/temp_files
+  #     # then upload the zip
+  #     - name: Upload Artifact
+  #       uses: actions/upload-artifact@main
+  #       with:
+  #         name: ${{ env.EXECUTABLE_NAME }}_ubuntu
+  #         path: ./target/release/${{ env.EXECUTABLE_NAME }}_ubuntu.zip
+  #         compression-level: 0
 
   build_on_windows:
     needs: prepare
-    if: ${{ needs.prepare.outputs.BUILD_ON_WINDOWS == 'true' }}
-    runs-on: windows-latest
+    runs-on: ${{ matrix.system }}-latest
     strategy:
       matrix:
-        system: ['windows']
+        system: ['windows', 'ubuntu', 'macos']
         include:
-          - pre_build_path: ./tools/build/pre-build.ps1
+          - name: Build on Windows
+            enabled: ${{ needs.prepare.outputs.BUILD_ON_WINDOWS == 'true' }}
+            pre_build_path: 
             build_path: ./tools/build/build.ps1
+          - name: Build on Linux
+            enabled: ${{ needs.prepare.outputs.BUILD_ON_UBUNTU == 'true' }}
+            build_path: ./tools/build/build.sh
+          - name: Build on MacOS
+            enabled: ${{ needs.prepare.outputs.BUILD_ON_MAC == 'true' }}
+            build_path: ./tools/build/build.sh
             
     steps:
       - uses: actions/checkout@main
+        if: ${{ matrix.enabled }}
+
       # Set up ffmpeg environment
       - name: Install dependencies
-        run: |
-          ${{ matrix.pre_build_path }}
+        if: ${{ matrix.system == 'windows' && matrix.enabled}}
+        run: ./tools/build/pre-build.ps1
         env:
           FFMPEG_DOWNLOAD_URL: https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-full-shared.7z
+      - if: ${{ matrix.system == 'ubuntu' && matrix.enabled}}
+        uses: awalsh128/cache-apt-pkgs-action@latest
+        with:
+          packages: clang curl pkg-config libavcodec-dev libavutil-dev libavformat-dev libavfilter-dev libavdevice-dev
+          version: 1.0
+      - if: ${{ matrix.system == 'macos' && matrix.enabled}}
+        run: brew install ffmpeg pkg-config
+      
       # Install rust toolchain
       - name: Setup Rust
+        if: ${{ env.RUST_TOOLCHAIN == 'dtolnay' && matrix.enabled}}
         uses: dtolnay/rust-toolchain@stable
         with:
+          toolchain: stable          
+      - name: Rust Setup
+        if: ${{ env.RUST_TOOLCHAIN == 'action-rs' && matrix.enabled}}
+        uses: actions-rs/toolchain@v1
+        with:
           toolchain: stable
-      # - name: Rust Setup
-      #   uses: actions-rs/toolchain@v1
-      #   with:
-      #     toolchain: stable
-      #     override: true
+          override: true
+        
       # Build and run and release
       - name: Build Project
+        if: ${{ matrix.enabled }}
         run: |
           ${{ matrix.build_path }}
         env:
           SECRET_PFX_CERTIFICATION_PASSWORD: "${{ secrets.PFX_CERTIFICATION_PASSWORD }}"
           ENV_SYSTEM: "${{ matrix.system }}"
       
-      # Then upload the zip
-      - name: Upload Asset
+      # Then upload the release
+      - name: Upload Artifact
+        if: ${{ matrix.enabled }}
         uses: actions/upload-artifact@main
         with:
-          name: ${{ env.EXECUTABLE_NAME }}_windows
-          path: ${{ env.EXECUTABLE_NAME }}_windows
+          name: ${{ env.EXECUTABLE_NAME }}_${{ matrix.system }}
+          path: ${{ env.EXECUTABLE_NAME }}_${{ matrix.system }}
+      - name: Upload Assets to GitHub Release
+        if: ${{ matrix.enabled && env.UPLOAD_TO_GITHUB_RELEASE == 'true' }}
+        uses: actions/github-script@main
+        with:
+          script: |
+            const fs = require('fs');
+            const path = "./target/release/${{ env.EXECUTABLE_NAME }}_${{ matrix.system }}.zip";
+            const artifact = fs.readFileSync(path);
+            const date = new Date().toISOString().replace(/T/, '_').replace(/\..+/, '').replace(/:/g, '-');
+            const artifactName = `Cube-Infinifold_${{ matrix.system }}_${date}.zip`;
+            
+            const {id} = await github.repos.getLatestRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo
+            });
+            
+            await github.repos.uploadReleaseAsset({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              release_id: id,
+              name: artifactName,
+              data: artifact
+            });
 
-  build_on_mac:
-    needs: prepare
-    if: ${{ needs.prepare.outputs.BUILD_ON_MAC == 'true' }}
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@main
-      # Set up ffmpeg environment
-      - name: Install dependencies
-        run: brew install ffmpeg pkg-config
-      # Install rust toolchain
-      - name: Install rust toolchain
-        uses: dtolnay/rust-toolchain@stable
-      # Build the project
-      - name: Build Project
-        if: ${{ env.ENABLE_CARGO_BUILD == 'true' }}
-        run: cargo build --verbose --release
-      # Create binary file if not building
-      - name: Create Binary
-        if: ${{ env.ENABLE_CARGO_BUILD != 'true' }}
-        run: |
-          mkdir -p ./target/release
-          touch ./target/release/${{ env.EXECUTABLE_NAME }}
-          touch ./target/release/${{ env.EXECUTABLE_CHECK_NAME }}
-      # Cargo Test
-      - name: Cargo Test
-        if: ${{ env.ENABLE_CARGO_TEST == 'true' }}
-        run: cargo test
-      # List the files in the target/release directory
-      - name: List Files
-        run: |
-          ffmpeg_path=$(brew --prefix ffmpeg)
-          cp $ffmpeg_path/lib/*.dylib ./target/release
-          ls ./target/release
-      # copy and compress the binary and library into a zip file
-      - name: Copy and Compress Binary
-        run: |
-          cd ./target/release
-          mkdir -p temp_files/libs
-          cp ${{ env.EXECUTABLE_NAME }} temp_files/
-          cp *.dylib temp_files/libs/
-          cd temp_files
-          zip -r ../${{ env.EXECUTABLE_NAME }}_macos.zip .
-          cd ..
-          mv ${{ env.EXECUTABLE_CHECK_NAME }} temp_files/
-          cd ..
-          cd ..
-      # Test the Rust program
-      - name: Run Rust program
-        if: ${{ env.ENABLE_PROGRAM_CHECK == 'true' }}
-        run: |
-          ./${{ env.EXECUTABLE_CHECK_NAME }}
-          exit_code=$?
-          if [ $exit_code -ne 0 ]; then
-            echo "Rust program failed with exit code $exit_code"
-            exit 1
-          fi
-        working-directory: ./target/release/temp_files
-      # delete the temp_files directory
-      - name: Delete temp_files
-        run: |
-          rm -rf ./target/release/temp_files
-      # then upload the zip
-      - name: Upload Asset
-        uses: actions/upload-artifact@main
-        with:
-          name: ${{ env.EXECUTABLE_NAME }}_macos
-          path: ./target/release/${{ env.EXECUTABLE_NAME }}_macos.zip
-          compression-level: 0
+  # build_on_mac:
+  #   needs: prepare
+  #   if: ${{ needs.prepare.outputs.BUILD_ON_MAC == 'true' }}
+  #   runs-on: macos-latest
+  #   steps:
+  #     - uses: actions/checkout@main
+  #     # Set up ffmpeg environment
+  #     - name: Install dependencies
+  #       run: brew install ffmpeg pkg-config
+  #     # Install rust toolchain
+  #     - name: Install rust toolchain
+  #       uses: dtolnay/rust-toolchain@stable
+  #     # Build the project
+  #     - name: Build Project
+  #       if: ${{ env.ENABLE_CARGO_BUILD == 'true' }}
+  #       run: cargo build --verbose --release
+  #     # Create binary file if not building
+  #     - name: Create Binary
+  #       if: ${{ env.ENABLE_CARGO_BUILD != 'true' }}
+  #       run: |
+  #         mkdir -p ./target/release
+  #         touch ./target/release/${{ env.EXECUTABLE_NAME }}
+  #         touch ./target/release/${{ env.EXECUTABLE_CHECK_NAME }}
+  #     # Cargo Test
+  #     - name: Cargo Test
+  #       if: ${{ env.ENABLE_CARGO_TEST == 'true' }}
+  #       run: cargo test
+  #     # List the files in the target/release directory
+  #     - name: List Files
+  #       run: |
+  #         ffmpeg_path=$(brew --prefix ffmpeg)
+  #         cp $ffmpeg_path/lib/*.dylib ./target/release
+  #         ls ./target/release
+  #     # copy and compress the binary and library into a zip file
+  #     - name: Copy and Compress Binary
+  #       run: |
+  #         cd ./target/release
+  #         mkdir -p temp_files/libs
+  #         cp ${{ env.EXECUTABLE_NAME }} temp_files/
+  #         cp *.dylib temp_files/libs/
+  #         cd temp_files
+  #         zip -r ../${{ env.EXECUTABLE_NAME }}_macos.zip .
+  #         cd ..
+  #         mv ${{ env.EXECUTABLE_CHECK_NAME }} temp_files/
+  #         cd ..
+  #         cd ..
+  #     # Test the Rust program
+  #     - name: Run Rust program
+  #       if: ${{ env.ENABLE_PROGRAM_CHECK == 'true' }}
+  #       run: |
+  #         ./${{ env.EXECUTABLE_CHECK_NAME }}
+  #         exit_code=$?
+  #         if [ $exit_code -ne 0 ]; then
+  #           echo "Rust program failed with exit code $exit_code"
+  #           exit 1
+  #         fi
+  #       working-directory: ./target/release/temp_files
+  #     # delete the temp_files directory
+  #     - name: Delete temp_files
+  #       run: |
+  #         rm -rf ./target/release/temp_files
+  #     # then upload the zip
+  #     - name: Upload Asset
+  #       uses: actions/upload-artifact@main
+  #       with:
+  #         name: ${{ env.EXECUTABLE_NAME }}_macos
+  #         path: ./target/release/${{ env.EXECUTABLE_NAME }}_macos.zip
+  #         compression-level: 0
