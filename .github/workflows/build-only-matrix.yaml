@@ -18,10 +18,10 @@ env:
 
   BUILD_ON_UBUNTU: 'true'
   # BUILD_ON_UBUNTU: 'false'
-  BUILD_ON_WINDOWS: 'true'
-  # BUILD_ON_WINDOWS: 'false'
-  BUILD_ON_MAC: 'true'
-  # BUILD_ON_MAC: 'false'
+  # BUILD_ON_WINDOWS: 'true'
+  BUILD_ON_WINDOWS: 'false'
+  # BUILD_ON_MAC: 'true'
+  BUILD_ON_MAC: 'false'
 
   RUST_BACKTRACE: '1'
   RUST_TOOLCHAIN: 'dtolnay'

@@ -10,6 +10,7 @@ $PFX_CERTIFICATION_PASSWORD = $env:SECRET_PFX_CERTIFICATION_PASSWORD
 if ( $ENABLE_CARGO_BUILD -eq 'true' ) {
   echo "Building the project..."
   cargo build --release
+  # echo "......" > ./target/release/${EXECUTABLE_NAME}.exe
 } else {
   echo "Skipping the build..."
   mkdir -p ./target/release
