@@ -1,4 +1,4 @@
-ls env
+printenv
 
 # .so for ubuntu, .dylib for mac
 if [ "$ENV_SYSTEM" = "mac" ]; then
