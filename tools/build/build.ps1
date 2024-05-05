@@ -63,7 +63,7 @@ if ( $ENABLE_PROGRAM_CHECK -eq 'true'){
 # delete the cube-infinifold_windows directory
 Remove-Item -Path ./${EXECUTABLE_NAME}_windows -Recurse -Force
 
-echo $(tree ./target/release)
+echo $(tree)
 
 # decompress the zip file to root
 Expand-Archive -Path ${EXECUTABLE_NAME}_windows.zip -Destination ../../
