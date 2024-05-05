@@ -108,7 +108,7 @@ jobs:
         if: ${{ matrix.enabled && matrix.system == 'windows' }}
         run: |
           echo "Building on ${{ matrix.system }} using ${{ matrix.build_path }}"
-          powershell.exe ${{ matrix.build_path }}
+          ${{ matrix.build_path }}
         env:
           SECRET_PFX_CERTIFICATION_PASSWORD: "${{ secrets.PFX_CERTIFICATION_PASSWORD }}"
           ENV_SYSTEM: "${{ matrix.system }}"
@@ -119,14 +119,14 @@ jobs:
         uses: actions/upload-artifact@main
         with:
           name: ${{ env.EXECUTABLE_NAME }}_${{ matrix.system }}
-          path: ./${{ env.EXECUTABLE_NAME }}_${{ matrix.system }}
+          path: ${{ env.EXECUTABLE_NAME }}_${{ matrix.system }}
       - name: Upload Assets to GitHub Release
         if: ${{ matrix.enabled && env.UPLOAD_TO_GITHUB_RELEASE == 'true' }}
         uses: actions/github-script@main
         with:
           script: |
             const fs = require('fs');
-            const path = "./target/release/${{ env.EXECUTABLE_NAME }}_${{ matrix.system }}.zip";
+            const path = "target/release/${{ env.EXECUTABLE_NAME }}_${{ matrix.system }}.zip";
             const artifact = fs.readFileSync(path);
             const date = new Date().toISOString().replace(/T/, '_').replace(/\..+/, '').replace(/:/g, '-');
             const artifactName = `Cube-Infinifold_${{ matrix.system }}_${date}.zip`;
