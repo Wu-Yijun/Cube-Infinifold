@@ -134,10 +134,10 @@ jobs:
         env:
           FFMPEG_DOWNLOAD_URL: https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-full-shared.7z
       # Install rust toolchain
-      - name: Setup Rust
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          toolchain: stable
+      # - name: Setup Rust
+      #   uses: dtolnay/rust-toolchain@stable
+      #   with:
+      #     toolchain: stable
       # Build and run and release
       - name: Build Project
         run: |
