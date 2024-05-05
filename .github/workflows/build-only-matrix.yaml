@@ -24,7 +24,7 @@ env:
   # BUILD_ON_MAC: 'false'
 
   RUST_BACKTRACE: '1'
-  RUST_TOOLCHAIN: 'action-rs'
+  RUST_TOOLCHAIN: 'dtolnay'
 
   UPLOAD_TO_GITHUB_RELEASE: 'true'
 
@@ -102,6 +102,7 @@ jobs:
         if: ${{ matrix.enabled && (matrix.system == 'ubuntu' || matrix.system == 'macos') }}
         run: |
           ENV_SYSTEM="${{ matrix.system }}"
+          printenv
           sudo sh ./tools/build/build.sh
         env:
           SECRET_PFX_CERTIFICATION_PASSWORD: "${{ secrets.PFX_CERTIFICATION_PASSWORD }}"
@@ -131,19 +132,17 @@ jobs:
             const date = new Date().toISOString().replace(/T/, '_').replace(/\..+/, '').replace(/:/g, '-');
             const artifactName = `Cube-Infinifold_${{ matrix.system }}_${date}.zip`;
             
-            const {id} = await github.rest.repos.getLatestRelease({
+            const response = await github.rest.repos.getLatestRelease({
               owner: context.repo.owner,
               repo: context.repo.repo
             });
-            let info = {
+            await github.rest.repos.uploadReleaseAsset({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              release_id: id,
+              release_id: response.data.id,
               name: artifactName,
               data: artifact
-            };
-            console.log(info);
-            await github.rest.repos.uploadReleaseAsset(info);
+            });
 
   conclude:
     needs: build_and_release
