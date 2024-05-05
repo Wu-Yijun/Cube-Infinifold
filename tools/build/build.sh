@@ -7,11 +7,6 @@ if [ "$ENV_SYSTEM" = "ubuntu" ]; then
 fi
 echo "Library extension: $LIB_EXTENSION"
 
-cd ..
-cd ..
-echo $(pwd)
-echo $(ls)
-
 # Build the project
 if [ "$ENABLE_CARGO_BUILD" = "true" ]; then
   echo "Building project"

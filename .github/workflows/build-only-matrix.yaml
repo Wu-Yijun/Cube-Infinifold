@@ -46,7 +46,7 @@ jobs:
   build_and_release:
     needs: prepare
     runs-on: ${{ matrix.os.system }}-latest
-    continue-on-error: true
+    # continue-on-error: true
     timeout-minutes: 60
     strategy:
       matrix:
@@ -101,9 +101,7 @@ jobs:
       # Build and run and release
       - name: Build Project on Ubuntu/MacOS
         if: ${{ matrix.os.enabled && (matrix.os.system == 'ubuntu' || matrix.os.system == 'macos') }}
-        run: sh ./build.sh
-        # run: sudo -E sh ./build.sh
-        working-directory: ./tools/build
+        run: sh ./tools/build/build.sh
         env:
           SECRET_PFX_CERTIFICATION_PASSWORD: "${{ secrets.PFX_CERTIFICATION_PASSWORD }}"
           ENV_SYSTEM: "${{ matrix.os.system }}"
