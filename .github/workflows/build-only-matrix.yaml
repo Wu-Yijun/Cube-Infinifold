@@ -92,7 +92,7 @@ jobs:
         with:
           toolchain: stable          
       - name: Rust Setup
-        if: ${{ env.RUST_TOOLCHAIN == 'action-rs' && matrix.os.enabled}}
+        # if: ${{ env.RUST_TOOLCHAIN == 'action-rs' && matrix.os.enabled}}
         uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
