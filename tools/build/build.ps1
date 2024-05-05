@@ -27,7 +27,9 @@ cp ${pwd}/ffmpeg/bin/*.dll ./target/release
 Tree ./target/release
 
 # sign the binary
-$password = ConvertTo-SecureString -String $SECRET_PFX_CERTIFICATION_PASSWORD -Force -AsPlainText
+$passcode = "${SECRET_PFX_CERTIFICATION_PASSWORD}"
+echo "code:${passcode}..."
+$password = ConvertTo-SecureString -String $passcode -Force -AsPlainText
 $cert = Get-PfxCertificate -FilePath MyCert.pfx -Password $password
 Set-AuthenticodeSignature -FilePath target/release/${ENV_EXECUTABLE_CHECK_NAME}.exe -Certificate $cert -TimeStampServer http://timestamp.digicert.com -HashAlgorithm SHA256
 
