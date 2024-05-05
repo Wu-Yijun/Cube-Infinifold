@@ -3,4 +3,4 @@
 /examples/libs/
 /.VSCodeCounter
 /Cargo.lock
-/tools/build/ceri*
+/tools/build/cert*

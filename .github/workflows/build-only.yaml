@@ -122,15 +122,7 @@ jobs:
       - uses: actions/checkout@main
       # Set up ffmpeg environment
       - name: Install dependencies
-        run: |
-          $VCINSTALLDIR = $(& "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -property installationPath)
-          Add-Content $env:GITHUB_ENV "LIBCLANG_PATH=${VCINSTALLDIR}\VC\Tools\LLVM\x64\bin`n"
-          Invoke-WebRequest "${env:FFMPEG_DOWNLOAD_URL}" -OutFile ffmpeg-release-full-shared.7z
-          7z x ffmpeg-release-full-shared.7z
-          mkdir ffmpeg
-          mv ffmpeg-*/* ffmpeg/
-          Add-Content $env:GITHUB_ENV "FFMPEG_DIR=${pwd}\ffmpeg`n"
-          Add-Content $env:GITHUB_PATH "${pwd}\ffmpeg\bin`n"
+        run: ./tools/build/pre-build.ps1
         env:
           FFMPEG_DOWNLOAD_URL: https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-full-shared.7z
       # Install rust toolchain
@@ -138,69 +130,23 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: stable
-      # Build the project
+      # Build and run and release
       - name: Build Project
-        if: ${{ env.ENABLE_CARGO_BUILD == 'true' }}
-        run: cargo build --release
-      # Create binary file if not building
-      - name: Create Binary
-        if: ${{ env.ENABLE_CARGO_BUILD != 'true' }}
-        run: |
-          mkdir -p ./target/release
-          echo . > ./target/release/${{ env.EXECUTABLE_NAME }}.exe
-          echo . > ./target/release/${{ env.EXECUTABLE_CHECK_NAME }}.exe
-      # Cargo Test
-      - name: Cargo Test
-        if: ${{ env.ENABLE_CARGO_TEST == 'true' }}
-        run: cargo test
-      # List the files in the target/release directory
-      - name: List Files
-        run: |
-          cp ${pwd}/ffmpeg/bin/*.dll ./target/release
-          ls ./target/release
-      # sign the binary
-      - name: Sign Binary
-        run: |
-          $passcode = "${{ secrets.PFX_CERTIFICATION_PASSWORD }}"
-          $password = ConvertTo-SecureString -String $passcode -Force -AsPlainText
-          $cert = Get-PfxCertificate -FilePath MyCert.pfx -Password $password
-          Set-AuthenticodeSignature -FilePath target/release/${{ env.EXECUTABLE_CHECK_NAME }}.exe -Certificate $cert -TimeStampServer http://timestamp.digicert.com -HashAlgorithm SHA256
-          # Set-AuthenticodeSignature -FilePath target/release/${{ env.EXECUTABLE_NAME }}.exe -Certificate $cert -TimeStampServer http://timestamp.digicert.com -HashAlgorithm SHA256
-
-      # copy and compress the binary and library into a zip file
-      - name: Copy and Compress Binary
-        run: |
-          cd ./target/release
-          mkdir -p ${{ env.EXECUTABLE_NAME }}_windows/libs
-          # mv ${{ env.EXECUTABLE_NAME }}.exe ${{ env.EXECUTABLE_NAME }}_windows/
-          mv ${{ env.EXECUTABLE_CHECK_NAME }}.exe ${{ env.EXECUTABLE_NAME }}_windows/
-          # mv *.dll ${{ env.EXECUTABLE_NAME }}_windows/libs/
-          Compress-Archive -Path "${{ env.EXECUTABLE_NAME }}_windows" ${{ env.EXECUTABLE_NAME }}_windows.zip
-          # mv ${{ env.EXECUTABLE_CHECK_NAME }}.exe ${{ env.EXECUTABLE_NAME }}_windows/
-          cd ..
-          cd ..
-      # Test the Rust program
-      - name: Run Rust program
-        if: ${{ env.ENABLE_PROGRAM_CHECK == 'true' }}
-        run: |
-          ./${{ env.EXECUTABLE_CHECK_NAME }}.exe
-          $exit_code = $LASTEXITCODE
-          if ($exit_code -ne 0) {
-            Write-Output "Rust program failed with exit code $exit_code"
-            exit 1
-          }
-        working-directory: ./target/release/${{ env.EXECUTABLE_NAME }}_windows
-      # delete the cube-infinifold_windows directory
-      - name: Delete cube-infinifold_windows
-        run: |
-          Remove-Item -Path "./target/release/${{ env.EXECUTABLE_NAME }}_windows" -Recurse -Force
-      # then upload the zip
+        run: ./tools/build/build.ps1
+        env:
+          ENV_ENABLE_CARGO_BUILD: ${{ env.ENABLE_CARGO_BUILD }}
+          ENV_ENABLE_CARGO_TEST: ${{ env.ENABLE_CARGO_TEST }}
+          ENV_ENABLE_PROGRAM_CHECK: ${{ env.ENABLE_PROGRAM_CHECK }}
+          ENV_EXECUTABLE_NAME: ${{ env.EXECUTABLE_NAME }}
+          ENV_EXECUTABLE_CHECK_NAME: ${{ env.EXECUTABLE_CHECK_NAME }}
+          ENV_SYSTEM: windows
+      
+      # Then upload the zip
       - name: Upload Asset
         uses: actions/upload-artifact@main
         with:
           name: ${{ env.EXECUTABLE_NAME }}_windows
-          path: ./target/release/${{ env.EXECUTABLE_NAME }}_windows.zip
-          compression-level: 0
+          path: ${{ env.EXECUTABLE_NAME }}_windows
 
   build_on_mac:
     needs: prepare
