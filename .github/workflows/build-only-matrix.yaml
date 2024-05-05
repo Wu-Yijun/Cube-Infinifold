@@ -77,11 +77,10 @@ jobs:
           FFMPEG_DOWNLOAD_URL: https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-full-shared.7z
       - name: Ubuntu Install dependencies
         if: ${{ matrix.os.system == 'ubuntu' && matrix.os.enabled}}
-        run: sudo apt-get install -y clang curl pkg-config libavcodec-dev libavutil-dev libavformat-dev libavfilter-dev libavdevice-dev
-        # uses: awalsh128/cache-apt-pkgs-action@latest
-        # with:
-        #   packages: clang curl pkg-config libavcodec-dev libavutil-dev libavformat-dev libavfilter-dev libavdevice-dev
-        #   version: 1.0
+        uses: awalsh128/cache-apt-pkgs-action@latest
+        with:
+          packages: clang curl pkg-config libavcodec-dev libavutil-dev libavformat-dev libavfilter-dev libavdevice-dev
+          version: 1.0
       - name: MacOS Install dependencies
         if: ${{ matrix.os.system == 'macos' && matrix.os.enabled}}
         run: brew install ffmpeg pkg-config
@@ -93,7 +92,7 @@ jobs:
         with:
           toolchain: stable          
       - name: Rust Setup
-        # if: ${{ env.RUST_TOOLCHAIN == 'action-rs' && matrix.os.enabled}}
+        if: ${{ env.RUST_TOOLCHAIN == 'action-rs' && matrix.os.enabled}}
         uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
@@ -102,7 +101,8 @@ jobs:
       # Build and run and release
       - name: Build Project on Ubuntu/MacOS
         if: ${{ matrix.os.enabled && (matrix.os.system == 'ubuntu' || matrix.os.system == 'macos') }}
-        run: sudo -E sh ./build.sh
+        run: sh ./build.sh
+        # run: sudo -E sh ./build.sh
         working-directory: ./tools/build
         env:
           SECRET_PFX_CERTIFICATION_PASSWORD: "${{ secrets.PFX_CERTIFICATION_PASSWORD }}"
