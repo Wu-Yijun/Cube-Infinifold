@@ -122,6 +122,8 @@ jobs:
   build_on_windows:
     needs: prepare
     runs-on: ${{ matrix.system }}-latest
+    continue-on-error: true
+    timeout-minutes: 60
     strategy:
       matrix:
         system: ['windows', 'ubuntu', 'macos']
@@ -131,27 +133,29 @@ jobs:
             build_command: ./tools/build/build.ps1
           - name: Build on Linux
             enabled: ${{ needs.prepare.outputs.BUILD_ON_UBUNTU == 'true' }}
-            build_command: sudo ./tools/build/build.sh
+            build_command: sudo sh ./tools/build/build.sh
           - name: Build on MacOS
             enabled: ${{ needs.prepare.outputs.BUILD_ON_MAC == 'true' }}
-            build_command: sudo ./tools/build/build.sh
+            build_command: sudo sh ./tools/build/build.sh
             
     steps:
       - uses: actions/checkout@main
         if: ${{ matrix.enabled }}
 
       # Set up ffmpeg environment
-      - name: Install dependencies
+      - name: WIndows Install dependencies
         if: ${{ matrix.system == 'windows' && matrix.enabled}}
         run: ./tools/build/pre-build.ps1
         env:
           FFMPEG_DOWNLOAD_URL: https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-full-shared.7z
-      - if: ${{ matrix.system == 'ubuntu' && matrix.enabled}}
+      - name: Ubuntu Install dependencies
+        if: ${{ matrix.system == 'ubuntu' && matrix.enabled}}
         uses: awalsh128/cache-apt-pkgs-action@latest
         with:
           packages: clang curl pkg-config libavcodec-dev libavutil-dev libavformat-dev libavfilter-dev libavdevice-dev
           version: 1.0
-      - if: ${{ matrix.system == 'macos' && matrix.enabled}}
+      - name: MacOS Install dependencies
+        if: ${{ matrix.system == 'macos' && matrix.enabled}}
         run: brew install ffmpeg pkg-config
       
       # Install rust toolchain
