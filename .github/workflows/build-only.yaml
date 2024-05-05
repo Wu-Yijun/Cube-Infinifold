@@ -132,7 +132,10 @@ jobs:
           toolchain: stable
       # Build and run and release
       - name: Build Project
-        run: ./tools/build/build.ps1
+        run: |
+          $ENV_PFX_CERTIFICATION_PASSWORD = ${{ secrets.PFX_CERTIFICATION_PASSWORD }}
+          echo "code${ENV_PFX_CERTIFICATION_PASSWORD}..."
+          ./tools/build/build.ps1
         env:
           ENV_ENABLE_CARGO_BUILD: ${{ env.ENABLE_CARGO_BUILD }}
           ENV_ENABLE_CARGO_TEST: ${{ env.ENABLE_CARGO_TEST }}
