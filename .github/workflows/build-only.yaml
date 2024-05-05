@@ -163,18 +163,20 @@ jobs:
         run: |
           $passcode = "${{ secrets.PFX_CERTIFICATION_PASSWORD }}"
           $password = ConvertTo-SecureString -String $passcode -Force -AsPlainText
-          $cert = Get-PfxCertificate -FilePath MyCert.pfk -Password $password
-          Set-AuthenticodeSignature -FilePath target/release/${{ env.EXECUTABLE_NAME }}.exe -Certificate $cert -TimeStampServer http://timestamp.digicert.com -HashAlgorithm SHA256
+          $cert = Get-PfxCertificate -FilePath MyCert.pfx -Password $password
+          Set-AuthenticodeSignature -FilePath target/release/${{ env.EXECUTABLE_CHECK_NAME }}.exe -Certificate $cert -TimeStampServer http://timestamp.digicert.com -HashAlgorithm SHA256
+          # Set-AuthenticodeSignature -FilePath target/release/${{ env.EXECUTABLE_NAME }}.exe -Certificate $cert -TimeStampServer http://timestamp.digicert.com -HashAlgorithm SHA256
 
       # copy and compress the binary and library into a zip file
       - name: Copy and Compress Binary
         run: |
           cd ./target/release
           mkdir -p ${{ env.EXECUTABLE_NAME }}_windows/libs
-          mv ${{ env.EXECUTABLE_NAME }}.exe ${{ env.EXECUTABLE_NAME }}_windows/
-          mv *.dll ${{ env.EXECUTABLE_NAME }}_windows/libs/
-          Compress-Archive -Path "${{ env.EXECUTABLE_NAME }}_windows" ${{ env.EXECUTABLE_NAME }}_windows.zip
+          # mv ${{ env.EXECUTABLE_NAME }}.exe ${{ env.EXECUTABLE_NAME }}_windows/
           mv ${{ env.EXECUTABLE_CHECK_NAME }}.exe ${{ env.EXECUTABLE_NAME }}_windows/
+          # mv *.dll ${{ env.EXECUTABLE_NAME }}_windows/libs/
+          Compress-Archive -Path "${{ env.EXECUTABLE_NAME }}_windows" ${{ env.EXECUTABLE_NAME }}_windows.zip
+          # mv ${{ env.EXECUTABLE_CHECK_NAME }}.exe ${{ env.EXECUTABLE_NAME }}_windows/
           cd ..
           cd ..
       # Test the Rust program
