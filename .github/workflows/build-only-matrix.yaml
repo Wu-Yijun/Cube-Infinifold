@@ -101,7 +101,7 @@ jobs:
       - name: Build Project on Ubuntu/MacOS
         if: ${{ matrix.enabled && (matrix.system == 'ubuntu' || matrix.system == 'macos') }}
         run: |
-          ENV_SYSTEM = ${{ matrix.system }}
+          ENV_SYSTEM="${{ matrix.system }}"
           sudo sh ./tools/build/build.sh
         env:
           SECRET_PFX_CERTIFICATION_PASSWORD: "${{ secrets.PFX_CERTIFICATION_PASSWORD }}"
