@@ -77,10 +77,11 @@ jobs:
           FFMPEG_DOWNLOAD_URL: https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-full-shared.7z
       - name: Ubuntu Install dependencies
         if: ${{ matrix.os.system == 'ubuntu' && matrix.os.enabled}}
-        uses: awalsh128/cache-apt-pkgs-action@latest
-        with:
-          packages: clang curl pkg-config libavcodec-dev libavutil-dev libavformat-dev libavfilter-dev libavdevice-dev
-          version: 1.0
+        run: sudo apt-get install -y clang curl pkg-config libavcodec-dev libavutil-dev libavformat-dev libavfilter-dev libavdevice-dev
+        # uses: awalsh128/cache-apt-pkgs-action@latest
+        # with:
+        #   packages: clang curl pkg-config libavcodec-dev libavutil-dev libavformat-dev libavfilter-dev libavdevice-dev
+        #   version: 1.0
       - name: MacOS Install dependencies
         if: ${{ matrix.os.system == 'macos' && matrix.os.enabled}}
         run: brew install ffmpeg pkg-config
