@@ -48,6 +48,10 @@ fi
 # copy and compress the binary and library into a zip file
 cd ./target/release
 mkdir -p ./${EXECUTABLE_NAME}_${ENV_SYSTEM}/libs
+mkdir -p ./${EXECUTABLE_NAME}_${ENV_SYSTEM}/assets
+mv ../../assets/ui ./${EXECUTABLE_NAME}_${ENV_SYSTEM}/assets/
+mv ../../assets/version_files/${SYSTEM}/levels.json ./${EXECUTABLE_NAME}_${ENV_SYSTEM}/
+
 mv ./${EXECUTABLE_NAME} ./${EXECUTABLE_NAME}_${ENV_SYSTEM}/
 mv ./${EXECUTABLE_CHECK_NAME} ./${EXECUTABLE_NAME}_${ENV_SYSTEM}/
 mv ./*${LIB_EXTENSION} ./${EXECUTABLE_NAME}_${ENV_SYSTEM}/libs/
