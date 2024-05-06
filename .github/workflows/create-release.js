@@ -11,11 +11,61 @@ async function main({github, context, sha}) {
   // get the latest tag (first tag in the list)
   const {tag, tag_sha} = await get_latest_tag({github, context});
 
-  // get the commit message
-  const commit_message = await get_commit_message({execSync, fs, tag_sha, sha});
+  // get the release body
+  const release_body = await get_release_body({execSync, fs, tag_sha, sha});
 
-  // return the commit message
-  return {tag, commit_message};
+  // save release_body as artifact
+  fs.writeFileSync('release_body.md', release_body);
+
+  // get the artifacts
+  const artifacts = await get_artifacts({github, context});
+
+  // create a new release with the tag and commit message
+  const name = `Release ${tag} created by ${context.actor}`;
+  await github.rest.repos.createRelease({
+    owner: context.repo.owner,
+    repo: context.repo.repo,
+    tag_name: tag,
+    // target_commitish: sha,
+    name: name,
+    body: release_body,
+    draft: false,
+    prerelease: false,
+    make_latest: true
+  });
+
+  // upload them to the release
+  for (const {name, data} of artifacts) {
+    await github.rest.repos.uploadReleaseAsset({
+      owner: context.repo.owner,
+      repo: context.repo.repo,
+      release_id: context.runId,
+      name: name,
+      data: data,
+    });
+  }
+
+  console.log(`Release ${tag} created successfully!`);
+}
+
+async function get_artifacts({github, context}) {
+  // list all possible artifacts
+  const artifacts = await github.rest.actions.listWorkflowRunArtifacts({
+    owner: context.repo.owner,
+    repo: context.repo.repo,
+    run_id: context.runId,
+  });
+  let result = new Array();
+  for (const {id, name} of artifacts.data.artifacts) {
+    const artifact = await github.rest.actions.downloadArtifact({
+      owner: context.repo.owner,
+      repo: context.repo.repo,
+      artifact_id: id,
+      archive_format: 'zip'
+    });
+    result.push({name, data: artifact.data});
+  }
+  return result;
 }
 
 async function get_latest_tag({github, context}) {
@@ -35,7 +85,7 @@ async function get_latest_tag({github, context}) {
   return {tag, tag_sha: sha};
 }
 
-async function get_commit_message({execSync, fs, tag_sha, sha}) {
+async function get_release_body({execSync, fs, tag_sha, sha}) {
   // get necessary text
   execSync('git fetch --prune --unshallow');
   const commit_header = execSync(`git log ${tag_sha}..`).toString().trim();

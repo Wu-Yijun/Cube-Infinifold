@@ -38,6 +38,12 @@ jobs:
           echo "BUILD_ON_UBUNTU=${BUILD_ON_UBUNTU}" >> $GITHUB_ENV
           echo "BUILD_ON_WINDOWS=${BUILD_ON_WINDOWS}" >> $GITHUB_ENV
           echo "BUILD_ON_MAC=${BUILD_ON_MAC}" >> $GITHUB_ENV
+          echo "hello" > test.txt
+      - name: Test/Upload
+        uses: actions/upload-artifact@main
+        with:
+          name: outputs
+          path: test.txt
     outputs:
       BUILD_ON_UBUNTU: ${{ env.BUILD_ON_UBUNTU }}
       BUILD_ON_WINDOWS: ${{ env.BUILD_ON_WINDOWS }}
@@ -154,4 +160,10 @@ jobs:
               sha: '${{ github.sha }}',
             });
             console.log(response);
+      - name: Upload Artifact release body
+        if: ${{ env.UPLOAD_TO_GITHUB_RELEASE == 'true' }}
+        uses: actions/upload-artifact@main
+        with:
+          name: release_body
+          path: release_body.md
           
