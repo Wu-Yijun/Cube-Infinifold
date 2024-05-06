@@ -144,6 +144,8 @@ second line
     const trim_date = new Date(date).toString();
     return `${header}*${trim_date}* by [${author}](mailto:${email})\n${body}`;
   };
+  console.log(header);
+  console.log(header.matchAll(pattern));
   const list = header.matchAll(pattern).toArray();
   const result = list.map(trim).join('\n\n');
   return result;
