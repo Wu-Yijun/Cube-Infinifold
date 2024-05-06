@@ -187,7 +187,9 @@ jobs:
 
       - name: Check on ${{ matrix.os.system }}
         if: ${{ matrix.os.enabled }}
-        run: sudo ./${{ env.EXECUTABLE_CHECK_NAME }}${{ matrix.os.app_extension }}
+        run: |
+          sudo chmod +x ${{ env.EXECUTABLE_CHECK_NAME }}${{ matrix.os.app_extension }}
+          ./${{ env.EXECUTABLE_CHECK_NAME }}${{ matrix.os.app_extension }}
         working-directory: ${{ env.EXECUTABLE_NAME }}_${{ matrix.os.system }}
       
       - name: Upload Artifact
