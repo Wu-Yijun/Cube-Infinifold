@@ -118,7 +118,6 @@ async function get_release_body({execSync, fs, tag_sha, sha}) {
   body_raw += trim_diff(commit_diff);
   body_raw += '</details>\n';
 
-  const trim_release_body = release_body.substring(0, MAX_BODY_LENGTH);
   if (body_raw.length > MAX_BODY_LENGTH) {
     const body =
         body_raw.substring(0, MAX_BODY_LENGTH - 20) + '\n\n(More)... ...';
