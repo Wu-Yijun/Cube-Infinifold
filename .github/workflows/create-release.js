@@ -136,6 +136,7 @@ second line
 *2024-05-05 21:39:45 -0700* by [Wu-Yijun](mailto:wuyijun21@mails.ucas.ac.cn)
 
 */
+  console.log(header);
   const pattern =
       /commit ([0-9a-f]{40})\nAuthor: (.*) <(.*)>\nDate: (.*)\n\n((?:.|\n)*?)(?=\ncommit|$)/g;
   const list = header.matchAll(pattern)
