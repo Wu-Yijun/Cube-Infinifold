@@ -10,6 +10,7 @@ async function main({github, context, sha}) {
 
   // get the latest tag (first tag in the list)
   const {tag, tag_sha} = await get_latest_tag({github, context});
+  console.log(`tag: ${tag}, tag_sha: ${tag_sha}, sha: ${sha}`);
 
   // get the commit message
   const commit_message = await get_commit_message({execSync, fs, tag_sha, sha});
