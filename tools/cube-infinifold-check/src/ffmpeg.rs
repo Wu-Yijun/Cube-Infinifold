@@ -175,8 +175,8 @@ fn load_lib(name: &str) -> Option<Library> {
     let path = path_exe.ancestors().nth(1).unwrap();
     let path = format!("{}/libs", path.display());
     println!("Loading lib from: {}", path);
-    std::env::set_current_dir(path).ok().unwrap();
-    let lib = unsafe { libloading::Library::new(libname).ok() };
-    std::env::set_current_dir(cur_path).ok().unwrap();
-    lib
+    std::env::set_current_dir(path).expect("Failed to set current dir");
+    let lib = unsafe { libloading::Library::new(libname).expect("Failed to load lib") };
+    std::env::set_current_dir(cur_path).expect("Failed to set current dir");
+    Some(lib)
 }
