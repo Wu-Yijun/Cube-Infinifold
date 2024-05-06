@@ -20,12 +20,9 @@ async function main({github, context, sha}) {
   // save release_body as artifact
   fs.writeFileSync('release_body.md', release_body);
 
-  // get the artifacts
-  const artifacts = await get_artifacts({github, context});
-
   // create a new release with the tag and commit message
   const name = `Release ${tag} created by ${context.actor}`;
-  await github.rest.repos.createRelease({
+  const release = await github.rest.repos.createRelease({
     owner: context.repo.owner,
     repo: context.repo.repo,
     tag_name: tag,
@@ -35,13 +32,20 @@ async function main({github, context, sha}) {
     draft: false,
     prerelease: false,
   });
+  const release_id = release.data.id;
+  
+  // get the artifacts
+  const artifacts = await get_artifacts({github, context});
+
+  // sleep for 1 second to make sure the release is created
+  // await new Promise(r => setTimeout(r, 1000));
 
   // upload them to the release
   for (const {name, data} of artifacts) {
     await github.rest.repos.uploadReleaseAsset({
       owner: context.repo.owner,
       repo: context.repo.repo,
-      release_id: context.runId,
+      release_id: release_id,
       name: name,
       data: data,
     });
