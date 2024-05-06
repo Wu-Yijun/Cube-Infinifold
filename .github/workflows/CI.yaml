@@ -26,8 +26,10 @@ env:
   RUST_BACKTRACE: '1'
   RUST_TOOLCHAIN: 'dtolnay'
 
-  UPLOAD_TO_GITHUB_RELEASE: 'true'
-  UPLOAD_TO_OLD_RELEASE: 'true'
+  # UPLOAD_TO_GITHUB_RELEASE: 'true'
+  UPLOAD_TO_GITHUB_RELEASE: 'false'
+  # UPLOAD_TO_OLD_RELEASE: 'true'
+  UPLOAD_TO_OLD_RELEASE: 'false'
 
 jobs:
   prepare:
