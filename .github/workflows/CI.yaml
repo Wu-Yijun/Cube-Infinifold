@@ -159,12 +159,15 @@ jobs:
             system: 'windows'
             enabled: ${{ needs.prepare.outputs.BUILD_ON_WINDOWS == 'true' && needs.prepare.outputs.ENABLE_INDENPENDENT_TEST == 'true'}}
             app_extension: '.exe'
+            app_runner: 'powershell.exe'
           - name: 'Test on Linux'
             system: 'ubuntu'
             enabled: ${{ needs.prepare.outputs.BUILD_ON_UBUNTU == 'true' && needs.prepare.outputs.ENABLE_INDENPENDENT_TEST == 'true'}}
+            app_runner: 'sudo'
           - name: 'Test on MacOS'
             system: 'macos'
             enabled: ${{ needs.prepare.outputs.BUILD_ON_MAC == 'true' && needs.prepare.outputs.ENABLE_INDENPENDENT_TEST == 'true'}}
+            app_runner: 'sudo'
     runs-on: ${{ matrix.os.system }}-latest
     steps:
       - name: Download Artifact
@@ -174,9 +177,13 @@ jobs:
           name: ${{ env.EXECUTABLE_NAME }}_${{ matrix.os.system }}
           path: ${{ env.EXECUTABLE_NAME }}_${{ matrix.os.system }}
 
+      - name: List files
+        if: ${{ matrix.os.enabled }}
+        run: ls -R
+
       - name: Check on ${{ matrix.os.system }}
         if: ${{ matrix.os.enabled }}
-        run: ./${{ env.EXECUTABLE_NAME }}_${{ matrix.os.system }}/${{ env.EXECUTABLE_CHECK_NAME }}${{ matrix.os.app_extension }}
+        run: ${{ matrix.os.app_runner }} ./${{ env.EXECUTABLE_NAME }}_${{ matrix.os.system }}/${{ env.EXECUTABLE_CHECK_NAME }}${{ matrix.os.app_extension }}
       
       - name: Upload Artifact
         if: ${{ matrix.os.enabled }}
