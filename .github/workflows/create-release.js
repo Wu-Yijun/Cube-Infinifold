@@ -27,8 +27,7 @@ async function get_latest_tag({github, context}) {
   const {name, commit: {sha}} = response.data[0];
   // extract the version number from the tag (v1.2.3.4 => major=1, minor=2,
   // patch=3, build=4) need to convert the version numbers from string to number
-  const [major, minor, patch, build] =
-      name.substr(1).split('.').map(Number);
+  const [major, minor, patch, build] = name.substr(1).split('.').map(Number);
   console.log(`ma: ${major}, mi: ${minor}, p: ${patch}, b: ${build};`);
   console.log(`runNumber: ${context.runNumber}`);
   // increment the patch number and change build to running number
@@ -39,26 +38,81 @@ async function get_latest_tag({github, context}) {
 async function get_commit_message({execSync, fs, tag_sha, sha}) {
   // get necessary text
   execSync('git fetch --prune --unshallow');
-  const commit_header = execSync('git log -1 --pretty=%B').toString().trim();
+  const commit_header = execSync(`git log ${tag_sha}..`).toString().trim();
   const changelog = fs.readFileSync(CHANGELOG_FILE, 'utf8');
   const commit_diff =
       execSync(`git diff --word-diff=porcelain ${tag_sha} ${sha}`).toString();
 
   // link the text
   let content = '';
-  content += commit_header.split('\n').map(line => `### *${line}*`).join('\n');
+  content += trim_commit_header(commit_header);
   content += '\n\n' + changelog;
   content += '\n\n## *Git Diff*:\n\n';
   content += `<details><summary>Changes are listed as follows:</summary>\n`;
-  content += convert_diff(commit_diff);
+  content += trim_diff(commit_diff);
   content += '</details>';
 
   return content;
 }
 
 
+function trim_commit_header(header) {
+  /* sample header:
+commit 5d9af644ceb59cd20af6b07d43e5019ae4c5a9db
+Author: Wu-Yijun <wuyijun21@mails.ucas.ac.cn>
+Date:   Sun May 5 21:41:09 2024 -0700
 
-function convert_diff(diff) {
+    test
+    second line
+    3rd line
+
+commit 9cb24a67498d18d9c0122c6fc11f271aa9228aaf
+Author: Wu-Yijun <wuyijun21@mails.ucas.ac.cn>
+Date:   Sun May 5 21:39:45 2024 -0700
+
+    tst
+
+*/
+  /* sample result:
+### test
+
+*2024-05-05 21:41:09 -0700* by [Wu-Yijun](mailto:wuyijun21@mails.ucas.ac.cn)
+
+second line
+3rd line
+
+### tst
+
+*2024-05-05 21:39:45 -0700* by [Wu-Yijun](mailto:wuyijun21@mails.ucas.ac.cn)
+
+*/
+  const pattern =
+      /commit ([0-9a-f]{40})\nAuthor: (.*) <(.*)>\nDate: (.*)\n\n((?:.|\n)*?)(?=\ncommit|$)/g;
+  const list = header.matchAll(pattern)
+                   .map((match) => {
+                     const content =
+                         match[5].split('\n').map(line => line.trim());
+                     const header = `### ${content[0]}\n\n`;
+                     const body = content.slice(1).join('\n');
+                     return {
+                       sha: match[1],
+                       author: match[2],
+                       email: match[3],
+                       date: match[4].trim(),
+                       header,
+                       body
+                     };
+                   })
+                   .toArray();
+  const result = list.map((item) => {
+                       return `${item.header}*${item.date}* by [${
+                           item.author}](mailto:${item.email})\n${item.body}`;
+                     })
+                     .join('\n\n');
+  return result;
+}
+
+function trim_diff(diff) {
   // return diff;
   const lines = diff.replaceAll('\r', '').split('\n');
   let typed_lines = [];
@@ -70,8 +124,8 @@ function convert_diff(diff) {
       // 如果state为none, 则表示当前是第一个diff, 不需要输出 ``` \n\n
       // 如果state不为none, 则表示当前是一个diff的结束, 需要输出 ``` \n\n
       // 我们希望格式为: 输入: diff --git a/xxx b/xxx
-      // 输出: ### xxx \n ```bash \n diff --git a/xxx b/xxx \n ``` \n \n ```diff
-      // 进入diff状态
+      // 输出: ### xxx \n ```bash \n diff --git a/xxx b/xxx \n ``` \n \n
+      // ```diff 进入diff状态
       let result = '';
       if (state !== 'none') {
         result += '\n```\n\n';
@@ -86,8 +140,8 @@ function convert_diff(diff) {
     if (state === 'diff' &&
         (line.startsWith('index ') || line.startsWith('--- ') ||
          line.startsWith('+++ '))) {
-      // 如果当前状态为diff, 且当前行以index, ---, +++开头, 则表示这是diff开头,
-      // 直接输出加换行
+      // 如果当前状态为diff, 且当前行以index, ---, +++开头,
+      // 则表示这是diff开头, 直接输出加换行
       typed_lines.push(['basic', line]);
       continue;
     }
