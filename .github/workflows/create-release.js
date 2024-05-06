@@ -4,6 +4,7 @@ module.exports = main;
 
 const CHANGELOG_FILE = 'CHANGELOG.md';
 const MAX_BODY_LENGTH = 125000;
+const LOCAL = ['zh-CN', {timeZone: 'UTC'}, ' (北京时间)'];
 
 
 async function main({github, context, sha}) {
@@ -33,7 +34,7 @@ async function main({github, context, sha}) {
     prerelease: false,
   });
   const release_id = release.data.id;
-  
+
   // get the artifacts
   const artifacts = await get_artifacts({github, context});
 
@@ -46,11 +47,11 @@ async function main({github, context, sha}) {
       owner: context.repo.owner,
       repo: context.repo.repo,
       release_id: release_id,
-      name: name,
+      name: name + '.zip',
       data: data,
     });
   }
-  
+
   console.log(`Release ${tag} created successfully!`);
 }
 
@@ -108,7 +109,11 @@ async function get_release_body({execSync, fs, tag_sha, sha}) {
   content += trim_diff(commit_diff);
   content += '</details>';
 
-  return content;
+  if (content.length > MAX_BODY_LENGTH) {
+    return content.substring(0, MAX_BODY_LENGTH - 20) + '\n\n(More)... ...';
+  } else {
+    return content;
+  }
 }
 
 
@@ -143,14 +148,22 @@ second line
   const pattern =
       /commit ([0-9a-f]{40})\nAuthor: (.*) <(.*)>\nDate: (.*)\n\n((?:.|\n)*?)(?=\ncommit|$)/g;
   let result = '';
+  let count = 0;
   for (const match of header.matchAll(pattern)) {
+    if (count++ == 3) {
+      result += '<details><summary>Expand all commits ... </summary>\n\n';
+    }
     const [_, sha, author, email, date, message] = match;
     const content = message.split('\n').map(line => line.trim());
     const header = `### ${content[0]}\n\n`;
     const body = content.slice(1).join('\n');
-    const trim_date = new Date(date).toString();
+    const trim_date =
+        new Date(date).toLocaleString(LOCAL[0], LOCAL[1]) + LOCAL[2];
     result +=
         `${header}*${trim_date}* by [${author}](mailto:${email})\n${body}\n\n`;
+  }
+  if (count > 3) {
+    result += '</details>';
   }
   return result;
 }
