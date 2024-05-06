@@ -161,23 +161,25 @@ jobs:
             enabled: ${{ needs.prepare.outputs.BUILD_ON_WINDOWS == 'true' && needs.prepare.outputs.ENABLE_INDENPENDENT_TEST == 'true'}}
             app_extension: '.exe'
             app_runner: 'powershell.exe'
+            artifact_id: '1477183193'
           - name: 'Test on Linux'
             system: 'ubuntu'
             enabled: ${{ needs.prepare.outputs.BUILD_ON_UBUNTU == 'true' && needs.prepare.outputs.ENABLE_INDENPENDENT_TEST == 'true'}}
             app_runner: 'sudo'
+            artifact_id: '1477182913'
           - name: 'Test on MacOS'
             system: 'macos'
             enabled: ${{ needs.prepare.outputs.BUILD_ON_MAC == 'true' && needs.prepare.outputs.ENABLE_INDENPENDENT_TEST == 'true'}}
             app_runner: 'sudo'
+            artifact_id: '1477179232'
     runs-on: ${{ matrix.os.system }}-latest
     steps:
-      - name: Download Artifact
+      - name: Download Artifact Directly From https://api.github.com/repos/${owner}/${repo}/actions/artifacts/${artifact_id}/zip
         if: ${{ matrix.os.enabled }}
-        uses: actions/download-artifact@main
-        with:
-          name: "${{ env.EXECUTABLE_NAME }}_${{ matrix.os.system }}"
-          path: ${{ env.EXECUTABLE_NAME }}_${{ matrix.os.system }}
-          run-id: '8972489291'
+        run: |
+          curl -L -o test.zip -H "Accept: application/vnd.github.v3+json" -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/repos/${owner}/${repo}/actions/artifacts/${artifact_id}/zip
+          unzip test.zip
+          ls -R
 
       - name: List files
         if: ${{ matrix.os.enabled }}
