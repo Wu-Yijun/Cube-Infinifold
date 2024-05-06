@@ -35,8 +35,6 @@ jobs:
       - name: Set outputs
         id: set_outputs
         run: |
-          echo ${{ github.sha }}
-          git log -1 --pretty=%B
           echo "BUILD_ON_UBUNTU=${BUILD_ON_UBUNTU}" >> $GITHUB_ENV
           echo "BUILD_ON_WINDOWS=${BUILD_ON_WINDOWS}" >> $GITHUB_ENV
           echo "BUILD_ON_MAC=${BUILD_ON_MAC}" >> $GITHUB_ENV
