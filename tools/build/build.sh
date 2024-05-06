@@ -29,7 +29,7 @@ if [ "$ENV_SYSTEM" = "macos" ]; then
 fi
 if [ "$ENV_SYSTEM" = "ubuntu" ]; then
   # Copy the so files to the target directory
-  cp /usr/lib/x86_64-ubuntu-gnu/libav* ./target/release
+  cp /usr/lib/x86_64-linux-gnu/libav* ./target/release
 fi
 
 echo $(ls ./target/release)
