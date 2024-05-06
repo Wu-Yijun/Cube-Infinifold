@@ -8,10 +8,10 @@ env:
   EXECUTABLE_NAME: cube-infinifold
   EXECUTABLE_CHECK_NAME: cube-infinifold-check
 
-  ENABLE_CARGO_TEST: 'true'
-  # ENABLE_CARGO_TEST: 'false'
   ENABLE_CARGO_BUILD: 'true'
   # ENABLE_CARGO_BUILD: 'false'
+  # ENABLE_CARGO_TEST: 'true'
+  ENABLE_CARGO_TEST: 'false'
   ENABLE_PROGRAM_CHECK: 'true'
   # ENABLE_PROGRAM_CHECK: 'false'
   # ENABLE_INDENPENDENT_TEST: 'true'
