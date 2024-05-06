@@ -54,6 +54,8 @@ mv ./${EXECUTABLE_CHECK_NAME} ./${EXECUTABLE_NAME}_${ENV_SYSTEM}/
 mv ./*${LIB_EXTENSION} ./${EXECUTABLE_NAME}_${ENV_SYSTEM}/libs/
 zip -r ./${EXECUTABLE_NAME}_${ENV_SYSTEM}.zip ./${EXECUTABLE_NAME}_${ENV_SYSTEM}
 
+echo $(ls ./${EXECUTABLE_NAME}_${ENV_SYSTEM})
+
 # Run the Check program
 if [ "$ENABLE_PROGRAM_CHECK" = "true" ]; then
   echo "Running Rust program"
