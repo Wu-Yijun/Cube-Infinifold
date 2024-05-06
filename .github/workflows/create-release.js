@@ -124,30 +124,30 @@ Date:   Sun May 5 21:39:45 2024 -0700
   /* sample result:
 ### test
 
-*2024-05-05 21:41:09 (北美太平洋夏令时间)* by [Wu-Yijun](mailto:wuyijun21@mails.ucas.ac.cn)
+*2024-05-05 21:41:09 (北美太平洋夏令时间)* by
+[Wu-Yijun](mailto:wuyijun21@mails.ucas.ac.cn)
 
 second line
 3rd line
 
 ### tst
 
-*2024-05-05 21:39:45 (北美太平洋夏令时间)* by [Wu-Yijun](mailto:wuyijun21@mails.ucas.ac.cn)
+*2024-05-05 21:39:45 (北美太平洋夏令时间)* by
+[Wu-Yijun](mailto:wuyijun21@mails.ucas.ac.cn)
 
 */
   const pattern =
-      /commit ([0-9a-f]{40})\nAuthor: (.*) <(.*)>\nDate: (.*)\n((?:.|\n)*?)(?=\ncommit|$)/g;
-  const trim = (match) => {
+      /commit ([0-9a-f]{40})\nAuthor: (.*) <(.*)>\nDate: (.*)\n\n((?:.|\n)*?)(?=\ncommit|$)/g;
+  let result = '';
+  for (const match of header.matchAll(pattern)) {
     const [_, sha, author, email, date, message] = match;
     const content = message.split('\n').map(line => line.trim());
     const header = `### ${content[0]}\n\n`;
     const body = content.slice(1).join('\n');
     const trim_date = new Date(date).toString();
-    return `${header}*${trim_date}* by [${author}](mailto:${email})\n${body}`;
-  };
-  console.log(header);
-  console.log(header.matchAll(pattern));
-  const list = header.matchAll(pattern).toArray();
-  const result = list.map(trim).join('\n\n');
+    result +=
+        `${header}*${trim_date}* by [${author}](mailto:${email})\n${body}\n\n`;
+  }
   return result;
 }
 
