@@ -63,6 +63,7 @@ jobs:
       OLD_RELEASE_ID: ${{ steps.GetLatestReleaseID.outputs.result }}
 
   build_and_release:
+    continue-on-error: true
     needs: prepare
     runs-on: ${{ matrix.os.system }}-latest
     timeout-minutes: 60

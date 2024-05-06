@@ -19,8 +19,18 @@ fn main() {
 
 use std::{env, path::PathBuf};
 fn join_path(relative_path: &str) {
+    // 根据不同的操作系统设置不同的环境变量
+    #[cfg(target_os = "windows")]
+    const  VAR: &str = "PATH";
+    #[cfg(target_os = "linux")]
+    const VAR: &str = "LD_LIBRARY_PATH";
+    #[cfg(target_os = "macos")]
+    const VAR: &str = "DYLD_LIBRARY_PATH";
+    #[cfg(not(any(target_os = "windows", target_os = "linux", target_os = "macos")))]
+    const VAR: &str = "UNKNOWN";
+
     // 获取当前的PATH环境变量
-    let mut paths = match env::var_os("PATH") {
+    let mut paths = match env::var_os(VAR) {
         Some(val) => env::split_paths(&val).collect::<Vec<_>>(),
         None => Vec::new(),
     };
@@ -37,7 +47,7 @@ fn join_path(relative_path: &str) {
     let new_path_str = env::join_paths(paths).expect("Failed to join paths");
 
     // 设置新的PATH环境变量
-    env::set_var("PATH", new_path_str);
+    env::set_var(VAR, new_path_str);
 
     // 打印新的PATH环境变量
     println!("PATH: {:?}", env::var("PATH").unwrap());
