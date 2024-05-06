@@ -3,6 +3,7 @@ const {match} = require('assert');
 module.exports = main;
 
 const CHANGELOG_FILE = 'CHANGELOG.md';
+const MAX_BODY_LENGTH = 125000;
 
 
 async function main({github, context, sha}) {
@@ -30,7 +31,7 @@ async function main({github, context, sha}) {
     tag_name: tag,
     // target_commitish: sha,
     name: name,
-    body: release_body,
+    body: release_body.substring(0, MAX_BODY_LENGTH),
     draft: false,
     prerelease: false,
   });
@@ -45,7 +46,7 @@ async function main({github, context, sha}) {
       data: data,
     });
   }
-
+  
   console.log(`Release ${tag} created successfully!`);
 }
 
