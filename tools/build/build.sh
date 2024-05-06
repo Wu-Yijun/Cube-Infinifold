@@ -37,7 +37,7 @@ echo $(ls ./target/release)
 # Run the tests
 if [ "$ENABLE_CARGO_TEST" = "true" ]; then
   echo "Running tests"
-  cargo test
+  cargo test --
 else
   echo "Skipping tests"
 fi

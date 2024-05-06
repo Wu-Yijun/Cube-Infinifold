@@ -21,7 +21,7 @@ if ( $ENABLE_CARGO_BUILD -eq 'true' ) {
 # Cargo Test
 if ( $ENABLE_CARGO_TEST -eq 'true' ) {
   echo "Running cargo test..."
-  cargo test
+  cargo test --release
 } else {
   echo "Skipping cargo test..."
 }
