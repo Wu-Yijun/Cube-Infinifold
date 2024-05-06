@@ -175,7 +175,7 @@ jobs:
         if: ${{ matrix.os.enabled }}
         uses: actions/download-artifact@main
         with:
-          name: ${{ env.EXECUTABLE_NAME }}_${{ matrix.os.system }}.zip
+          name: "${{ env.EXECUTABLE_NAME }}_${{ matrix.os.system }}"
           path: ${{ env.EXECUTABLE_NAME }}_${{ matrix.os.system }}
           run-id: '8972489291'
 
