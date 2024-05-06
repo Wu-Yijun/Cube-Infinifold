@@ -19,7 +19,7 @@ async function main({github, context, sha}) {
 }
 
 async function get_latest_tag({github, context}) {
-  const {tag_name, commit: {tag_sha}} = (await github.rest.repos.listTags({
+  const {name, commit: {tag_sha}} = (await github.rest.repos.listTags({
     owner: context.repo.owner,  // owner of the repo
     repo: context.repo.repo,    // name of the repo
     per_page: 1                 // only need the first tag
@@ -27,7 +27,7 @@ async function get_latest_tag({github, context}) {
   // extract the version number from the tag (v1.2.3.4 => major=1, minor=2,
   // patch=3, build=4) need to convert the version numbers from string to number
   const [major, minor, patch, build] =
-      tag_name.substr(1).split('.').map(Number);
+      name.substr(1).split('.').map(Number);
   console.log(`ma: ${major}, mi: ${minor}, p: ${patch}, b: ${build};`);
   console.log(`runNumber: ${context.runNumber}`);
   // increment the patch number and change build to running number
