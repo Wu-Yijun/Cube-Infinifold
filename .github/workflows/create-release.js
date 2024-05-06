@@ -1,3 +1,5 @@
+const {match} = require('assert');
+
 module.exports = main;
 
 const CHANGELOG_FILE = 'CHANGELOG.md';
@@ -111,55 +113,39 @@ function trim_commit_header(header) {
 commit 5d9af644ceb59cd20af6b07d43e5019ae4c5a9db
 Author: Wu-Yijun <wuyijun21@mails.ucas.ac.cn>
 Date:   Sun May 5 21:41:09 2024 -0700
-
     test
     second line
     3rd line
-
 commit 9cb24a67498d18d9c0122c6fc11f271aa9228aaf
 Author: Wu-Yijun <wuyijun21@mails.ucas.ac.cn>
 Date:   Sun May 5 21:39:45 2024 -0700
-
     tst
-
 */
   /* sample result:
 ### test
 
-*2024-05-05 21:41:09 -0700* by [Wu-Yijun](mailto:wuyijun21@mails.ucas.ac.cn)
+*2024-05-05 21:41:09 (北美太平洋夏令时间)* by [Wu-Yijun](mailto:wuyijun21@mails.ucas.ac.cn)
 
 second line
 3rd line
 
 ### tst
 
-*2024-05-05 21:39:45 -0700* by [Wu-Yijun](mailto:wuyijun21@mails.ucas.ac.cn)
+*2024-05-05 21:39:45 (北美太平洋夏令时间)* by [Wu-Yijun](mailto:wuyijun21@mails.ucas.ac.cn)
 
 */
-  console.log(header);
   const pattern =
-      /commit ([0-9a-f]{40})\nAuthor: (.*) <(.*)>\nDate: (.*)\n\n((?:.|\n)*?)(?=\ncommit|$)/g;
-  const list = header.matchAll(pattern)
-                   .map((match) => {
-                     const content =
-                         match[5].split('\n').map(line => line.trim());
-                     const header = `### ${content[0]}\n\n`;
-                     const body = content.slice(1).join('\n');
-                     return {
-                       sha: match[1],
-                       author: match[2],
-                       email: match[3],
-                       date: match[4].trim(),
-                       header,
-                       body
-                     };
-                   })
-                   .toArray();
-  const result = list.map((item) => {
-                       return `${item.header}*${item.date}* by [${
-                           item.author}](mailto:${item.email})\n${item.body}`;
-                     })
-                     .join('\n\n');
+      /commit ([0-9a-f]{40})\nAuthor: (.*) <(.*)>\nDate: (.*)\n((?:.|\n)*?)(?=\ncommit|$)/g;
+  const trim = (match) => {
+    const [_, sha, author, email, date, message] = match;
+    const content = message.split('\n').map(line => line.trim());
+    const header = `### ${content[0]}\n\n`;
+    const body = content.slice(1).join('\n');
+    const trim_date = new Date(date).toString();
+    return `${header}*${trim_date}* by [${author}](mailto:${email})\n${body}`;
+  };
+  const list = header.matchAll(pattern).toArray();
+  const result = list.map(trim).join('\n\n');
   return result;
 }
 
