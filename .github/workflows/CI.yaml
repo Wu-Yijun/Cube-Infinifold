@@ -177,11 +177,13 @@ jobs:
         with:
           name: ${{ env.EXECUTABLE_NAME }}_${{ matrix.os.system }}
           path: ${{ env.EXECUTABLE_NAME }}_${{ matrix.os.system }}
-          run-id: '126391865'
+          run-id: '8972489291'
 
       - name: List files
         if: ${{ matrix.os.enabled }}
-        run: ls -R
+        run: |
+          ls -R
+          echo "Run id: ${{ github.run_id }}"
 
       - name: Check on ${{ matrix.os.system }}
         if: ${{ matrix.os.enabled }}
