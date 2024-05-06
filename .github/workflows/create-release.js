@@ -12,7 +12,7 @@ async function main({github, context, sha}) {
   const {tag, tag_sha} = await get_latest_tag({github, context});
 
   // get the commit message
-  const commit_message = await get_commit_message({execSync, tag_sha, sha});
+  const commit_message = await get_commit_message({execSync, fs, tag_sha, sha});
 
   // return the commit message
   return {tag, commit_message};
@@ -35,7 +35,7 @@ async function get_latest_tag({github, context}) {
   return {tag, tag_sha};
 }
 
-async function get_commit_message({execSync, tag_sha, sha}) {
+async function get_commit_message({execSync, fs, tag_sha, sha}) {
   // get necessary text
   execSync('git fetch --prune --unshallow');
   const commit_header = execSync('git log -1 --pretty=%B').toString().trim();
