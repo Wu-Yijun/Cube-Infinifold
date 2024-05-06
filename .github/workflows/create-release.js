@@ -16,10 +16,10 @@ async function main({github, context, sha}) {
   const {tag, tag_sha} = await get_latest_tag({github, context});
 
   // get the release body
-  const release_body = await get_release_body({execSync, fs, tag_sha, sha});
+  const {body, body_raw} = await get_release_body({execSync, fs, tag_sha, sha});
 
   // save release_body as artifact
-  fs.writeFileSync('release_body.md', release_body);
+  fs.writeFileSync('release_body.md', body_raw);
 
   // create a new release with the tag and commit message
   const name = `Release ${tag} created by ${context.actor}`;
@@ -29,7 +29,7 @@ async function main({github, context, sha}) {
     tag_name: tag,
     // target_commitish: sha,
     name: name,
-    body: release_body.substring(0, MAX_BODY_LENGTH),
+    body: body,
     draft: false,
     prerelease: false,
   });
@@ -40,6 +40,15 @@ async function main({github, context, sha}) {
 
   // sleep for 1 second to make sure the release is created
   // await new Promise(r => setTimeout(r, 1000));
+
+  // upload body_raw to the release
+  await github.rest.repos.uploadReleaseAsset({
+    owner: context.repo.owner,
+    repo: context.repo.repo,
+    release_id: release_id,
+    name: 'release_body.md',
+    data: body_raw,
+  });
 
   // upload them to the release
   for (const {name, data} of artifacts) {
@@ -101,18 +110,21 @@ async function get_release_body({execSync, fs, tag_sha, sha}) {
       execSync(`git diff --word-diff=porcelain ${tag_sha} ${sha}`).toString();
 
   // link the text
-  let content = '';
-  content += trim_commit_header(commit_header);
-  content += '\n\n' + changelog;
-  content += '\n\n## *Git Diff*:\n\n';
-  content += `<details><summary>Changes are listed as follows:</summary>\n`;
-  content += trim_diff(commit_diff);
-  content += '</details>';
+  let body_raw = '';
+  body_raw += trim_commit_header(commit_header);
+  body_raw += '\n\n---\n\n' + changelog;
+  body_raw += '\n\n---\n\n## *Git Diff*:\n\n';
+  body_raw += `<details><summary>Changes are listed as follows:</summary>\n`;
+  body_raw += trim_diff(commit_diff);
+  body_raw += '</details>\n';
 
-  if (content.length > MAX_BODY_LENGTH) {
-    return content.substring(0, MAX_BODY_LENGTH - 20) + '\n\n(More)... ...';
+  const trim_release_body = release_body.substring(0, MAX_BODY_LENGTH);
+  if (body_raw.length > MAX_BODY_LENGTH) {
+    const body =
+        body_raw.substring(0, MAX_BODY_LENGTH - 20) + '\n\n(More)... ...';
+    return {body, origin_body: body_raw};
   } else {
-    return content;
+    return {body: body_raw, origin_body: body_raw};
   }
 }
 
