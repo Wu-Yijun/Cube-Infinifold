@@ -10,7 +10,6 @@ async function main({github, context, sha}) {
 
   // get the latest tag (first tag in the list)
   const {tag, tag_sha} = await get_latest_tag({github, context});
-  console.log(`tag: ${tag}, tag_sha: ${tag_sha}, sha: ${sha}`);
 
   // get the commit message
   const commit_message = await get_commit_message({execSync, fs, tag_sha, sha});
@@ -25,8 +24,7 @@ async function get_latest_tag({github, context}) {
     repo: context.repo.repo,    // name of the repo
     per_page: 1                 // only need the first tag
   });
-  console.log(response.data[0], response.data[0].commit);
-  const {name, commit: {tag_sha}} = response.data[0];
+  const {name, commit: {sha}} = response.data[0];
   // extract the version number from the tag (v1.2.3.4 => major=1, minor=2,
   // patch=3, build=4) need to convert the version numbers from string to number
   const [major, minor, patch, build] =
@@ -35,7 +33,7 @@ async function get_latest_tag({github, context}) {
   console.log(`runNumber: ${context.runNumber}`);
   // increment the patch number and change build to running number
   const tag = `v${major}.${minor}.${patch + 1}.${context.runNumber}`;
-  return {tag, tag_sha};
+  return {tag, tag_sha: sha};
 }
 
 async function get_commit_message({execSync, fs, tag_sha, sha}) {
