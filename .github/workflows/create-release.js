@@ -16,10 +16,10 @@ async function main({github, context, sha}) {
   const {tag, tag_sha} = await get_latest_tag({github, context});
 
   // get the release body
-  const {body, body_raw} = await get_release_body({execSync, fs, tag_sha, sha});
+  const {body, origin_body} = await get_release_body({execSync, fs, tag_sha, sha});
 
   // save release_body as artifact
-  fs.writeFileSync('release_body.md', body_raw);
+  fs.writeFileSync('release_body.md', origin_body);
 
   // create a new release with the tag and commit message
   const name = `Release ${tag} created by ${context.actor}`;
@@ -47,7 +47,7 @@ async function main({github, context, sha}) {
     repo: context.repo.repo,
     release_id: release_id,
     name: 'release_body.md',
-    data: body_raw,
+    data: origin_body,
   });
 
   // upload them to the release
