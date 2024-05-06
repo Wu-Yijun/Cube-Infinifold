@@ -138,42 +138,22 @@ jobs:
   #             data: artifact
   #           });
 
-  # conclude:
-  #   # needs: build_and_release
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@main
-  #     - name: Create Release and Upload assets
-  #       if: ${{ env.UPLOAD_TO_GITHUB_RELEASE == 'true' }}
-  #       uses: actions/github-script@main
-  #       with:
-  #         script: |
-  #           const data = {
-  #             githib, core, context,
-  #             sha: "${{ github.sha }}"
-  #           };
-  #           // git fetch --prune --unshallow
-  #           // git diff --word-diff=porcelain ${{ github.event.before }} ${{ github.sha }} > commit_diff_temp.md
-  #           execSync('git fetch --prune --unshallow');
-  #            execSync(`git diff --word-diff=porcelain ${{ github.event.before }} ${{ github.sha }}`);
-
-
-  #           const fs = require('fs');
-  #           const path = "target/release/${{ env.EXECUTABLE_NAME }}_${{ matrix.os.system }}.zip";
-  #           const artifact = fs.readFileSync(path);
-  #           const date = new Date().toISOString().replace(/T/, '_').replace(/\..+/, '').replace(/:/g, '-');
-  #           const artifactName = `Cube-Infinifold_${{ matrix.os.system }}_${date}.zip`;
-            
-  #           const response = await github.rest.repos.getLatestRelease({
-  #             owner: context.repo.owner,
-  #             repo: context.repo.repo
-  #           });
-  #           await github.rest.repos.uploadReleaseAsset({
-  #             owner: context.repo.owner,
-  #             repo: context.repo.repo,
-  #             release_id: response.data.id,
-  #             name: artifactName,
-  #             data: artifact
-  #           });
+  conclude:
+    # needs: build_and_release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@main
+      - name: Create Release and Upload assets
+        if: ${{ env.UPLOAD_TO_GITHUB_RELEASE == 'true' }}
+        uses: actions/github-script@main
+        with:
+          script: |
+            const response = await require('.github/workflows/create_release.js')({
+              github,
+              context,
+              core,
+              sha: '${{ github.sha }}',
+            });
+            console.log(response);
           
