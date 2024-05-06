@@ -31,9 +31,8 @@ async function main({github, context, sha}) {
     // target_commitish: sha,
     name: name,
     body: release_body,
-    draft: 'false',
-    prerelease: 'false',
-    make_latest: 'true'
+    draft: false,
+    prerelease: false,
   });
 
   // upload them to the release
