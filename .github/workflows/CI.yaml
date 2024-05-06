@@ -14,6 +14,8 @@ env:
   # ENABLE_CARGO_BUILD: 'false'
   ENABLE_PROGRAM_CHECK: 'true'
   # ENABLE_PROGRAM_CHECK: 'false'
+  ENABLE_INDENPENDENT_TEST: 'true'
+  # ENABLE_INDENPENDENT_TEST: 'false'
 
 
   BUILD_ON_UBUNTU: 'true'
@@ -58,6 +60,7 @@ jobs:
       BUILD_ON_UBUNTU: ${{ env.BUILD_ON_UBUNTU }}
       BUILD_ON_WINDOWS: ${{ env.BUILD_ON_WINDOWS }}
       BUILD_ON_MAC: ${{ env.BUILD_ON_MAC }}
+      ENABLE_INDENPENDENT_TEST: ${{ env.ENABLE_INDENPENDENT_TEST }}
       OLD_RELEASE_ID: ${{ steps.GetLatestReleaseID.outputs.result }}
 
   build_and_release:
@@ -148,8 +151,43 @@ jobs:
               data: artifact
             });
 
+  independent_test:
+    needs: [prepare, build_and_release]
+    strategy:
+      matrix:
+        os:
+          - name: 'Test on Windows'
+            system: 'windows'
+            enabled: ${{ needs.prepare.outputs.BUILD_ON_WINDOWS == 'true' && needs.prepare.outputs.ENABLE_INDENPENDENT_TEST == 'true'}}
+            app_extension: '.exe'
+          - name: 'Test on Linux'
+            system: 'ubuntu'
+            enabled: ${{ needs.prepare.outputs.BUILD_ON_UBUNTU == 'true' && needs.prepare.outputs.ENABLE_INDENPENDENT_TEST == 'true'}}
+          - name: 'Test on MacOS'
+            system: 'macos'
+            enabled: ${{ needs.prepare.outputs.BUILD_ON_MAC == 'true' && needs.prepare.outputs.ENABLE_INDENPENDENT_TEST == 'true'}}
+    runs-on: ${{ matrix.os.system }}-latest
+    steps:
+      - name: Download Artifact
+        if: ${{ matrix.os.enabled }}
+        uses: actions/download-artifact@main
+        with:
+          name: ${{ env.EXECUTABLE_NAME }}_${{ matrix.os.system }}
+          path: ${{ env.EXECUTABLE_NAME }}_${{ matrix.os.system }}
+
+      - name: Check on ${{ matrix.os.system }}
+        if: ${{ matrix.os.enabled }}
+        run: ./${{ env.EXECUTABLE_NAME }}_${{ matrix.os.system }}/${{ env.EXECUTABLE_CHECK_NAME }}${{ matrix.os.app_extension }}
+      
+      - name: Upload Artifact
+        if: ${{ matrix.os.enabled }}
+        uses: actions/upload-artifact@main
+        with:
+          name: independent_check_video_${{ matrix.os.system }}
+          path: ${{ env.EXECUTABLE_NAME }}_${{ matrix.os.system }}/test.mp4
+        
   conclude:
-    needs: build_and_release
+    needs: [build_and_release, independent_test]
     # needs: prepare
     runs-on: ubuntu-latest
     steps:

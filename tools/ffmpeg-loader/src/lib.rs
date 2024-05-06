@@ -47,5 +47,5 @@ pub fn finish() {
 
 #[no_mangle]
 pub fn hello() {
-    println!("Hello from Rust!");
+    println!("Hello ffmpeg-loader(video-encoder)!");
 }
