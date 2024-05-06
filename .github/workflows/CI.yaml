@@ -144,6 +144,7 @@ jobs:
 
   conclude:
     # needs: build_and_release
+    needs: prepare
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
