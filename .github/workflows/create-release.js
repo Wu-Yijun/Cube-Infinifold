@@ -19,6 +19,12 @@ async function main({github, context, sha}) {
 }
 
 async function get_latest_tag({github, context}) {
+  const response = await github.rest.repos.listTags({
+    owner: context.repo.owner,  // owner of the repo
+    repo: context.repo.repo,    // name of the repo
+    per_page: 1                 // only need the first tag
+  });
+  console.log(response);
   const {tag_name, commit: {tag_sha}} = (await github.rest.repos.listTags({
     owner: context.repo.owner,  // owner of the repo
     repo: context.repo.repo,    // name of the repo
