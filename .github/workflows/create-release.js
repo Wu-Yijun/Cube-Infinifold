@@ -1,4 +1,4 @@
-export default main;
+module.exports = main;
 
 const CHANGELOG_FILE = 'CHANGELOG.md';
 
