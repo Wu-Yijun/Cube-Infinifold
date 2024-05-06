@@ -2,7 +2,7 @@ name: Build Only Using Matrix
 
 on:
   workflow_dispatch:
-  push:
+  # push:
 
 env:
   EXECUTABLE_NAME: cube-infinifold
