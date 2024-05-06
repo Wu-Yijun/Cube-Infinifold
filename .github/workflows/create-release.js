@@ -22,7 +22,7 @@ async function main({github, context, sha}) {
   fs.writeFileSync('release_body.md', origin_body);
 
   // create a new release with the tag and commit message
-  const name = `Release ${tag} created by ${context.actor}`;
+  const name = `Release ${tag} by ${context.actor}`;
   const release = await github.rest.repos.createRelease({
     owner: context.repo.owner,
     repo: context.repo.repo,
@@ -110,7 +110,7 @@ async function get_release_body({execSync, fs, tag_sha, sha}) {
       execSync(`git diff --word-diff=porcelain ${tag_sha} ${sha}`).toString();
 
   // link the text
-  let body_raw = '';
+  let body_raw = '## *Commits*:\n\n';
   body_raw += trim_commit_header(commit_header);
   body_raw += '\n\n---\n\n' + changelog;
   body_raw += '\n\n---\n\n## *Git Diff*:\n\n';
@@ -171,7 +171,7 @@ second line
     const trim_date =
         new Date(date).toLocaleString(LOCAL[0], LOCAL[1]) + LOCAL[2];
     result +=
-        `${header}*${trim_date}* by [${author}](mailto:${email})\n${body}\n\n`;
+        `${header}*${trim_date}* by [${author}](mailto:${email})\n\n${body}\n\n`;
   }
   if (count > 3) {
     result += '</details>';
