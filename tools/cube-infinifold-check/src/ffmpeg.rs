@@ -170,13 +170,13 @@ fn load_lib(name: &str) -> Option<Library> {
         "MacOS" => format!("lib{}.dylib", name),
         _ => return None,
     };
-    let cur_path = std::env::current_dir().ok()?;
-    let path_exe = std::env::current_exe().ok()?;
-    let path = path_exe.ancestors().nth(1)?;
+    let cur_path = std::env::current_dir().expect("Failed to get current dir");
+    let path_exe = std::env::current_exe().expect("Failed to get current exe");
+    let path = path_exe.ancestors().nth(1).unwrap();
     let path = format!("{}/libs", path.display());
     println!("Loading lib from: {}", path);
-    std::env::set_current_dir(path).ok()?;
+    std::env::set_current_dir(path).ok().unwrap();
     let lib = unsafe { libloading::Library::new(libname).ok() };
-    std::env::set_current_dir(cur_path).ok()?;
+    std::env::set_current_dir(cur_path).ok().unwrap();
     lib
 }
