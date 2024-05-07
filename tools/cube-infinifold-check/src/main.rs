@@ -25,7 +25,7 @@ fn join_path(relative_path: &str) {
     #[cfg(target_os = "linux")]
     const VAR: &str = "LD_LIBRARY_PATH";
     #[cfg(target_os = "macos")]
-    const VAR: &str = "DYLD_LIBRARY_PATH";
+    const VAR: &str = "DYLD_FALLBACK_LIBRARY_PATH";
     #[cfg(not(any(target_os = "windows", target_os = "linux", target_os = "macos")))]
     const VAR: &str = "UNKNOWN";
 
