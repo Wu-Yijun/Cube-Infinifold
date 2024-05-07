@@ -37,8 +37,10 @@ fn join_path(relative_path: &str) {
 
     let path_exe = std::env::current_exe().expect("Failed to get current exe");
     let path = path_exe.ancestors().nth(1).unwrap();
+    let path_str = format!("{}/{}", path.display(), relative_path);
+    println!("Adding path to {VAR}: {}", path_str);
     // 将新路径添加到PATH环境变量中
-    let new_path_buf = PathBuf::from(format!("{}/{}", path.display(), relative_path));
+    let new_path_buf = PathBuf::from(path_str);
     if !paths.contains(&new_path_buf) {
         paths.push(new_path_buf);
     }
