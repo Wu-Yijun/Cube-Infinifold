@@ -32,7 +32,7 @@ fn set_path() {
 fn main() {
     set_path();
     // let path = library_filename("libs/main");
-    let path = "libs/libmain.so";
+    let path = "./libs/libmain.so";
     // let path = format!("libs/{:?}", library_filename("main"));
     println!("Loading library: {:?}", path);
     let lib = unsafe { Library::new(path).unwrap() };
