@@ -2,12 +2,12 @@ name: Build Selected Test Only
 
 on:
   workflow_dispatch:
-  push:
+  # push:
 
 jobs:
   build_and_release:
     runs-on: ${{ matrix.os.system }}-latest
-    continue-on-error: true
+    # continue-on-error: true
     strategy:
       matrix:
         os: 
@@ -38,17 +38,15 @@ jobs:
         run: cargo build
         working-directory: ./examples/test_example_lib
       - name: Test
-        continue-on-error: true
+        # continue-on-error: true
         run: |
-          cd ./target/debug
+          mkdir -p ./target/debug/libs
+          cp /target/debug/${{ matrix.os.libname }} ./target/debug/libs
+          cp /target/debug/${{ matrix.os.libname2 }} ./target/debug/libs
 
-          mkdir -p ./libs
-          cp ${{ matrix.os.libname }} ./libs
-          cp ${{ matrix.os.libname2 }} ./libs
+          ${{ matrix.os.sudo }} ./target/debug/test_set_env${{ matrix.os.ext }}
 
-          ${{ matrix.os.sudo }} ./test_set_env${{ matrix.os.ext }}
-
-          ${{ matrix.os.sudo }} ./test_set_env${{ matrix.os.ext }}
+          ${{ matrix.os.sudo }} ./target/debug/test_set_env${{ matrix.os.ext }}
 
 
       # - name: Test

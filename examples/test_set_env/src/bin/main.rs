@@ -1,4 +1,4 @@
-use std::{env, fs::File, process::Command};
+use std::{env, process::Command};
 
 #[cfg(target_os = "windows")]
 const OS: &str = "windows";
@@ -7,7 +7,7 @@ const OS: &str = "linux";
 #[cfg(target_os = "macos")]
 const OS: &str = "macos";
 
-use libloading::{library_filename, Library};
+use libloading::Library;
 
 fn set_current_dir() -> std::path::PathBuf {
     let path_exe = env::current_exe().unwrap();
@@ -18,7 +18,6 @@ fn set_current_dir() -> std::path::PathBuf {
     out_path
 }
 
-
 fn linux_save_custom_search_path(mut custom_library_path: Vec<&str>) {
     const FILE_PATH: &str = "/etc/ld.so.conf.d/cube_infinifold_libs.conf";
     // sort and remove duplicates
@@ -26,13 +25,14 @@ fn linux_save_custom_search_path(mut custom_library_path: Vec<&str>) {
     custom_library_path.dedup();
     let custom_library_path = custom_library_path.join("\n");
 
-    let file_content =  std::fs::read_to_string(FILE_PATH).unwrap_or_default();
+    let file_content = std::fs::read_to_string(FILE_PATH).unwrap_or_default();
     if file_content == custom_library_path {
         return;
     }
 
     println!("Installing custom search path...");
-    std::fs::write(FILE_PATH, custom_library_path).expect("Unable to write file, try running with sudo!");
+    std::fs::write(FILE_PATH, custom_library_path)
+        .expect("Unable to write file, try running with sudo!");
     Command::new("sudo")
         .arg("ldconfig")
         .spawn()

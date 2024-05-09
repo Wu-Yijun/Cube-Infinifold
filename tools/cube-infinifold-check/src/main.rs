@@ -4,9 +4,9 @@ mod font;
 /// this application is used to check the cube-infinifold executable
 /// and its output in github actions
 fn main() {
-    println!("Hello, world!");
-
-    // join_path("libs");
+    println!("Installing cube-infinifold...");
+    install();
+    println!("Done!");
 
     font::main();
 
@@ -17,40 +17,52 @@ fn main() {
     std::process::exit(0);
 }
 
-use std::{env, path::PathBuf};
-fn join_path(relative_path: &str) {
-    // 根据不同的操作系统设置不同的环境变量
-    #[cfg(target_os = "windows")]
-    const  VAR: &str = "PATH";
-    #[cfg(target_os = "linux")]
-    const VAR: &str = "LD_LIBRARY_PATH";
-    #[cfg(target_os = "macos")]
-    const VAR: &str = "DYLD_FALLBACK_LIBRARY_PATH";
-    #[cfg(not(any(target_os = "windows", target_os = "linux", target_os = "macos")))]
-    const VAR: &str = "UNKNOWN";
 
-    // 获取当前的PATH环境变量
-    let mut paths = match env::var_os(VAR) {
-        Some(val) => env::split_paths(&val).collect::<Vec<_>>(),
-        None => Vec::new(),
-    };
+use std::{env, process::Command};
 
-    let path_exe = std::env::current_exe().expect("Failed to get current exe");
+#[cfg(target_os = "windows")]
+const OS: &str = "windows";
+#[cfg(target_os = "linux")]
+const OS: &str = "linux";
+#[cfg(target_os = "macos")]
+const OS: &str = "macos";
+
+fn set_current_dir() -> std::path::PathBuf {
+    let path_exe = env::current_exe().unwrap();
     let path = path_exe.ancestors().nth(1).unwrap();
-    let path_str = format!("{}/{}", path.display(), relative_path);
-    println!("Adding path to {VAR}: {}", path_str);
-    // 将新路径添加到PATH环境变量中
-    let new_path_buf = PathBuf::from(path_str);
-    if !paths.contains(&new_path_buf) {
-        paths.push(new_path_buf);
+    let out_path = path.join("libs");
+    env::set_current_dir(out_path.clone()).unwrap();
+    println!("Output path: {:?}", env::current_dir());
+    out_path
+}
+
+fn linux_save_custom_search_path(mut custom_library_path: Vec<&str>) {
+    const FILE_PATH: &str = "/etc/ld.so.conf.d/cube_infinifold_libs.conf";
+    // sort and remove duplicates
+    custom_library_path.sort();
+    custom_library_path.dedup();
+    let custom_library_path = custom_library_path.join("\n");
+
+    let file_content = std::fs::read_to_string(FILE_PATH).unwrap_or_default();
+    if file_content == custom_library_path {
+        return;
     }
 
-    // 生成新的PATH环境变量字符串
-    let new_path_str = env::join_paths(paths).expect("Failed to join paths");
+    println!("Installing custom search path...");
+    std::fs::write(FILE_PATH, custom_library_path)
+        .expect("Unable to write file, try running with sudo!");
+    Command::new("sudo")
+        .arg("ldconfig")
+        .spawn()
+        .expect("failed to execute ldconfig");
+    // 等待一段时间以确保缓存已更新
+    std::thread::sleep(std::time::Duration::from_secs(1));
+    println!("Library cache updated!");
+}
 
-    // 设置新的PATH环境变量
-    env::set_var(VAR, new_path_str);
-
-    // 打印新的PATH环境变量
-    println!("PATH: {:?}", env::var("PATH").unwrap());
+fn install() {
+    let current_path = set_current_dir();
+    if OS == "linux" {
+        linux_save_custom_search_path(vec![current_path.to_str().unwrap()]);
+    }
 }

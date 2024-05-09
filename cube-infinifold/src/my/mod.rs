@@ -8,6 +8,7 @@ pub mod level_index;
 pub mod load_fonts;
 pub mod menu;
 pub mod performance_evaluation;
+pub mod install;
 
 pub trait MyViewImpl {
     fn destory(&mut self);

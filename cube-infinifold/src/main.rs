@@ -5,11 +5,12 @@ mod my;
 mod test;
 use game_options::{media, MyGameOption};
 use my::{
-    cube_infinifold_logo::MyInfinifoldLogo, game::MyGameView, gl_views::MyGLView,
-    level_index::MyLevelIndex, load_fonts::load_fonts, menu::MyMenu, MyView, MyViewImpl,
+    cube_infinifold_logo::MyInfinifoldLogo, game::MyGameView, gl_views::MyGLView, level_index::MyLevelIndex, load_fonts::load_fonts, menu::MyMenu, MyView, MyViewImpl
 };
 
 fn main() -> Result<(), eframe::Error> {
+    my::install::install();
+
     let options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default()
             .with_fullscreen(true)
@@ -181,7 +182,7 @@ impl eframe::App for MyApp {
                             self.option.screenshot.video_encoder = Some(media::Video::new(
                                 (rect.height() * ctx.pixels_per_point()).round() as usize,
                                 (rect.width() * ctx.pixels_per_point()).round() as usize,
-                                "output/video.mp4",
+                                "video.mp4",
                                 self.option.messages.send.clone(),
                                 self.option.global_message.sender.clone(),
                             ));

@@ -3,8 +3,6 @@ use std::sync::mpsc;
 use crate::my::game::game_info::MyGameInfo;
 use crate::my::performance_evaluation::PerformanceEvaluation;
 
-use libloading::Library;
-
 #[derive(Debug)]
 pub struct GLobalMessage {
     pub sender: mpsc::Sender<(String, i64)>,
@@ -201,21 +199,18 @@ pub mod media {
             msg_sender: Sender<(String, u64)>,
             info_sender: Sender<(String, i64)>,
         ) -> Self {
-            let lib = super::load_lib("videosaver").unwrap();
-            let (init, add_frame, finish, hello): (
-                fn(usize, usize, String),
-                fn(ndarray::Array3<u8>, f64),
-                fn(),
-                fn(),
-            ) = unsafe {
-                (
-                    *lib.get::<fn(usize, usize, String)>(b"new\0").unwrap(),
-                    *lib.get::<fn(ndarray::Array3<u8>, f64)>(b"add_frame\0")
-                        .unwrap(),
-                    *lib.get::<fn()>(b"finish\0").unwrap(),
-                    *lib.get::<fn()>(b"hello\0").unwrap(),
-                )
+            let lib =
+                unsafe { libloading::Library::new(super::get_lib_name("videosaver")).unwrap() };
+            
+            let init: fn(usize, usize, String) =
+                *unsafe { lib.get::<fn(usize, usize, String)>(b"new\0").unwrap() };
+            let add_frame: fn(ndarray::Array3<u8>, f64) = *unsafe {
+                lib.get::<fn(ndarray::Array3<u8>, f64)>(b"add_frame\0")
+                    .unwrap()
             };
+            let finish: fn() = *unsafe { lib.get::<fn()>(b"finish\0").unwrap() };
+            let hello: fn() = *unsafe { lib.get::<fn()>(b"hello\0").unwrap() };
+
             init(width, height, path.to_string());
             hello();
 
@@ -250,7 +245,9 @@ pub mod media {
                     ))
                     .unwrap();
                 lib.close().unwrap();
-                info_sender.send(("recording ready".to_string(), 0)).unwrap();
+                info_sender
+                    .send(("recording ready".to_string(), 0))
+                    .unwrap();
             });
             Self {
                 width,
@@ -542,27 +539,41 @@ impl MyEvents {
     }
 }
 
-#[cfg(target_os = "windows")]
-const PLATFORM: &str = "Windows";
-#[cfg(target_os = "linux")]
-const PLATFORM: &str = "Linux";
-#[cfg(target_os = "macos")]
-const PLATFORM: &str = "MacOS";
+/// input: name of the library e.g.
+/// output: name of the library with extension based on the OS
+/// e.g. "libs/add" -> "libs/add.dll" (windows)
+/// e.g. "libs/add" -> "libs/libadd.so" (linux)
+/// e.g. "libs/add" -> "libs/libadd.dylib" (macos)
+fn get_lib_name(name: &str) -> String {
+    #[cfg(target_os = "windows")]
+    const OS: &str = "windows";
+    #[cfg(target_os = "linux")]
+    const OS: &str = "linux";
+    #[cfg(target_os = "macos")]
+    const OS: &str = "macos";
 
-fn load_lib(name: &str) -> Option<Library> {
-    let libname = match PLATFORM {
-        "Windows" => format!("{}.dll", name),
-        "Linux" => format!("lib{}.so", name),
-        "MacOS" => format!("lib{}.dylib", name),
-        _ => return None,
-    };
-    let cur_path = std::env::current_dir().ok()?;
-    let path_exe = std::env::current_exe().ok()?;
-    let path = path_exe.ancestors().nth(1)?;
-    let path = format!("{}/libs", path.display());
-    println!("Loading lib from: {}", path);
-    std::env::set_current_dir(path).ok()?;
-    let lib = unsafe { libloading::Library::new(libname).ok() };
-    std::env::set_current_dir(cur_path).ok()?;
-    lib
+    let path = name.split("/").collect::<Vec<_>>();
+    if path.len() == 1 {
+        match OS {
+            "windows" => format!("{}.dll", name),
+            "linux" => format!("lib{}.so", name),
+            "macos" => format!("lib{}.dylib", name),
+            _ => {
+                println!("Unsupported OS: {:?}", OS);
+                name.to_string()
+            }
+        }
+    } else {
+        let name = path[path.len() - 1];
+        let prefix = path[0..path.len() - 1].join("/");
+        match OS {
+            "windows" => format!("{}/{}.dll", prefix, name),
+            "linux" => format!("{}/lib{}.so", prefix, name),
+            "macos" => format!("{}/lib{}.dylib", prefix, name),
+            _ => {
+                println!("Unsupported OS: {:?}", OS);
+                name.to_string()
+            }
+        }
+    }
 }
