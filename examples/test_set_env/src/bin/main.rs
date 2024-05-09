@@ -102,11 +102,11 @@ fn get_lib_name(name: &str) -> String {
 
 fn main() {
     install();
-    let name = get_lib_name("add");
-    println!("Current Dir {:?}", env::current_dir());
-    println!("Library name: {:?}", name);
-    let name = env::current_dir().unwrap().join(name);
-    println!("Library name: {:?}", name);
+    // let name = get_lib_name("add");
+    // println!("Current Dir {:?}", env::current_dir());
+    // println!("Library name: {:?}", name);
+    // let name = env::current_dir().unwrap().join(name);
+    // println!("Library name: {:?}", name);
     // read number
     // let mut input = String::new();
     // println!("Please input a number:");
@@ -114,7 +114,8 @@ fn main() {
     // let input: i32 = input.trim().parse().unwrap();
     // println!("You input: {}", input);
 
-    // let name = get_lib_name("libs/add");
+    let name = get_lib_name("./libs/add");
+    println!("Library name: {:?}", name);
 
     let lib = unsafe { Library::new(name).unwrap() };
     println!("Library loaded!");
