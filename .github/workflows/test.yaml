@@ -11,23 +11,23 @@ jobs:
     strategy:
       matrix:
         os: 
-          # - name: 'Build on Windows'
-          #   system: 'windows'
-          #   # build_command: ./tools/build/build.ps1
-          #   ext: '.exe'
-          #   libname: 'add.dll'
-          #   libname2: 'sublib.dll'
+          - name: 'Build on Windows'
+            system: 'windows'
+            # build_command: ./tools/build/build.ps1
+            ext: '.exe'
+            libname: 'add.dll'
+            libname2: 'sublib.dll'
           - name: 'Build on Linux'
             system: 'ubuntu'
             # build_command: sh ./tools/build/build.sh
             libname: 'libadd.so'
             libname2: 'libsublib.so'
             sudo: sudo
-          # - name: 'Build on MacOS'
-          #   system: 'macos'
-          #   # build_command: sh ./tools/build/build.sh
-          #   libname: 'libadd.dylib'
-          #   libname2: 'libsublib.dylib'
+          - name: 'Build on MacOS'
+            system: 'macos'
+            # build_command: sh ./tools/build/build.sh
+            libname: 'libadd.dylib'
+            libname2: 'libsublib.dylib'
             
     steps:
       - uses: actions/checkout@main
@@ -46,8 +46,8 @@ jobs:
           cp ${{ matrix.os.libname }} ./libs
           cp ${{ matrix.os.libname2 }} ./libs
 
-          ls
-          export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/runner/work/Cube-Infinifold/Cube-Infinifold/target/debug/libs
+          ${{ matrix.os.sudo }} ./test_set_env${{ matrix.os.ext }}
+
           ${{ matrix.os.sudo }} ./test_set_env${{ matrix.os.ext }}
 
 
