@@ -11,23 +11,23 @@ jobs:
     strategy:
       matrix:
         os: 
-          - name: 'Build on Windows'
-            system: 'windows'
-            # build_command: ./tools/build/build.ps1
-            ext: '.exe'
-            libname: 'add.dll'
-            libname2: 'sublib.dll'
+          # - name: 'Build on Windows'
+          #   system: 'windows'
+          #   # build_command: ./tools/build/build.ps1
+          #   ext: '.exe'
+          #   libname: 'add.dll'
+          #   libname2: 'sublib.dll'
           - name: 'Build on Linux'
             system: 'ubuntu'
             # build_command: sh ./tools/build/build.sh
             libname: 'libadd.so'
             libname2: 'libsublib.so'
             sudo: sudo
-          - name: 'Build on MacOS'
-            system: 'macos'
-            # build_command: sh ./tools/build/build.sh
-            libname: 'libadd.dylib'
-            libname2: 'libsublib.dylib'
+          # - name: 'Build on MacOS'
+          #   system: 'macos'
+          #   # build_command: sh ./tools/build/build.sh
+          #   libname: 'libadd.dylib'
+          #   libname2: 'libsublib.dylib'
             
     steps:
       - uses: actions/checkout@main
