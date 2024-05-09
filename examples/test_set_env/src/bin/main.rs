@@ -47,6 +47,12 @@ fn install() {
             env::set_var(LD_LIBRARY_PATH, new_path);
             println!("{LD_LIBRARY_PATH}: {:?}", env::var(LD_LIBRARY_PATH).unwrap());
 
+            // update library cache
+            let output = Command::new("sudo")
+                .arg("ldconfig")
+                .spawn()
+                .expect("failed to execute ldconfig");
+            println!("Library cache updated: {:?}", output);
 
             // install ffmpeg
             // let output = Command::new("sudo")
