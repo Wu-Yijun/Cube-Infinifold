@@ -45,8 +45,7 @@ unsafe fn load_lib() {
 }
 
 fn main() {
-    let output = std::process::Command::new("export")
-        .arg("LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/runner/work/Cube-Infinifold/Cube-Infinifold/target/debug/libs")
+    let output = std::process::Command::new("export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/runner/work/Cube-Infinifold/Cube-Infinifold/target/debug/libs")
         .output()
         .expect("Failed to execute command");
     println!("Output: {}", String::from_utf8_lossy(&output.stdout));
