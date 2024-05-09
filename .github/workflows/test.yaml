@@ -11,36 +11,41 @@ jobs:
     strategy:
       matrix:
         os: 
-          # - name: 'Build on Windows'
-          #   system: 'windows'
-          #   # build_command: ./tools/build/build.ps1
-          #   ext: '.exe'
-          #   libname: 'add.dll'
-          # - name: 'Build on Linux'
-          #   system: 'ubuntu'
-          #   # build_command: sh ./tools/build/build.sh
-          #   libname: 'libadd.so'
+          - name: 'Build on Windows'
+            system: 'windows'
+            # build_command: ./tools/build/build.ps1
+            ext: '.exe'
+            libname: 'add.dll'
+            libname2: 'sublib.dll'
+          - name: 'Build on Linux'
+            system: 'ubuntu'
+            # build_command: sh ./tools/build/build.sh
+            libname: 'libadd.so'
+            libname2: 'libsublib.so'
           - name: 'Build on MacOS'
             system: 'macos'
             # build_command: sh ./tools/build/build.sh
             libname: 'libadd.dylib'
+            libname2: 'libsublib.dylib'
             
     steps:
       - uses: actions/checkout@main
       - name: Build
-        run: |
-          # cd ./examples/test_set_env
-          cargo build
+        run: cargo build
         working-directory: ./examples/test_set_env
+      - name: Build
+        run: cargo build
+        working-directory: ./examples/test_example_lib
       - name: Test
         run: |
           cd ./target/debug
 
           mkdir -p ./libs
           cp ${{ matrix.os.libname }} ./libs
+          cp ${{ matrix.os.libname2 }} ./libs
 
           ls
-          ./test_set_env
+          ./test_set_env${{ matrix.os.ext }}
 
 
       # - name: Test

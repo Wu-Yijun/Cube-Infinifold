@@ -12,10 +12,6 @@ name = "add"
 path = "src/lib/add.rs"
 crate-type = ["dylib"]
 
-# [lib]
-# name = "sublib"
-# path = "src/lib/sublib.rs"
-# crate-type = ["dylib"]
 
 [dependencies]
 libloading = "*"
