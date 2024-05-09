@@ -35,6 +35,7 @@ jobs:
       - name: Test
         run: |
           export PATH=$PATH:/home/runner/work/Cube-Infinifold/Cube-Infinifold/target/debug/libs
+          export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/runner/work/Cube-Infinifold/Cube-Infinifold/target/debug/libs
           cd ./target/debug
 
           mkdir -p ./libs
