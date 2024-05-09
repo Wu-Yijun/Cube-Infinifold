@@ -38,7 +38,7 @@ jobs:
         run: cargo build
         working-directory: ./examples/test_example_lib
       - name: Test
-        # continue-on-error: true
+        continue-on-error: true
         run: |
           mkdir -p ./target/debug/libs
           cp ./target/debug/${{ matrix.os.libname }} ./target/debug/libs

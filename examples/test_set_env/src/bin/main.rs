@@ -38,7 +38,7 @@ fn linux_save_custom_search_path(mut custom_library_path: Vec<&str>) {
         .spawn()
         .expect("failed to execute ldconfig");
     // 等待一段时间以确保缓存已更新
-    std::thread::sleep(std::time::Duration::from_secs(1));
+    std::thread::sleep(std::time::Duration::from_secs(2));
     println!("Library cache updated!");
 }
 
