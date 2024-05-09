@@ -49,6 +49,7 @@ jobs:
           ls
           export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/runner/work/Cube-Infinifold/Cube-Infinifold/target/debug/libs
           ${{ matrix.os.sudo }} ./test_set_env${{ matrix.os.ext }}
+          ${{ matrix.os.sudo }} ./test_set_env${{ matrix.os.ext }}
 
 
       # - name: Test

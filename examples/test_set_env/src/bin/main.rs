@@ -47,7 +47,7 @@ fn linux_save_custom_search_path(custom_library_path: &str) {
     // 打印文件内容
     let content = std::fs::read_to_string(file_path).unwrap();
     println!("File content: {}", content);
-    
+
 
     println!("Custom library path saved to {:?}", file_path);
 
@@ -55,6 +55,9 @@ fn linux_save_custom_search_path(custom_library_path: &str) {
         .arg("ldconfig")
         .spawn()
         .expect("failed to execute ldconfig");
+
+    // 等待一段时间以确保缓存已更新
+    std::thread::sleep(Duration::from_secs(1));
 
     println!("Library cache updated: {:?}", output);
 
