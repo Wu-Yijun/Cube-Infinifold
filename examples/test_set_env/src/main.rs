@@ -45,7 +45,7 @@ unsafe fn load_lib() {
 }
 
 fn main() {
-    set_path(false);
-    set_path(true);
+    // set_path(false);
+    // set_path(true);
     unsafe { load_lib() };
 }
