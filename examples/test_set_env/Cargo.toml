@@ -4,22 +4,18 @@ version = "0.1.0"
 edition = "2021"
 
 [[bin]]
-name = "start"
-path = "src/main.rs"
-
-
-# [lib]
-[[bin]]
-name = "main"
-path = "src/lib.rs"
-# crate-type = ["dylib"]
-
+name = "test_set_env"
+path = "src/bin/main.rs"
 
 [lib]
 name = "add"
-path = "src/add.rs"
+path = "src/lib/add.rs"
 crate-type = ["dylib"]
 
+# [lib]
+# name = "sublib"
+# path = "src/lib/sublib.rs"
+# crate-type = ["dylib"]
 
 [dependencies]
 libloading = "*"

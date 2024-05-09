@@ -16,14 +16,14 @@ jobs:
           #   # build_command: ./tools/build/build.ps1
           #   ext: '.exe'
           #   libname: 'add.dll'
-          - name: 'Build on Linux'
-            system: 'ubuntu'
-            # build_command: sh ./tools/build/build.sh
-            libname: '*.so'
-          # - name: 'Build on MacOS'
-          #   system: 'macos'
+          # - name: 'Build on Linux'
+          #   system: 'ubuntu'
           #   # build_command: sh ./tools/build/build.sh
-          #   libname: 'libadd.dylib'
+          #   libname: '*.so'
+          - name: 'Build on MacOS'
+            system: 'macos'
+            # build_command: sh ./tools/build/build.sh
+            libname: 'libadd.dylib'
             
     steps:
       - uses: actions/checkout@main
@@ -40,7 +40,7 @@ jobs:
           cp ${{ matrix.os.libname }} ./libs
 
           ls
-          ./start
+          ./test_set_env
 
 
       # - name: Test
