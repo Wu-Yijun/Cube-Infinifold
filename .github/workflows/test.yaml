@@ -19,7 +19,7 @@ jobs:
           # - name: 'Build on Linux'
           #   system: 'ubuntu'
           #   # build_command: sh ./tools/build/build.sh
-          #   libname: '*.so'
+          #   libname: 'libadd.so'
           - name: 'Build on MacOS'
             system: 'macos'
             # build_command: sh ./tools/build/build.sh
