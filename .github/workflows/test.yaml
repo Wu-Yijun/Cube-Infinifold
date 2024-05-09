@@ -1,0 +1,31 @@
+name: Build Only Using Matrix
+
+on:
+  workflow_dispatch:
+  push:
+
+jobs:
+  build_and_release:
+    runs-on: ${{ matrix.os.system }}-latest
+    continue-on-error: true
+    strategy:
+      matrix:
+        os: 
+          - name: 'Build on Windows'
+            system: 'windows'
+            # build_command: ./tools/build/build.ps1
+          - name: 'Build on Linux'
+            system: 'ubuntu'
+            # build_command: sh ./tools/build/build.sh
+          - name: 'Build on MacOS'
+            system: 'macos'
+            # build_command: sh ./tools/build/build.sh
+            
+    steps:
+      - uses: actions/checkout@main
+        if: ${{ matrix.os.enabled }}
+      - name: Run
+        run: |
+          cd examples/test_Set_Env
+          cargo run
+          

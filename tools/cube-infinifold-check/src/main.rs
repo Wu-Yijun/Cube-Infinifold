@@ -6,7 +6,7 @@ mod font;
 fn main() {
     println!("Hello, world!");
 
-    join_path("libs");
+    // join_path("libs");
 
     font::main();
 
