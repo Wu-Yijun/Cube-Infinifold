@@ -34,13 +34,14 @@ jobs:
         working-directory: ./examples/test_set_env
       - name: Test
         run: |
+          ls
           cd ./target/debug
           mkdir -p ./libs
           cp ${{ matrix.os.libname }} ./libs
 
           ./test_set_env${{ matrix.os.ext }}
 
-          rm -rf ${{ matrix.os.libname }}
+          rm ${{ matrix.os.libname }}
 
           ./test_set_env${{ matrix.os.ext }}
           
