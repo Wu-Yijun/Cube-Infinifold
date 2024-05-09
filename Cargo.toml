@@ -8,6 +8,7 @@ members = [
     "levels/level-interface",       # crate
     "levels/levels-interface",      # crate
     "levels/test-level",            # dylib/level
-    "levels/test-penrose-triangle", "examples/test_set_env", # dylib/level
+    "levels/test-penrose-triangle",  # dylib/level
+    # "examples/test_set_env",        # test/application
 ]
 resolver = "2"
