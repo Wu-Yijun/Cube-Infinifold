@@ -18,6 +18,39 @@ fn set_current_dir() -> std::path::PathBuf {
     out_path
 }
 
+use std::io::Write;
+fn linux_save_custom_search_path(custom_library_path: &str) {
+    // 指定要写入的文件路径
+    let file_path = "/etc/ld.so.conf.d/my_path.conf";
+
+    // 创建并打开文件
+    let mut file = std::fs::File::create(file_path).unwrap();
+
+    // // 读取已有路径
+    // let paths = std::fs::read_to_string(file_path).unwrap_or_default();
+    // let paths = paths.split('\n').collect::<Vec<_>>();
+    // // 如果已有路径中包含自定义路径，则不再写入
+    // if paths.contains(&custom_library_path) {
+    //     println!("Custom library path already exists in {:?}", file_path);
+    //     return;
+    // }
+
+    // 写入自定义路径到文件
+    writeln!(file, "{}", custom_library_path).unwrap();
+
+    // 如果需要，您可以写入更多路径，例如：
+    // writeln!(file, "{}", "/another/custom/library/path")?;
+
+    println!("Custom library path saved to {:?}", file_path);
+
+    let output = Command::new("sudo")
+        .arg("ldconfig")
+        .spawn()
+        .expect("failed to execute ldconfig");
+
+    println!("Library cache updated: {:?}", output);
+}
+
 fn install() {
     let current_path = set_current_dir();
     match OS {
@@ -41,18 +74,17 @@ fn install() {
             let path = env::var_os(LD_LIBRARY_PATH).unwrap_or_default();
             let mut paths = env::split_paths(&path).collect::<Vec<_>>();
             if !paths.contains(&current_path) {
-                paths.push(current_path);
+                paths.push(current_path.clone());
             }
             let new_path = env::join_paths(paths).expect("Failed to join paths");
             env::set_var(LD_LIBRARY_PATH, new_path);
-            println!("{LD_LIBRARY_PATH}: {:?}", env::var(LD_LIBRARY_PATH).unwrap());
+            println!(
+                "{LD_LIBRARY_PATH}: {:?}",
+                env::var(LD_LIBRARY_PATH).unwrap()
+            );
 
             // update library cache
-            let output = Command::new("sudo")
-                .arg("ldconfig")
-                .spawn()
-                .expect("failed to execute ldconfig");
-            println!("Library cache updated: {:?}", output);
+            linux_save_custom_search_path(current_path.to_str().unwrap());
 
             // install ffmpeg
             // let output = Command::new("sudo")
@@ -62,7 +94,6 @@ fn install() {
             //     .spawn()
             //     .expect("failed to execute apt-get install ffmpeg");
             // println!("FFmpeg installed: {:?}", output);
-            
         }
         "macos" => {
             // macos
