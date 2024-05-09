@@ -2,7 +2,7 @@ name: Build Selected Test Only
 
 on:
   workflow_dispatch:
-  # push:
+  push:
 
 jobs:
   build_and_release:
@@ -41,8 +41,8 @@ jobs:
         # continue-on-error: true
         run: |
           mkdir -p ./target/debug/libs
-          cp /target/debug/${{ matrix.os.libname }} ./target/debug/libs
-          cp /target/debug/${{ matrix.os.libname2 }} ./target/debug/libs
+          cp ./target/debug/${{ matrix.os.libname }} ./target/debug/libs
+          cp ./target/debug/${{ matrix.os.libname2 }} ./target/debug/libs
 
           ${{ matrix.os.sudo }} ./target/debug/test_set_env${{ matrix.os.ext }}
 
