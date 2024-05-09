@@ -34,8 +34,9 @@ jobs:
         working-directory: ./examples/test_set_env
       - name: Test
         run: |
-          ls
           cd ./target/debug
+          
+          ls
           mkdir -p ./libs
           cp ${{ matrix.os.libname }} ./libs
 
