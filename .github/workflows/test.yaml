@@ -14,18 +14,33 @@ jobs:
           - name: 'Build on Windows'
             system: 'windows'
             # build_command: ./tools/build/build.ps1
+            ext: '.exe'
+            libname: 'add.dll'
           - name: 'Build on Linux'
             system: 'ubuntu'
             # build_command: sh ./tools/build/build.sh
+            libname: 'libadd.so'
           - name: 'Build on MacOS'
             system: 'macos'
             # build_command: sh ./tools/build/build.sh
+            libname: 'libadd.dylib'
             
     steps:
       - uses: actions/checkout@main
-      - name: Run
+      - name: Build
         run: |
           # cd ./examples/test_set_env
-          cargo run
+          cargo build
         working-directory: ./examples/test_set_env
+      - name: Test
+        run: |
+          cd ./target/debug
+          mkdir -p ./libs
+          cp ${{ matrix.os.libname }} ./libs
+
+          ./test_set_env${{ matrix.os.ext }}
+
+          rm -rf ${{ matrix.os.libname }}
+
+          ./test_set_env${{ matrix.os.ext }}
           

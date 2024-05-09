@@ -1,7 +1,8 @@
 use std::env;
 
+use libloading::{library_filename, Library};
 
-fn main() {
+fn set_path(){
     #[cfg(target_os = "windows")]
     const PATH: &'static str = "PATH";
     #[cfg(target_os = "linux")]
@@ -27,4 +28,20 @@ fn main() {
     let new_path = env::join_paths(paths).expect("Failed to join paths");
     env::set_var(PATH, new_path);
     println!("{PATH}: {:?}", env::var(PATH).unwrap());
+}
+
+unsafe fn load_lib(){
+    let lib = Library::new(library_filename("add")).unwrap();
+    let add: libloading::Symbol<fn(i32, i32) -> i32> = lib.get(b"add").unwrap();
+    
+    println!("Calling add(1, 2)");
+    let result = add(1, 2);
+    println!("Result: {}", result);
+
+    lib.close().unwrap();
+}
+
+fn main() {
+    set_path();
+    unsafe { load_lib() };
 }
