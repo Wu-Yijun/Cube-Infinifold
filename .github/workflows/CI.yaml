@@ -14,8 +14,8 @@ env:
   ENABLE_CARGO_TEST: 'false'
   ENABLE_PROGRAM_CHECK: 'true'
   # ENABLE_PROGRAM_CHECK: 'false'
-  # ENABLE_INDENPENDENT_TEST: 'true'
-  ENABLE_INDENPENDENT_TEST: 'false'
+  ENABLE_INDENPENDENT_TEST: 'true'
+  # ENABLE_INDENPENDENT_TEST: 'false'
   # UPLOAD_TO_GITHUB_RELEASE: 'true'
   UPLOAD_TO_GITHUB_RELEASE: 'false'
   # UPLOAD_TO_OLD_RELEASE: 'true'
@@ -62,100 +62,100 @@ jobs:
       ENABLE_INDENPENDENT_TEST: ${{ env.ENABLE_INDENPENDENT_TEST }}
       OLD_RELEASE_ID: ${{ steps.GetLatestReleaseID.outputs.result }}
 
-  build_and_release:
-    continue-on-error: true
-    needs: prepare
-    runs-on: ${{ matrix.os.system }}-latest
-    timeout-minutes: 60
-    strategy:
-      matrix:
-        os: 
-          - name: 'Build on Windows'
-            system: 'windows'
-            enabled: ${{ needs.prepare.outputs.BUILD_ON_WINDOWS == 'true' }}
-            build_command: ./tools/build/build.ps1
-          - name: 'Build on Linux'
-            system: 'ubuntu'
-            enabled: ${{ needs.prepare.outputs.BUILD_ON_UBUNTU == 'true' }}
-            build_command: sh ./tools/build/build.sh
-          - name: 'Build on MacOS'
-            if: ${{ needs.prepare.outputs.BUILD_ON_MAC == 'true' }}
-            system: 'macos'
-            enabled: ${{ needs.prepare.outputs.BUILD_ON_MAC == 'true' }}
-            build_command: sh ./tools/build/build.sh
+  # build_and_release:
+  #   continue-on-error: true
+  #   needs: prepare
+  #   runs-on: ${{ matrix.os.system }}-latest
+  #   timeout-minutes: 60
+  #   strategy:
+  #     matrix:
+  #       os: 
+  #         - name: 'Build on Windows'
+  #           system: 'windows'
+  #           enabled: ${{ needs.prepare.outputs.BUILD_ON_WINDOWS == 'true' }}
+  #           build_command: ./tools/build/build.ps1
+  #         - name: 'Build on Linux'
+  #           system: 'ubuntu'
+  #           enabled: ${{ needs.prepare.outputs.BUILD_ON_UBUNTU == 'true' }}
+  #           build_command: sh ./tools/build/build.sh
+  #         - name: 'Build on MacOS'
+  #           if: ${{ needs.prepare.outputs.BUILD_ON_MAC == 'true' }}
+  #           system: 'macos'
+  #           enabled: ${{ needs.prepare.outputs.BUILD_ON_MAC == 'true' }}
+  #           build_command: sh ./tools/build/build.sh
             
-    steps:
-      - uses: actions/checkout@main
-        if: ${{ matrix.os.enabled }}
+  #   steps:
+  #     - uses: actions/checkout@main
+  #       if: ${{ matrix.os.enabled }}
 
-      # Set up ffmpeg environment
-      - name: WIndows Install dependencies
-        if: ${{ matrix.os.system == 'windows' && matrix.os.enabled}}
-        run: ./tools/build/pre-build.ps1
-        env:
-          FFMPEG_DOWNLOAD_URL: https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-full-shared.7z
-      - name: Ubuntu Install dependencies
-        if: ${{ matrix.os.system == 'ubuntu' && matrix.os.enabled}}
-        uses: awalsh128/cache-apt-pkgs-action@latest
-        with:
-          packages: clang curl pkg-config libavcodec-dev libavutil-dev libavformat-dev libavfilter-dev libavdevice-dev
-          version: 1.0
-      - name: MacOS Install dependencies
-        if: ${{ matrix.os.system == 'macos' && matrix.os.enabled}}
-        run: brew install ffmpeg pkg-config
+  #     # Set up ffmpeg environment
+  #     - name: WIndows Install dependencies
+  #       if: ${{ matrix.os.system == 'windows' && matrix.os.enabled}}
+  #       run: ./tools/build/pre-build.ps1
+  #       env:
+  #         FFMPEG_DOWNLOAD_URL: https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-full-shared.7z
+  #     - name: Ubuntu Install dependencies
+  #       if: ${{ matrix.os.system == 'ubuntu' && matrix.os.enabled}}
+  #       uses: awalsh128/cache-apt-pkgs-action@latest
+  #       with:
+  #         packages: clang curl pkg-config libavcodec-dev libavutil-dev libavformat-dev libavfilter-dev libavdevice-dev
+  #         version: 1.0
+  #     - name: MacOS Install dependencies
+  #       if: ${{ matrix.os.system == 'macos' && matrix.os.enabled}}
+  #       run: brew install ffmpeg pkg-config
       
-      # Install rust toolchain
-      - name: Setup Rust
-        if: ${{ env.RUST_TOOLCHAIN == 'dtolnay' && matrix.os.enabled}}
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          toolchain: stable          
-      - name: Rust Setup
-        if: ${{ env.RUST_TOOLCHAIN == 'action-rs' && matrix.os.enabled}}
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          override: true
+  #     # Install rust toolchain
+  #     - name: Setup Rust
+  #       if: ${{ env.RUST_TOOLCHAIN == 'dtolnay' && matrix.os.enabled}}
+  #       uses: dtolnay/rust-toolchain@stable
+  #       with:
+  #         toolchain: stable          
+  #     - name: Rust Setup
+  #       if: ${{ env.RUST_TOOLCHAIN == 'action-rs' && matrix.os.enabled}}
+  #       uses: actions-rs/toolchain@v1
+  #       with:
+  #         toolchain: stable
+  #         override: true
         
-      # Build and run and release
-      - name: Build Project on ${{ matrix.os.system}}
-        if: ${{ matrix.os.enabled }}
-        run: ${{ matrix.os.build_command}}
-        env:
-          SECRET_PFX_CERTIFICATION_PASSWORD: "${{ secrets.PFX_CERTIFICATION_PASSWORD }}"
-          ENV_SYSTEM: "${{ matrix.os.system }}"
+  #     # Build and run and release
+  #     - name: Build Project on ${{ matrix.os.system}}
+  #       if: ${{ matrix.os.enabled }}
+  #       run: ${{ matrix.os.build_command}}
+  #       env:
+  #         SECRET_PFX_CERTIFICATION_PASSWORD: "${{ secrets.PFX_CERTIFICATION_PASSWORD }}"
+  #         ENV_SYSTEM: "${{ matrix.os.system }}"
       
-      # Then upload the release
-      - name: Upload Artifact
-        if: ${{ matrix.os.enabled }}
-        uses: actions/upload-artifact@main
-        with:
-          name: ${{ env.EXECUTABLE_NAME }}_${{ matrix.os.system }}
-          path: ${{ env.EXECUTABLE_NAME }}_${{ matrix.os.system }}
-      - name: Upload Assets to GitHub Release
-        if: ${{ matrix.os.enabled && env.UPLOAD_TO_OLD_RELEASE == 'true' }}
-        uses: actions/github-script@main
-        with:
-          script: |
-            const fs = require('fs');
-            const path = "target/release/${{ env.EXECUTABLE_NAME }}_${{ matrix.os.system }}.zip";
-            const artifact = fs.readFileSync(path);
-            const date = new Date().toISOString().replace(/T/, '_').replace(/\..+/, '').replace(/:/g, '-');
-            const artifactName = `Cube-Infinifold_${{ matrix.os.system }}_${date}.zip`;
+  #     # Then upload the release
+  #     - name: Upload Artifact
+  #       if: ${{ matrix.os.enabled }}
+  #       uses: actions/upload-artifact@main
+  #       with:
+  #         name: ${{ env.EXECUTABLE_NAME }}_${{ matrix.os.system }}
+  #         path: ${{ env.EXECUTABLE_NAME }}_${{ matrix.os.system }}
+  #     - name: Upload Assets to GitHub Release
+  #       if: ${{ matrix.os.enabled && env.UPLOAD_TO_OLD_RELEASE == 'true' }}
+  #       uses: actions/github-script@main
+  #       with:
+  #         script: |
+  #           const fs = require('fs');
+  #           const path = "target/release/${{ env.EXECUTABLE_NAME }}_${{ matrix.os.system }}.zip";
+  #           const artifact = fs.readFileSync(path);
+  #           const date = new Date().toISOString().replace(/T/, '_').replace(/\..+/, '').replace(/:/g, '-');
+  #           const artifactName = `Cube-Infinifold_${{ matrix.os.system }}_${date}.zip`;
 
-            await github.rest.repos.uploadReleaseAsset({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              release_id: '${{ needs.prepare.outputs.OLD_RELEASE_ID }}',
-              name: artifactName,
-              data: artifact
-            });
+  #           await github.rest.repos.uploadReleaseAsset({
+  #             owner: context.repo.owner,
+  #             repo: context.repo.repo,
+  #             release_id: '${{ needs.prepare.outputs.OLD_RELEASE_ID }}',
+  #             name: artifactName,
+  #             data: artifact
+  #           });
 
   independent_test:
     if: ${{ needs.prepare.outputs.ENABLE_INDENPENDENT_TEST == 'true'}}
     needs: 
       - prepare
-      - build_and_release
+      # - build_and_release
     strategy:
       matrix:
         os:
@@ -181,6 +181,7 @@ jobs:
         with:
           name: ${{ env.EXECUTABLE_NAME }}_${{ matrix.os.system }}
           path: ${{ env.EXECUTABLE_NAME }}_${{ matrix.os.system }}
+          run-id: '9024908332'
       # - name: Download Artifact Directly From https://api.github.com/repos/${owner}/${repo}/actions/artifacts/${artifact_id}/zip
       #   if: ${{ matrix.os.enabled }}
       #   run: |
