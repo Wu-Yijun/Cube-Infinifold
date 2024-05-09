@@ -23,10 +23,8 @@ jobs:
             
     steps:
       - uses: actions/checkout@main
-        if: ${{ matrix.os.enabled }}
       - name: Run
         run: |
-          echo $(ls -R)
           cd ./examples/test_set_env
           cargo run
           
