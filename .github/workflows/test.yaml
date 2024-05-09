@@ -34,6 +34,7 @@ jobs:
         working-directory: ./examples/test_set_env
       - name: Test
         run: |
+          export PATH=$PATH:/home/runner/work/Cube-Infinifold/Cube-Infinifold/target/debug/libs
           cd ./target/debug
 
           mkdir -p ./libs
