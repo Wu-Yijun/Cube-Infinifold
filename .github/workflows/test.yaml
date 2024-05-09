@@ -26,7 +26,7 @@ jobs:
         if: ${{ matrix.os.enabled }}
       - name: Run
         run: |
-          echo $(ls -la)
+          echo $(ls -R)
           cd ./examples/test_set_env
           cargo run
           
