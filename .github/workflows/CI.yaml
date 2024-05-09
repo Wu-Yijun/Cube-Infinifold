@@ -153,8 +153,9 @@ jobs:
 
   independent_test:
     if: ${{ needs.prepare.outputs.ENABLE_INDENPENDENT_TEST == 'true'}}
-    # needs: [prepare, build_and_release]
-    needs: [prepare]
+    needs: 
+      - prepare
+      - build_and_release
     strategy:
       matrix:
         os:
@@ -162,36 +163,38 @@ jobs:
             system: 'windows'
             enabled: ${{ needs.prepare.outputs.BUILD_ON_WINDOWS == 'true' && needs.prepare.outputs.ENABLE_INDENPENDENT_TEST == 'true'}}
             app_extension: '.exe'
-            app_runner: 'powershell.exe'
             artifact_id: '1477183193'
           - name: 'Test on Linux'
             system: 'ubuntu'
             enabled: ${{ needs.prepare.outputs.BUILD_ON_UBUNTU == 'true' && needs.prepare.outputs.ENABLE_INDENPENDENT_TEST == 'true'}}
-            app_runner: 'sudo'
+            sudo: sudo
             artifact_id: '1477182913'
           - name: 'Test on MacOS'
             system: 'macos'
             enabled: ${{ needs.prepare.outputs.BUILD_ON_MAC == 'true' && needs.prepare.outputs.ENABLE_INDENPENDENT_TEST == 'true'}}
-            app_runner: 'sudo'
             artifact_id: '1477179232'
     runs-on: ${{ matrix.os.system }}-latest
     steps:
-      - name: Download Artifact Directly From https://api.github.com/repos/${owner}/${repo}/actions/artifacts/${artifact_id}/zip
+      - name: Download Artifact
         if: ${{ matrix.os.enabled }}
-        run: |
-          curl -L \
-            -o test.zip \
-            -H "Accept: application/vnd.github.v3+json" \
-            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-            https://api.github.com/repos/${{ github.repository }}/actions/artifacts/${{ matrix.os.artifact_id }}/zip
-          unzip test.zip -d ${{ env.EXECUTABLE_NAME }}_${{ matrix.os.system }}
-          ls -R
+        uses: actions/download-artifact@main
+        with:
+          name: ${{ env.EXECUTABLE_NAME }}_${{ matrix.os.system }}
+          path: ${{ env.EXECUTABLE_NAME }}_${{ matrix.os.system }}
+      # - name: Download Artifact Directly From https://api.github.com/repos/${owner}/${repo}/actions/artifacts/${artifact_id}/zip
+      #   if: ${{ matrix.os.enabled }}
+      #   run: |
+      #     curl -L \
+      #       -o test.zip \
+      #       -H "Accept: application/vnd.github.v3+json" \
+      #       -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+      #       https://api.github.com/repos/${{ github.repository }}/actions/artifacts/${{ matrix.os.artifact_id }}/zip
+      #     unzip test.zip -d ${{ env.EXECUTABLE_NAME }}_${{ matrix.os.system }}
+      #     ls -R
 
       - name: Check on ${{ matrix.os.system }}
         if: ${{ matrix.os.enabled }}
-        run: |
-          sudo chmod +x ${{ env.EXECUTABLE_CHECK_NAME }}${{ matrix.os.app_extension }}
-          ./${{ env.EXECUTABLE_CHECK_NAME }}${{ matrix.os.app_extension }}
+        run: ${{matrix.os.sudo}} ./${{ env.EXECUTABLE_CHECK_NAME }}${{ matrix.os.app_extension }}
         working-directory: ${{ env.EXECUTABLE_NAME }}_${{ matrix.os.system }}
       
       - name: Upload Artifact

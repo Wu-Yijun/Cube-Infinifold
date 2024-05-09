@@ -2,7 +2,7 @@ name: Build Selected Test Only
 
 on:
   workflow_dispatch:
-  push:
+  # push:
 
 jobs:
   build_and_release:

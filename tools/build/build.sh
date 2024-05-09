@@ -59,7 +59,7 @@ echo $(ls ./${EXECUTABLE_NAME}_${ENV_SYSTEM})
 # Run the Check program
 if [ "$ENABLE_PROGRAM_CHECK" = "true" ]; then
   echo "Running Rust program"
-  ./${EXECUTABLE_NAME}_${ENV_SYSTEM}/${EXECUTABLE_CHECK_NAME}
+  sudo ./${EXECUTABLE_NAME}_${ENV_SYSTEM}/${EXECUTABLE_CHECK_NAME}
   exit_code=$?
   if [ $exit_code -ne 0 ]; then
     echo "Rust program failed with exit code $exit_code"
