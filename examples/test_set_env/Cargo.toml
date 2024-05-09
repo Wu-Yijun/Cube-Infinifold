@@ -8,13 +8,14 @@ name = "start"
 path = "src/main.rs"
 
 
-[lib]
+# [lib]
+[[bin]]
 name = "main"
 path = "src/lib.rs"
-crate-type = ["dylib"]
+# crate-type = ["dylib"]
 
 
-[[sublib]]
+[lib]
 name = "add"
 path = "src/add.rs"
 crate-type = ["dylib"]

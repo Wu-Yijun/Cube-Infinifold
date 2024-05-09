@@ -2,7 +2,7 @@ use std::env;
 
 use libloading::{library_filename, Library};
 
-#[no_mangle]
+// #[no_mangle]
 fn main() {
     println!("\nHello, main fun!");
     print_path();

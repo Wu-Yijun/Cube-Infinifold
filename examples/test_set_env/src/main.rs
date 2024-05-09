@@ -1,6 +1,6 @@
-use std::env;
+use std::{env, process::Command};
 
-use libloading::{library_filename, Library};
+// use libloading::{library_filename, Library};
 
 fn set_path() {
     #[cfg(target_os = "windows")]
@@ -31,12 +31,19 @@ fn set_path() {
 
 fn main() {
     set_path();
-    // let path = library_filename("libs/main");
-    let path = "./libs/libmain.so";
-    // let path = format!("libs/{:?}", library_filename("main"));
-    println!("Loading library: {:?}", path);
-    let lib = unsafe { Library::new(path).unwrap() };
-    let main = unsafe { lib.get::<fn()>(b"main").unwrap() };
-    main();
-    lib.close().unwrap();
+    // // let path = library_filename("libs/main");
+    // let path = "./libs/libmain.so";
+    // // let path = format!("libs/{:?}", library_filename("main"));
+    // println!("Loading library: {:?}", path);
+    // let lib = unsafe { Library::new(path).unwrap() };
+    // let main = unsafe { lib.get::<fn()>(b"main").unwrap() };
+    // main();
+    // lib.close().unwrap();
+
+    // 启动main程序
+    // let output = Command::new("./main.exe")
+    let output = Command::new("./main")
+        .output()
+        .expect("failed to execute main program");
+    println!("status: {}", output.status);
 }
