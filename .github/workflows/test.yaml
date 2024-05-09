@@ -1,4 +1,4 @@
-name: Build Only Using Matrix
+name: Build Selected Test Only
 
 on:
   workflow_dispatch:
@@ -11,19 +11,19 @@ jobs:
     strategy:
       matrix:
         os: 
-          - name: 'Build on Windows'
-            system: 'windows'
-            # build_command: ./tools/build/build.ps1
-            ext: '.exe'
-            libname: 'add.dll'
+          # - name: 'Build on Windows'
+          #   system: 'windows'
+          #   # build_command: ./tools/build/build.ps1
+          #   ext: '.exe'
+          #   libname: 'add.dll'
           - name: 'Build on Linux'
             system: 'ubuntu'
             # build_command: sh ./tools/build/build.sh
             libname: 'libadd.so'
-          - name: 'Build on MacOS'
-            system: 'macos'
-            # build_command: sh ./tools/build/build.sh
-            libname: 'libadd.dylib'
+          # - name: 'Build on MacOS'
+          #   system: 'macos'
+          #   # build_command: sh ./tools/build/build.sh
+          #   libname: 'libadd.dylib'
             
     steps:
       - uses: actions/checkout@main
@@ -35,11 +35,11 @@ jobs:
       - name: Test
         run: |
           cd ./target/debug
-          
-          ls
+
           mkdir -p ./libs
           cp ${{ matrix.os.libname }} ./libs
 
+          ls
           ./test_set_env${{ matrix.os.ext }}
 
           rm ${{ matrix.os.libname }}

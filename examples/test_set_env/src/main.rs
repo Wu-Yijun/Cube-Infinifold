@@ -19,7 +19,7 @@ fn set_path(always_path: bool) {
     println!("{PP}: {:?}", path);
 
     // add path environment variable
-    let new_path = "libs";
+    let new_path = "libs/libadd.so";
     let new_path = format!("{}/{}", env::current_dir().unwrap().display(), new_path);
     println!("Adding path to {PP}: {new_path}");
     let new_path = std::path::PathBuf::from(new_path);
