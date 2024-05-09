@@ -39,7 +39,7 @@ fn get_lib_name(name: &str) -> String {
 
 #[no_mangle]
 fn add(a: i32, b: i32) -> i32 {
-    let lib = unsafe { libloading::Library::new(get_lib_name("./sublib")).unwrap() };
+    let lib = unsafe { libloading::Library::new(get_lib_name("sublib")).unwrap() };
     let hello: libloading::Symbol<fn() -> i32> = unsafe { lib.get(b"hello").unwrap() };
     println!("Calling hello from sublib.dll");
     hello();
