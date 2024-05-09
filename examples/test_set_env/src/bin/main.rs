@@ -1,4 +1,4 @@
-use std::{env, process::Command};
+use std::{env, fs::File, process::Command};
 
 #[cfg(target_os = "windows")]
 const OS: &str = "windows";
@@ -18,102 +18,34 @@ fn set_current_dir() -> std::path::PathBuf {
     out_path
 }
 
-use std::io::Write;
-fn linux_save_custom_search_path(custom_library_path: &str) {
-    // 指定要写入的文件路径
-    let file_path = "/etc/ld.so.conf.d/my_path.conf";
 
-    // 创建并打开文件
-    let mut file = std::fs::File::create(file_path).unwrap();
+fn linux_save_custom_search_path(mut custom_library_path: Vec<&str>) {
+    const FILE_PATH: &str = "/etc/ld.so.conf.d/cube_infinifold_libs.conf";
+    // sort and remove duplicates
+    custom_library_path.sort();
+    custom_library_path.dedup();
+    let custom_library_path = custom_library_path.join("\n");
 
-    // // 读取已有路径
-    // let paths = std::fs::read_to_string(file_path).unwrap_or_default();
-    // let paths = paths.split('\n').collect::<Vec<_>>();
-    // // 如果已有路径中包含自定义路径，则不再写入
-    // if paths.contains(&custom_library_path) {
-    //     println!("Custom library path already exists in {:?}", file_path);
-    //     return;
-    // }
+    let file_content =  std::fs::read_to_string(FILE_PATH).unwrap_or_default();
+    if file_content == custom_library_path {
+        return;
+    }
 
-    // 写入自定义路径到文件
-    writeln!(file, "{}", custom_library_path).unwrap();
-
-    // 如果需要，您可以写入更多路径，例如：
-    // writeln!(file, "{}", "/another/custom/library/path")?;
-
-    // 关闭文件
-    drop(file);
-
-    // 打印文件内容
-    let content = std::fs::read_to_string(file_path).unwrap();
-    println!("File content: {}", content);
-
-
-    println!("Custom library path saved to {:?}", file_path);
-
-    let output = Command::new("sudo")
+    println!("Installing custom search path...");
+    std::fs::write(FILE_PATH, custom_library_path).expect("Unable to write file, try running with sudo!");
+    Command::new("sudo")
         .arg("ldconfig")
         .spawn()
         .expect("failed to execute ldconfig");
-
     // 等待一段时间以确保缓存已更新
     std::thread::sleep(std::time::Duration::from_secs(1));
-
-    println!("Library cache updated: {:?}", output);
-
+    println!("Library cache updated!");
 }
 
 fn install() {
     let current_path = set_current_dir();
-    match OS {
-        "windows" => {
-            // no need to install ffmpeg
-
-            // const PATH: &str = "PATH";
-            // let path = env::var_os(PATH).unwrap_or_default();
-            // let mut paths = env::split_paths(&path).collect::<Vec<_>>();
-            // if !paths.contains(&current_path) {
-            //     paths.push(current_path);
-            // }
-            // let new_path = env::join_paths(paths).expect("Failed to join paths");
-            // env::set_var(PATH, new_path);
-            // println!("{PATH}: {:?}", env::var(PATH).unwrap());
-        }
-        "linux" => {
-            // linux
-            // set LD_LIBRARY_PATH = current_path
-            const LD_LIBRARY_PATH: &str = "LD_LIBRARY_PATH";
-            let path = env::var_os(LD_LIBRARY_PATH).unwrap_or_default();
-            let mut paths = env::split_paths(&path).collect::<Vec<_>>();
-            if !paths.contains(&current_path) {
-                paths.push(current_path.clone());
-            }
-            let new_path = env::join_paths(paths).expect("Failed to join paths");
-            env::set_var(LD_LIBRARY_PATH, new_path);
-            println!(
-                "{LD_LIBRARY_PATH}: {:?}",
-                env::var(LD_LIBRARY_PATH).unwrap()
-            );
-
-            // update library cache
-            linux_save_custom_search_path(current_path.to_str().unwrap());
-
-            // install ffmpeg
-            // let output = Command::new("sudo")
-            //     .arg("apt-get")
-            //     .arg("install")
-            //     .arg("ffmpeg")
-            //     .spawn()
-            //     .expect("failed to execute apt-get install ffmpeg");
-            // println!("FFmpeg installed: {:?}", output);
-        }
-        "macos" => {
-            // macos
-            // no need to install ffmpeg
-        }
-        _ => {
-            println!("Unsupported OS: {:?}", OS);
-        }
+    if OS == "linux" {
+        linux_save_custom_search_path(vec![current_path.to_str().unwrap()]);
     }
 }
 
@@ -151,19 +83,8 @@ fn get_lib_name(name: &str) -> String {
 
 fn main() {
     install();
-    // let name = get_lib_name("add");
-    // println!("Current Dir {:?}", env::current_dir());
-    // println!("Library name: {:?}", name);
-    // let name = env::current_dir().unwrap().join(name);
-    // println!("Library name: {:?}", name);
-    // read number
-    // let mut input = String::new();
-    // println!("Please input a number:");
-    // std::io::stdin().read_line(&mut input).unwrap();
-    // let input: i32 = input.trim().parse().unwrap();
-    // println!("You input: {}", input);
 
-    let name = get_lib_name("./add");
+    let name = get_lib_name("add");
     println!("Library name: {:?}", name);
 
     let lib = unsafe { Library::new(name).unwrap() };
