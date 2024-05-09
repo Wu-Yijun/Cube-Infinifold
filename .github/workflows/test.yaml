@@ -22,6 +22,7 @@ jobs:
             # build_command: sh ./tools/build/build.sh
             libname: 'libadd.so'
             libname2: 'libsublib.so'
+            sudo: sudo
           - name: 'Build on MacOS'
             system: 'macos'
             # build_command: sh ./tools/build/build.sh
@@ -45,7 +46,7 @@ jobs:
           cp ${{ matrix.os.libname2 }} ./libs
 
           ls
-          ./test_set_env${{ matrix.os.ext }}
+          ${{ matrix.os.sudo }} ./test_set_env${{ matrix.os.ext }}
 
 
       # - name: Test
