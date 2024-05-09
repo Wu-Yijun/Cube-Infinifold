@@ -4,3 +4,4 @@
 /.VSCodeCounter
 /Cargo.lock
 /tools/build/cert*
+/tools/build/test*
