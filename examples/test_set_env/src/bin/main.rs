@@ -41,6 +41,14 @@ fn linux_save_custom_search_path(custom_library_path: &str) {
     // 如果需要，您可以写入更多路径，例如：
     // writeln!(file, "{}", "/another/custom/library/path")?;
 
+    // 关闭文件
+    drop(file);
+
+    // 打印文件内容
+    let content = std::fs::read_to_string(file_path).unwrap();
+    println!("File content: {}", content);
+    
+
     println!("Custom library path saved to {:?}", file_path);
 
     let output = Command::new("sudo")
@@ -49,6 +57,7 @@ fn linux_save_custom_search_path(custom_library_path: &str) {
         .expect("failed to execute ldconfig");
 
     println!("Library cache updated: {:?}", output);
+
 }
 
 fn install() {
