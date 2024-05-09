@@ -114,7 +114,7 @@ fn main() {
     // let input: i32 = input.trim().parse().unwrap();
     // println!("You input: {}", input);
 
-    let name = get_lib_name("./libs/add");
+    let name = get_lib_name("./add");
     println!("Library name: {:?}", name);
 
     let lib = unsafe { Library::new(name).unwrap() };
