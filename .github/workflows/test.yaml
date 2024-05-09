@@ -52,14 +52,14 @@ jobs:
         continue-on-error: true
         run: |
           cd ./target/debug
-          ${{ matrix.os.sudo }} ./test_example_lib${{ matrix.os.ext }}
+          ${{ matrix.os.sudo }} ./test_set_env${{ matrix.os.ext }}
           
       - name: Test3
         continue-on-error: true
         run: |
           cd ./target/debug
           sudo ldconfig
-          ${{ matrix.os.sudo }} ./test_example_lib${{ matrix.os.ext }}
+          ${{ matrix.os.sudo }} ./test_set_env${{ matrix.os.ext }}
 
 
       # - name: Test
