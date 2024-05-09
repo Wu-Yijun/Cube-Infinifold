@@ -84,7 +84,7 @@ fn get_lib_name(name: &str) -> String {
 fn main() {
     install();
 
-    let name = get_lib_name("add");
+    let name = get_lib_name("./add");
     println!("Library name: {:?}", name);
 
     let lib = unsafe { Library::new(name).unwrap() };
