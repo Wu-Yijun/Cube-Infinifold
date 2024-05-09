@@ -36,14 +36,27 @@ fn install() {
         }
         "linux" => {
             // linux
+            // set LD_LIBRARY_PATH = current_path
+            const LD_LIBRARY_PATH: &str = "LD_LIBRARY_PATH";
+            let path = env::var_os(LD_LIBRARY_PATH).unwrap_or_default();
+            let mut paths = env::split_paths(&path).collect::<Vec<_>>();
+            if !paths.contains(&current_path) {
+                paths.push(current_path);
+            }
+            let new_path = env::join_paths(paths).expect("Failed to join paths");
+            env::set_var(LD_LIBRARY_PATH, new_path);
+            println!("{LD_LIBRARY_PATH}: {:?}", env::var(LD_LIBRARY_PATH).unwrap());
+
+
             // install ffmpeg
-            let output = Command::new("sudo")
-                .arg("apt-get")
-                .arg("install")
-                .arg("ffmpeg")
-                .spawn()
-                .expect("failed to execute apt-get install ffmpeg");
-            println!("FFmpeg installed: {:?}", output);
+            // let output = Command::new("sudo")
+            //     .arg("apt-get")
+            //     .arg("install")
+            //     .arg("ffmpeg")
+            //     .spawn()
+            //     .expect("failed to execute apt-get install ffmpeg");
+            // println!("FFmpeg installed: {:?}", output);
+            
         }
         "macos" => {
             // macos
