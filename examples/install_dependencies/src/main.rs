@@ -48,8 +48,8 @@ fn install() -> bool {
                     }
                 }
                 "macos" => {
-                    let install_output = Command::new("brew")
-                        // .arg("brew")
+                    let install_output = Command::new("sh")
+                        .arg("brew")
                         .arg("install")
                         .arg("ffmpeg")
                         .output()
