@@ -36,26 +36,36 @@ fn install() -> bool {
                         .arg("apt")
                         .arg("install")
                         .arg("ffmpeg")
-                        .spawn();
+                        .arg("-y")
+                        .spawn()
+                        .expect("Failed to execute command")
+                        .wait_with_output()
+                        .expect("failed to wait on process");
 
-                    if let Err(e) = install_output {
-                        println!("Failed to install ffmpeg.");
-                        println!("Error: {:?}", e);
-                        return false;
+                    if install_output.status.success() {
+                        println!("FFmpeg installed successfully.");
                     } else {
-                        println!("ffmpeg installed successfully.");
+                        println!("Failed to install ffmpeg.");
+                        println!("Error: {:?}", install_output);
+                        return false;
                     }
                 }
                 "macos" => {
                     // Command::new("sudo").arg("sudo chown -R $(whoami) $(brew --prefix)/*").;
-                    let install_output = Command::new("brew").arg("install").arg("ffmpeg").spawn();
+                    let install_output = Command::new("brew")
+                        .arg("install")
+                        .arg("ffmpeg")
+                        .spawn()
+                        .expect("Failed to execute command")
+                        .wait_with_output()
+                        .expect("failed to wait on process");
 
-                    if let Err(e) = install_output {
-                        println!("Failed to install ffmpeg.");
-                        println!("Error: {:?}", e);
-                        return false;
+                    if install_output.status.success() {
+                        println!("FFmpeg installed successfully.");
                     } else {
-                        println!("ffmpeg installed successfully.");
+                        println!("Failed to install ffmpeg.");
+                        println!("Error: {:?}", install_output);
+                        return false;
                     }
                 }
                 _ => {
