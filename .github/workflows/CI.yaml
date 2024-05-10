@@ -196,7 +196,8 @@ jobs:
         continue-on-error: true
         run: |
           chmod +x ./${{ env.EXECUTABLE_CHECK_NAME }}${{ matrix.os.app_extension }}
-          brew install ffmpeg
+          # brew install ffmpeg
+          sudo apt install ffmpeg
           ${{ matrix.os.sudo }} ./${{ env.EXECUTABLE_CHECK_NAME }}${{ matrix.os.app_extension }}
         working-directory: ${{ env.EXECUTABLE_NAME }}_${{ matrix.os.system }}
 
