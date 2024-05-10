@@ -168,13 +168,13 @@ jobs:
           - name: 'Test on Linux'
             system: 'ubuntu'
             enabled: ${{ needs.prepare.outputs.BUILD_ON_UBUNTU == 'true' && needs.prepare.outputs.ENABLE_INDENPENDENT_TEST == 'true'}}
-            sudo: sudo sh -c
+            sudo: sudo
             artifact_id: '1489501454'
           - name: 'Test on MacOS'
             system: 'macos'
             enabled: ${{ needs.prepare.outputs.BUILD_ON_MAC == 'true' && needs.prepare.outputs.ENABLE_INDENPENDENT_TEST == 'true'}}
             artifact_id: '1489499678'
-            sudo: sudo sh -c
+            sudo: sudo
     runs-on: ${{ matrix.os.system }}-latest
     steps:
       # - name: Download Artifact
@@ -193,8 +193,10 @@ jobs:
 
       - name: Check on ${{ matrix.os.system }}
         if: ${{ matrix.os.enabled }}
-        run: ${{matrix.os.sudo}} ./${{ env.EXECUTABLE_CHECK_NAME }}${{ matrix.os.app_extension }}
-        working-directory: ./${{ env.EXECUTABLE_NAME }}_${{ matrix.os.system }}
+        run: |
+          cd ./${{ env.EXECUTABLE_NAME }}_${{ matrix.os.system }}
+          ${{matrix.os.sudo}} ./${{ env.EXECUTABLE_CHECK_NAME }}${{ matrix.os.app_extension }}
+        working-directory: 
       
       - name: Upload Artifact
         if: ${{ matrix.os.enabled }}
