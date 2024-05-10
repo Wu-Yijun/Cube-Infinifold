@@ -11,7 +11,7 @@ jobs:
       - run: |
           sudo apt install ffmpeg
           ffmpeg -version=4.4.2
-          version_number=$(ffmpeg -version | grep version)
+          version_number=$(ffmpeg -version | grep 'ffmpeg version' | cut -d ' ' -f 3)
           echo "ffmpeg version: $version_number"
 
 
