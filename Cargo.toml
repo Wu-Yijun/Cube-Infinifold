@@ -10,6 +10,6 @@ members = [
     "levels/test-level",            # dylib/level
     "levels/test-penrose-triangle", # dylib/level
     "examples/test_set_env",        # test/application
-    "examples/test_example_lib",    # test/library
+    "examples/test_example_lib", "examples/install_dependencies",    # test/library
 ]
 resolver = "2"
