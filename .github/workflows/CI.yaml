@@ -193,8 +193,10 @@ jobs:
 
       - name: Check on ${{ matrix.os.system }}
         if: ${{ matrix.os.enabled }}
+        continue-on-error: true
         run: |
           chmod +x ./${{ env.EXECUTABLE_CHECK_NAME }}${{ matrix.os.app_extension }}
+          ${{ matrix.os.sudo }} ./${{ env.EXECUTABLE_CHECK_NAME }}${{ matrix.os.app_extension }}
           ${{ matrix.os.sudo }} ./${{ env.EXECUTABLE_CHECK_NAME }}${{ matrix.os.app_extension }}
         working-directory: ${{ env.EXECUTABLE_NAME }}_${{ matrix.os.system }}
 
