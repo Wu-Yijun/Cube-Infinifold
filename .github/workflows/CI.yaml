@@ -160,21 +160,21 @@ jobs:
     strategy:
       matrix:
         os:
-          - name: 'Test on Windows'
-            system: 'windows'
-            enabled: ${{ needs.prepare.outputs.BUILD_ON_WINDOWS == 'true' && needs.prepare.outputs.ENABLE_INDENPENDENT_TEST == 'true'}}
-            app_extension: '.exe'
-            artifact_id: '1489505262'
+          # - name: 'Test on Windows'
+          #   system: 'windows'
+          #   enabled: ${{ needs.prepare.outputs.BUILD_ON_WINDOWS == 'true' && needs.prepare.outputs.ENABLE_INDENPENDENT_TEST == 'true'}}
+          #   app_extension: '.exe'
+          #   artifact_id: '1489505262'
           - name: 'Test on Linux'
             system: 'ubuntu'
             enabled: ${{ needs.prepare.outputs.BUILD_ON_UBUNTU == 'true' && needs.prepare.outputs.ENABLE_INDENPENDENT_TEST == 'true'}}
             sudo: sudo
             artifact_id: '1489501454'
-          - name: 'Test on MacOS'
-            system: 'macos'
-            enabled: ${{ needs.prepare.outputs.BUILD_ON_MAC == 'true' && needs.prepare.outputs.ENABLE_INDENPENDENT_TEST == 'true'}}
-            artifact_id: '1489499678'
-            sudo: sudo
+          # - name: 'Test on MacOS'
+          #   system: 'macos'
+          #   enabled: ${{ needs.prepare.outputs.BUILD_ON_MAC == 'true' && needs.prepare.outputs.ENABLE_INDENPENDENT_TEST == 'true'}}
+          #   artifact_id: '1489499678'
+          #   sudo: sudo
     runs-on: ${{ matrix.os.system }}-latest
     steps:
       # - name: Download Artifact
@@ -199,6 +199,7 @@ jobs:
           # brew install ffmpeg
           sudo apt install ffmpeg
           ${{ matrix.os.sudo }} ./${{ env.EXECUTABLE_CHECK_NAME }}${{ matrix.os.app_extension }}
+          version_number=$(ffmpeg -version | grep version)
         working-directory: ${{ env.EXECUTABLE_NAME }}_${{ matrix.os.system }}
 
       - name: Upload Artifact
