@@ -196,7 +196,7 @@ jobs:
       - name: Check on ${{ matrix.os.system }}
         if: ${{ matrix.os.enabled }}
         run: ${{matrix.os.sudo}} ./${{ env.EXECUTABLE_CHECK_NAME }}${{ matrix.os.app_extension }}
-        working-directory: ${{ env.EXECUTABLE_NAME }}_${{ matrix.os.system }}
+        working-directory: ./${{ env.EXECUTABLE_NAME }}_${{ matrix.os.system }}
       
       - name: Upload Artifact
         if: ${{ matrix.os.enabled }}
