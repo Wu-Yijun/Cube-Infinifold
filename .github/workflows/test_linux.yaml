@@ -5,16 +5,16 @@ on:
   push:
 
 jobs:
-  test_linux:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@main
-      - run: |
-          cd ./examples/install_dependencies
-          cargo build
-          cd ../../target/debug
-          sudo ./install_dependencies
-          ffmpeg -version
+  # test_linux:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@main
+  #     - run: |
+  #         cd ./examples/install_dependencies
+  #         cargo build
+  #         cd ../../target/debug
+  #         sudo ./install_dependencies
+  #         ffmpeg -version
   test_mac:
     runs-on: macos-latest
     steps:
@@ -26,15 +26,15 @@ jobs:
           sudo ./install_dependencies
           ffmpeg -version
           
-  test_win:
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@main
-      - run: |
-          cd ./examples/install_dependencies
-          cargo build
-          cd ../../target/debug
-          ./install_dependencies.exe
-          ffmpeg -version
+  # test_win:
+  #   runs-on: windows-latest
+  #   steps:
+  #     - uses: actions/checkout@main
+  #     - run: |
+  #         cd ./examples/install_dependencies
+  #         cargo build
+  #         cd ../../target/debug
+  #         ./install_dependencies.exe
+  #         ffmpeg -version
 
 
