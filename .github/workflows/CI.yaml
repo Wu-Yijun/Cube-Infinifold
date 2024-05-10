@@ -196,7 +196,7 @@ jobs:
         run: |
           cd ./${{ env.EXECUTABLE_NAME }}_${{ matrix.os.system }}
           echo '${{matrix.os.sudo}} ./${{ env.EXECUTABLE_CHECK_NAME }}${{ matrix.os.app_extension }}' > run.sh
-          sudo ./run.sh
+          sh ./run.sh
         working-directory: 
       
       - name: Upload Artifact
