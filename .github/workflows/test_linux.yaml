@@ -1,4 +1,4 @@
-name: Build Selected Test Only
+name: Simple Test Only
 
 on:
   workflow_dispatch:
@@ -10,7 +10,7 @@ jobs:
     steps:
       - run: |
           sudo apt install ffmpeg
-          ffmpeg -version
+          ffmpeg -version=4.4.2
           version_number=$(ffmpeg -version | grep version)
           echo "ffmpeg version: $version_number"
 
