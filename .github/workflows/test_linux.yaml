@@ -1,0 +1,17 @@
+name: Build Selected Test Only
+
+on:
+  workflow_dispatch:
+  push:
+
+jobs:
+  test_linux:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          sudo apt install ffmpeg
+          ffmpeg -version
+          version_number=$(ffmpeg -version | grep version)
+          echo "ffmpeg version: $version_number"
+
+
