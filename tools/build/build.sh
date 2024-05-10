@@ -29,7 +29,8 @@ if [ "$ENV_SYSTEM" = "macos" ]; then
 fi
 if [ "$ENV_SYSTEM" = "ubuntu" ]; then
   # Copy the so files to the target directory
-  cp /usr/lib/x86_64-linux-gnu/libav* ./target/release
+  # cp /usr/lib/x86_64-linux-gnu/libav* ./target/release
+  xargs -a ./tools/build/liblist.txt -I {} mv /usr/lib/x86_64-linux-gnu/lib{}.so ./target/release
 fi
 
 echo $(ls ./target/release)

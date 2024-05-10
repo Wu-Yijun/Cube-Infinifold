@@ -1,0 +1,8 @@
+avcodec
+avdevice
+avfilter
+avformat
+avutil
+postproc
+swresample
+swscale
