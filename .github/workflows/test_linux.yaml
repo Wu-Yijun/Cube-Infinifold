@@ -34,7 +34,7 @@ jobs:
           cd ./examples/install_dependencies
           cargo build
           cd ../../target/debug
-          sudo ./install_dependencies
+          ./install_dependencies.exe
           ffmpeg -version
 
 

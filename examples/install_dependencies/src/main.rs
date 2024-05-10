@@ -7,7 +7,7 @@ const OS: &str = "linux";
 #[cfg(target_os = "macos")]
 const OS: &str = "macos";
 
-fn main(){
+fn main() {
     if !install() {
         println!("Try to install dependencies again...");
         install();
@@ -43,10 +43,11 @@ fn install() -> bool {
                         println!("ffmpeg installed successfully.");
                     } else {
                         println!("Failed to install ffmpeg.");
+                        println!("output: {:?}", install_output);
                         return false;
                     }
                 }
-                "macos" =>{
+                "macos" => {
                     let install_output = Command::new("sudo")
                         .arg("brew")
                         .arg("install")
@@ -57,6 +58,7 @@ fn install() -> bool {
                         println!("ffmpeg installed successfully.");
                     } else {
                         println!("Failed to install ffmpeg.");
+                        println!("output: {:?}", install_output);
                         return false;
                     }
                 }
