@@ -23,7 +23,7 @@ jobs:
           cd ./examples/install_dependencies
           cargo build
           cd ../../target/debug
-          # sudo chown -R $(whoami) /usr/local
+          sudo chown -R $(whoami) /usr/local
           ./install_dependencies
           ffmpeg -version
           
