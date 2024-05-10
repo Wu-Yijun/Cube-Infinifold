@@ -195,7 +195,8 @@ jobs:
         if: ${{ matrix.os.enabled }}
         run: |
           cd ./${{ env.EXECUTABLE_NAME }}_${{ matrix.os.system }}
-          ${{matrix.os.sudo}} ./${{ env.EXECUTABLE_CHECK_NAME }}${{ matrix.os.app_extension }}
+          echo '${{matrix.os.sudo}} ./${{ env.EXECUTABLE_CHECK_NAME }}${{ matrix.os.app_extension }}' > run.sh
+          sudo ./run.sh
         working-directory: 
       
       - name: Upload Artifact
