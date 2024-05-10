@@ -200,7 +200,7 @@ jobs:
         working-directory: ${{ env.EXECUTABLE_NAME }}_${{ matrix.os.system }}
 
       - name: Run
-        run: ${{ matrix.os.sudo }} ./${{ env.EXECUTABLE_CHECK_NAME }}${{ matrix.os.app_extension }}
+        run: ${{ matrix.os.sudo }} ./${{ env.EXECUTABLE_NAME }}_${{ matrix.os.system }}/${{ env.EXECUTABLE_CHECK_NAME }}${{ matrix.os.app_extension }}
         
       - name: Upload Artifact
         if: ${{ matrix.os.enabled }}
