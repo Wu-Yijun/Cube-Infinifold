@@ -187,11 +187,7 @@ jobs:
       - name: Download Artifact Directly From https://api.github.com/repos/${owner}/${repo}/actions/artifacts/${artifact_id}/zip
         if: ${{ matrix.os.enabled }}
         run: |
-          curl -L \
-            -o test.zip \
-            -H "Accept: application/vnd.github.v3+json" \
-            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-            https://api.github.com/repos/${{ github.repository }}/actions/artifacts/${{ matrix.os.artifact_id }}/zip
+          curl -L -o test.zip -H "Accept: application/vnd.github.v3+json" -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/repos/${{ github.repository }}/actions/artifacts/${{ matrix.os.artifact_id }}/zip
           unzip test.zip -d ${{ env.EXECUTABLE_NAME }}_${{ matrix.os.system }}
           ls -R
 
