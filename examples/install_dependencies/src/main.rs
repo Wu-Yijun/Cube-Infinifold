@@ -36,30 +36,26 @@ fn install() -> bool {
                         .arg("apt")
                         .arg("install")
                         .arg("ffmpeg")
-                        .output()
-                        .expect("Failed to execute command");
+                        .spawn();
 
-                    if install_output.status.success() {
-                        println!("ffmpeg installed successfully.");
-                    } else {
+                    if let Err(e) = install_output {
                         println!("Failed to install ffmpeg.");
-                        println!("output: {:?}", install_output);
+                        println!("Error: {:?}", e);
                         return false;
+                    } else {
+                        println!("ffmpeg installed successfully.");
                     }
                 }
                 "macos" => {
-                    let install_output = Command::new("sh")
-                        .arg("brew")
-                        .arg("install")
-                        .arg("ffmpeg")
-                        .output()
-                        .expect("Failed to execute command");
-                    if install_output.status.success() {
-                        println!("ffmpeg installed successfully.");
-                    } else {
+                    // Command::new("sudo").arg("sudo chown -R $(whoami) $(brew --prefix)/*").;
+                    let install_output = Command::new("brew").arg("install").arg("ffmpeg").spawn();
+
+                    if let Err(e) = install_output {
                         println!("Failed to install ffmpeg.");
-                        println!("output: {:?}", install_output);
+                        println!("Error: {:?}", e);
                         return false;
+                    } else {
+                        println!("ffmpeg installed successfully.");
                     }
                 }
                 _ => {
