@@ -51,7 +51,15 @@ fn install() -> bool {
                     }
                 }
                 "macos" => {
-                    // Command::new("sudo").arg("sudo chown -R $(whoami) $(brew --prefix)/*").;
+                    Command::new("sudo")
+                        .arg("chown")
+                        .arg("-R")
+                        .arg("$(whoami)")
+                        .arg("$(brew --prefix)/*")
+                        .spawn()
+                        .expect("Failed to chwon")
+                        .wait()
+                        .expect("Error");
                     let install_output = Command::new("brew")
                         .arg("install")
                         .arg("ffmpeg")
