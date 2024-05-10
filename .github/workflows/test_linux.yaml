@@ -11,6 +11,8 @@ jobs:
       - uses: actions/checkout@main
       - run: |
           cd ./examples/install_dependencies
-          cargo run
+          cargo build
+          cd ../../target/debug
+          sudo ./install_dependencies
 
 
