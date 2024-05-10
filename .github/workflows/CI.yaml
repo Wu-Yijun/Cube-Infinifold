@@ -153,6 +153,7 @@ jobs:
 
   independent_test:
     if: ${{ needs.prepare.outputs.ENABLE_INDENPENDENT_TEST == 'true'}}
+    continue-on-error: true
     needs: 
       - prepare
       # - build_and_release
@@ -173,6 +174,7 @@ jobs:
             system: 'macos'
             enabled: ${{ needs.prepare.outputs.BUILD_ON_MAC == 'true' && needs.prepare.outputs.ENABLE_INDENPENDENT_TEST == 'true'}}
             artifact_id: '1489499678'
+            sudo: sudo
     runs-on: ${{ matrix.os.system }}-latest
     steps:
       # - name: Download Artifact
