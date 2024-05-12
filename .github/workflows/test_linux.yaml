@@ -13,7 +13,7 @@ jobs:
           cd ./examples/install_dependencies
           cargo build
           cd ../../target/debug
-          ./install_dependencies
+          sudo ./install_dependencies
           ffmpeg -version
   # test_mac:
   #   runs-on: macos-latest
