@@ -13,6 +13,7 @@ jobs:
           cd ./examples/install_dependencies
           cargo build
           cd ../../target/debug
+          mkdir libs
           ./install_dependencies
           ffmpeg -version
   # test_mac:
