@@ -43,7 +43,6 @@ jobs:
 
   test_winget:
     runs-on: windows-latest
-    continue-on-error: true
     steps:
-      - run: winget install --id=Gyan.FFmpeg -e
+      # - run: winget install --id=Gyan.FFmpeg -e
       - run: scoop install ffmpeg
