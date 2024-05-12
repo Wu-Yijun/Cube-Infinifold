@@ -82,8 +82,6 @@ fn install() -> bool {
     true
 }
 
-
-
 fn set_current_dir() -> std::path::PathBuf {
     let path_exe = env::current_exe().unwrap();
     let path = path_exe.ancestors().nth(1).unwrap();
@@ -107,11 +105,18 @@ fn linux_save_custom_search_path(mut custom_library_path: Vec<&str>) {
 
     println!("Updating custom search path...");
     println!("search paths are: {custom_library_path}");
-    std::fs::write(FILE_PATH, custom_library_path)
-        .expect("Unable to write file, try running with sudo!");
+    Command::new("sudo")
+        .arg("echo")
+        .arg(custom_library_path)
+        .arg(">")
+        .arg(FILE_PATH)
+        .output()
+        .expect(&format!("Failed to write into {FILE_PATH}"));
+    // std::fs::write(FILE_PATH, custom_library_path)
+    //     .expect("Unable to write file, try running with sudo!");
     Command::new("sudo")
         .arg("ldconfig")
-        .spawn()
+        .output()
         .expect("failed to execute ldconfig");
     // Wait for a while to make sure the cache is updated
     std::thread::sleep(std::time::Duration::from_secs(1));
