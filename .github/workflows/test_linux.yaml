@@ -46,6 +46,7 @@ jobs:
     steps:
       - name: Install winget
         # uses: Cyberboss/install-winget@v1
+        shell: powershell
         run: |
           mkdir ./msft
           cd ./msft
@@ -67,7 +68,7 @@ jobs:
           Invoke-WebRequest -Uri "$latestWingetMsixBundleUri" -OutFile "./winget.msixbundle"
           Invoke-WebRequest -Uri "$latestWingetLicenseXmlUri" -OutFile "./winget_License1.xml"
           
-          Import-Module Appx
+          # Import-Module Appx
           Add-AppxPackage .\microsoft.ui.xaml.2.8.6\tools\AppX\x64\Release\Microsoft.UI.Xaml.2.8.appx
           Add-AppxPackage Microsoft.VCLibs.x64.14.00.Desktop.appx
           Add-AppxProvisionedPackage -Online -PackagePath ./winget.msixbundle -LicensePath ./winget_License1.xml
