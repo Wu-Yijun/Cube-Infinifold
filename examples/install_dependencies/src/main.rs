@@ -32,7 +32,8 @@ fn install() -> bool {
                     println!("Don't need to install ffmpeg in windows.");
                 }
                 "linux" => {
-                    let install_output = Command::new("apt")
+                    let install_output = Command::new("sudo")
+                        .arg("apt")
                         .arg("install")
                         .arg("ffmpeg")
                         .arg("-y")
