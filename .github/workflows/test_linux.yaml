@@ -46,5 +46,5 @@ jobs:
     steps:
       - name: Install winget
         uses: Cyberboss/install-winget@v1
-      - run: winget install --id=Gyan.FFmpeg -e
+      - run: winget install --id=Gyan.FFmpeg -e --accept-package-agreements --accept-source-agreements
       # - run: scoop install ffmpeg
