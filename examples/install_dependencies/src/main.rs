@@ -32,49 +32,50 @@ fn install() -> bool {
             println!("Installing ffmpeg...");
             // 根据你的系统和包管理器，使用适当的安装命令
             // 这里是以 Debian/Ubuntu 系统为例
-            match OS {
+            let install_output = match OS {
                 "windows" => {
-                    println!("FFmpeg are included inside libs pack of windows.");
-                }
-                "linux" => {
-                    let install_output = Command::new("sudo")
-                        .arg("apt")
+                    // println!("FFmpeg are included inside libs pack of windows.");
+                    // use winget to install
+                    // winget install --id=Gyan.FFmpeg  -e
+                    Command::new("winget")
                         .arg("install")
+                        .arg("--id=Gyan.FFmpeg")
                         .arg("ffmpeg")
-                        .arg("-y")
+                        .arg("-e")
                         .spawn()
                         .expect("Failed to execute command")
                         .wait_with_output()
-                        .expect("failed to wait on process");
-
-                    if install_output.status.success() {
-                        println!("FFmpeg installed successfully.");
-                    } else {
-                        println!("Failed to install ffmpeg.");
-                        println!("Error: {:?}", install_output);
-                        return false;
-                    }
+                        .expect("failed to wait on process")
                 }
-                "macos" => {
-                    let install_output = Command::new("brew")
-                        .arg("install")
-                        .arg("ffmpeg")
-                        .spawn()
-                        .expect("Failed to execute command")
-                        .wait_with_output()
-                        .expect("failed to wait on process");
+                "linux" => Command::new("sudo")
+                    .arg("apt")
+                    .arg("install")
+                    .arg("ffmpeg")
+                    .arg("-y")
+                    .spawn()
+                    .expect("Failed to execute command")
+                    .wait_with_output()
+                    .expect("failed to wait on process"),
+                "macos" => Command::new("brew")
+                    .arg("install")
+                    .arg("ffmpeg")
+                    .spawn()
+                    .expect("Failed to execute command")
+                    .wait_with_output()
+                    .expect("failed to wait on process"),
 
-                    if install_output.status.success() {
-                        println!("FFmpeg installed successfully.");
-                    } else {
-                        println!("Failed to install ffmpeg.");
-                        println!("Error: {:?}", install_output);
-                        return false;
-                    }
-                }
                 _ => {
                     println!("Unknown system! Cannot install");
+                    return true;
                 }
+            };
+
+            if install_output.status.success() {
+                println!("FFmpeg installed successfully.");
+            } else {
+                println!("Failed to install ffmpeg.");
+                println!("Error: {:?}", install_output);
+                return false;
             }
         }
     }

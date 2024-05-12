@@ -22,7 +22,8 @@ fn main() -> Result<(), eframe::Error> {
                     .expect("can not load file"),
             ),
         multisampling: 4,
-        renderer: eframe::Renderer::Glow,
+        renderer: eframe::Renderer::Wgpu,
+        // renderer: eframe::Renderer::Glow,
         depth_buffer: 24,
         ..Default::default()
     };

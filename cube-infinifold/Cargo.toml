@@ -9,7 +9,8 @@ authors = ["Yijun Wu", "Rimor Aluria"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-eframe = "*"
+wgpu = "*"
+eframe = { version = "*", features = ["wgpu"] }
 egui_extras = { version = "*", features = ["all_loaders"] }
 ndarray = "*"
 rand = "*"
