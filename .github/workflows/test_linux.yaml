@@ -44,5 +44,7 @@ jobs:
   test_winget:
     runs-on: windows-latest
     steps:
-      # - run: winget install --id=Gyan.FFmpeg -e
-      - run: scoop install ffmpeg
+      - name: Install winget
+        uses: Cyberboss/install-winget@v1
+      - run: winget install --id=Gyan.FFmpeg -e
+      # - run: scoop install ffmpeg
