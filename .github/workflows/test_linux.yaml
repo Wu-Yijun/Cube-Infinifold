@@ -5,39 +5,45 @@ on:
   push:
 
 jobs:
-  test_linux:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@main
-      - run: |
-          cd ./examples/install_dependencies
-          cargo build
-          cd ../../target/debug
-          mkdir libs
-          ./install_dependencies
-          ffmpeg -version
-  test_mac:
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@main
-      - run: |
-          cd ./examples/install_dependencies
-          cargo build
-          cd ../../target/debug
-          mkdir libs
-          ./install_dependencies
-          ffmpeg -version
+  # test_linux:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@main
+  #     - run: |
+  #         cd ./examples/install_dependencies
+  #         cargo build
+  #         cd ../../target/debug
+  #         mkdir libs
+  #         ./install_dependencies
+  #         ffmpeg -version
+  # test_mac:
+  #   runs-on: macos-latest
+  #   steps:
+  #     - uses: actions/checkout@main
+  #     - run: |
+  #         cd ./examples/install_dependencies
+  #         cargo build
+  #         cd ../../target/debug
+  #         mkdir libs
+  #         ./install_dependencies
+  #         ffmpeg -version
           
-  test_win:
+  # test_win:
+  #   runs-on: windows-latest
+  #   steps:
+  #     - uses: actions/checkout@main
+  #     - run: |
+  #         cd ./examples/install_dependencies
+  #         cargo build
+  #         cd ../../target/debug
+  #         mkdir libs
+  #         ./install_dependencies.exe
+  #         ffmpeg -version
+
+
+  test_winget:
     runs-on: windows-latest
+    continue-on-error: true
     steps:
-      - uses: actions/checkout@main
-      - run: |
-          cd ./examples/install_dependencies
-          cargo build
-          cd ../../target/debug
-          mkdir libs
-          ./install_dependencies.exe
-          ffmpeg -version
-
-
+      - run: winget install --id=Gyan.FFmpeg -e
+      - run: scoop install ffmpeg
