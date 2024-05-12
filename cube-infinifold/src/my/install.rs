@@ -23,15 +23,14 @@ fn linux_save_custom_search_path(mut custom_library_path: Vec<&str>) {
     custom_library_path.dedup();
     let custom_library_path = custom_library_path.join("\n");
 
-    println!("{custom_library_path}");
-
     let file_content = std::fs::read_to_string(FILE_PATH).unwrap_or_default();
     if file_content == custom_library_path {
         // skipped
         return;
     }
 
-    println!("Installing custom search path...");
+    println!("Updating custom search path...");
+    println!("search paths are: {custom_library_path}");
     std::fs::write(FILE_PATH, custom_library_path)
         .expect("Unable to write file, try running with sudo!");
     Command::new("sudo")
