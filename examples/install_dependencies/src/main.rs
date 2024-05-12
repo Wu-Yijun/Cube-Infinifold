@@ -27,14 +27,14 @@ fn install() -> bool {
             println!("ffmpeg is already installed.");
         }
         _ => {
-            println!("Failed to execute ffmpeg command. Seems that ffmpeg is not installed.");
+            println!("Cannot find ffmpeg command. Seems that ffmpeg is not installed.");
             // 如果没有安装，则安装 ffmpeg
             println!("Installing ffmpeg...");
             // 根据你的系统和包管理器，使用适当的安装命令
             // 这里是以 Debian/Ubuntu 系统为例
             match OS {
                 "windows" => {
-                    println!("Don't need to install ffmpeg in windows.");
+                    println!("FFmpeg are included inside libs pack of windows.");
                 }
                 "linux" => {
                     let install_output = Command::new("sudo")

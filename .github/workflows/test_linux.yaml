@@ -16,26 +16,26 @@ jobs:
           mkdir libs
           ./install_dependencies
           ffmpeg -version
-  # test_mac:
-  #   runs-on: macos-latest
-  #   steps:
-  #     - uses: actions/checkout@main
-  #     - run: |
-  #         cd ./examples/install_dependencies
-  #         cargo build
-  #         cd ../../target/debug
-  #         ./install_dependencies
-  #         ffmpeg -version
+  test_mac:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@main
+      - run: |
+          cd ./examples/install_dependencies
+          cargo build
+          cd ../../target/debug
+          ./install_dependencies
+          ffmpeg -version
           
-  # test_win:
-  #   runs-on: windows-latest
-  #   steps:
-  #     - uses: actions/checkout@main
-  #     - run: |
-  #         cd ./examples/install_dependencies
-  #         cargo build
-  #         cd ../../target/debug
-  #         ./install_dependencies.exe
-  #         ffmpeg -version
+  test_win:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@main
+      - run: |
+          cd ./examples/install_dependencies
+          cargo build
+          cd ../../target/debug
+          ./install_dependencies.exe
+          ffmpeg -version
 
 
