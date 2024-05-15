@@ -40,10 +40,19 @@ jobs:
           cd ../../target/debug
           mkdir libs
           ./install_dependencies.exe
-          echo "Finished!"
-          Sleep 10
-          # ffmpeg -version
-      - run: ffmpeg -version
+
+          # # this may not work, depending on system
+          # # see: https://github.com/microsoft/winget-pkgs/issues/95349
+          # ffmpeg -veersion
+
+      - run: |
+          cd ./tools/ffmpeg-loader/
+          cargo test
+
+      - uses: actions/upload-artifact@main
+        with:
+          name: test_video
+          path: ./target/debug/deps/*.mp4 
 
 
   # test_winget:

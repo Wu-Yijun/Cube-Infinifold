@@ -49,3 +49,20 @@ pub fn finish() {
 pub fn hello() {
     println!("Hello ffmpeg-loader(video-encoder)!");
 }
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn test() {
+        new(480, 360, "ffmpeg_loader_test.mp4".to_string());
+        let frame: ndarray::Array3<u8> =
+            ndarray::Array3::from_shape_fn((360, 480, 3), |(y, x, c)| 128);
+        add_frame(frame, 0.5);
+        let frame: ndarray::Array3<u8> =
+            ndarray::Array3::from_shape_fn((360, 480, 3), |(y, x, c)| 33);
+        add_frame(frame, 1.0);
+        finish();
+    }
+}
