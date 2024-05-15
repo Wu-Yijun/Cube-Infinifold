@@ -34,6 +34,7 @@ jobs:
       - uses: actions/checkout@main
       - name: Install winget
         uses: Cyberboss/install-winget@v1
+      - run: vcpkg integrate install
       - run: |
           cd ./examples/install_dependencies
           cargo build
