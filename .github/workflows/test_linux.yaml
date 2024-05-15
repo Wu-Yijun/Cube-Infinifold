@@ -42,7 +42,8 @@ jobs:
           ./install_dependencies.exe
           echo "Finished!"
           Sleep 10
-          ffmpeg -version
+          # ffmpeg -version
+      - run: ffmpeg -version
 
 
   # test_winget:
