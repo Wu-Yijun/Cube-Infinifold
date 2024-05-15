@@ -5,71 +5,47 @@ on:
   push:
 
 jobs:
-  # test_linux:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@main
-  #     - run: |
-  #         cd ./examples/install_dependencies
-  #         cargo build
-  #         cd ../../target/debug
-  #         mkdir libs
-  #         ./install_dependencies
-  #         ffmpeg -version
-  # test_mac:
-  #   runs-on: macos-latest
-  #   steps:
-  #     - uses: actions/checkout@main
-  #     - run: |
-  #         cd ./examples/install_dependencies
-  #         cargo build
-  #         cd ../../target/debug
-  #         mkdir libs
-  #         ./install_dependencies
-  #         ffmpeg -version
+  test_linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@main
+      - run: |
+          cd ./examples/install_dependencies
+          cargo build
+          cd ../../target/debug
+          mkdir libs
+          ./install_dependencies
+          ffmpeg -version
+  test_mac:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@main
+      - run: |
+          cd ./examples/install_dependencies
+          cargo build
+          cd ../../target/debug
+          mkdir libs
+          ./install_dependencies
+          ffmpeg -version
           
-  # test_win:
-  #   runs-on: windows-latest
-  #   steps:
-  #     - uses: actions/checkout@main
-  #     - run: |
-  #         cd ./examples/install_dependencies
-  #         cargo build
-  #         cd ../../target/debug
-  #         mkdir libs
-  #         ./install_dependencies.exe
-  #         ffmpeg -version
-
-
-  test_winget:
+  test_win:
     runs-on: windows-latest
     steps:
+      - uses: actions/checkout@main
       - name: Install winget
-        # uses: Cyberboss/install-winget@v1
-        shell: powershell
-        run: |
-          mkdir ./msft
-          cd ./msft
-          
-          $ProgressPreference = 'SilentlyContinue'
-          Invoke-WebRequest -Uri https://www.nuget.org/api/v2/package/Microsoft.UI.Xaml/2.8.6 -OutFile .\microsoft.ui.xaml.2.8.6.zip
-          Expand-Archive .\microsoft.ui.xaml.2.8.6.zip
-          Invoke-WebRequest -Uri https://aka.ms/Microsoft.VCLibs.x64.14.00.Desktop.appx -OutFile Microsoft.VCLibs.x64.14.00.Desktop.appx
-          
-          $gitHubReleasesResponse = Invoke-RestMethod https://api.github.com/repos/microsoft/winget-cli/releases/latest
-          $wingetReleaseAssets = $gitHubReleasesResponse.assets
-          $latestWingetMsixBundleUri = $wingetReleaseAssets.browser_download_url | Where-Object {$_.EndsWith(".msixbundle")}
-          $latestWingetLicenseXmlUri = $wingetReleaseAssets.browser_download_url | Where-Object {$_.EndsWith("License1.xml")}
+        uses: Cyberboss/install-winget@v1
+      - run: |
+          cd ./examples/install_dependencies
+          cargo build
+          cd ../../target/debug
+          mkdir libs
+          ./install_dependencies.exe
+          ffmpeg -version
 
-          Invoke-WebRequest -Uri "$latestWingetMsixBundleUri" -OutFile "./winget.msixbundle"
-          Invoke-WebRequest -Uri "$latestWingetLicenseXmlUri" -OutFile "./winget_License1.xml"
-          
-          Add-AppxPackage .\microsoft.ui.xaml.2.8.6\tools\AppX\x64\Release\Microsoft.UI.Xaml.2.8.appx
-          Add-AppxPackage Microsoft.VCLibs.x64.14.00.Desktop.appx
-          Add-AppxProvisionedPackage -Online -PackagePath ./winget.msixbundle -LicensePath ./winget_License1.xml
-          
-          cd ..
-          Remove-Item -Recurse -Force .\msft
 
-          Sleep 15
-      - run: winget install --id=Gyan.FFmpeg -e --accept-package-agreements --accept-source-agreements
+  # test_winget:
+  #   runs-on: windows-latest
+  #   steps:
+  #     - name: Install winget
+  #       uses: Cyberboss/install-winget@v1
+  #     - run: winget install --id=Gyan.FFmpeg -e --accept-package-agreements --accept-source-agreements

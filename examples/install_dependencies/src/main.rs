@@ -42,6 +42,8 @@ fn install() -> bool {
                         .arg("--id=Gyan.FFmpeg")
                         .arg("ffmpeg")
                         .arg("-e")
+                        .arg("--accept-package-agreements")
+                        .arg("--accept-source-agreements")
                         .spawn()
                         .expect("Failed to execute command")
                         .wait_with_output()
